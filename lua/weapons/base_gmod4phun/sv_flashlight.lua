@@ -9,7 +9,7 @@ function SWEP:ToggleFlashlight(dontUseAnim)
 		self:SetFlashlightState(!self:GetFlashlightState())
 		if !dontUseAnim then
 			self:SetNextFlashlightUse(CurTime() + 0.75)
-			self:PlayVMSequence(self:GetIron() and "lighton_iron" or "lighton")
+			SendUserMessage("PHUNBASE_FLASHLIGHT_PLAYANIM", ply)
 		end
 	end
 end

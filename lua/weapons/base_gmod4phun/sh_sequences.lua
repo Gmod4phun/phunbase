@@ -52,7 +52,7 @@ function SWEP:_playAnim(anim, speed, cycle, ent)
 			end
 		end
 	end
-	
+
 	if SERVER then return end
 	
 	ent:ResetSequence(foundAnim)

@@ -138,6 +138,9 @@ local particlenames = {
 	"wispy_smoke",
 	"wispy_smoke_orig",
 	"shelleject_spark",
+	"ricochet_sparks",
+	"tracer_bullettime_ripples",
+	"tracer_bullettime_ripples_b",
 }
 
 for k, v in pairs(particlenames) do

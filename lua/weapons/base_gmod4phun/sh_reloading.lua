@@ -1,11 +1,17 @@
 function SWEP:Reload()
+	self:_realReloadStart()
+end
+
+function SWEP:_realReloadStart()
 	local ply = self.Owner
 	if self:IsBusy() or self:IsFlashlightBusy() then return end
 	if !(self:Clip1() < self.Primary.ClipSize) or ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then return end
+	if self:GetNextPrimaryFire() > CurTime() or self:GetNextSecondaryFire() > CurTime() then return end
 	if IsFirstTimePredicted() then
 		self.FinishReloadTime = CurTime() + self.ReloadTime
 		self:PlayVMSequence("reload")
 		self:_reloadBegin()
+		ply:DoReloadEvent()
 	end
 end
 

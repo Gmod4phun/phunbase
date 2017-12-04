@@ -19,6 +19,8 @@ function PHUNBASE.LoadLua(file)
 	end
 end
 
+PHUNBASE.LoadLua("includes/modules/halo_phunbase.lua") // Custom Halo lib
+
 PHUNBASE.cmodel = PHUNBASE.cmodel or {}
 PHUNBASE.cmodel.Models = PHUNBASE.cmodel.Models or {}
 
@@ -51,7 +53,7 @@ function PHUNBASE.VehicleWeapons(ply,vehicle,role)
 		ply:SetAllowWeaponsInVehicle(false)
 	end
 end
-hook.Add("CanPlayerEnterVehicle","PHUNBASE.VehicleWeapons",PHUNBASE.VehicleWeapons)
+--hook.Add("CanPlayerEnterVehicle","PHUNBASE.VehicleWeapons",PHUNBASE.VehicleWeapons) -- dont use that now, still wip
 
 function PHUNBASE.VehicleDamage(target, dmginfo)
 	if target:IsVehicle() then // if we shot our vehicle, dont damage us
@@ -65,11 +67,46 @@ function PHUNBASE.VehicleDamage(target, dmginfo)
 end
 hook.Add("EntityTakeDamage","PHUNBASE.VehicleDamage",PHUNBASE.VehicleDamage)
 
-/*
-local function PHUNBASE_GiveWeaponFix(ply,wep) -- disable default behaviour of weapon giving, fixes deploy functions
-	--ply:Give(wep)
-	--ply:ConCommand("use "..wep)
-	return true
+function PHUNBASE.PlayerScreenFlash(ply, time, color)
+	if !IsValid(ply) then return end
+	time = time or 0.5
+	color = color or Color(255,255,255,255)
+	ply:ScreenFade(SCREENFADE.OUT, color, time/2, time/2)
+	timer.Simple(time/2, function()
+		ply:ScreenFade(SCREENFADE.IN, color, time/2, time/2)
+	end)
+end
+
+local function PHUNBASE_GiveWeaponFix(ply,wep,swep) -- disable default behaviour of weapon giving for phunbase weapons, fixes deploy functions
+	local IsSWEP = weapons.GetStored(wep) != nil
+	if IsSWEP then
+		local base = weapons.GetStored(wep).Base
+		local basetable = weapons.GetStored(base)
+		if ply:IsPlayer() and basetable.PHUNBASEWEP then
+			if !ply:HasWeapon(wep) then
+				ply:Give(wep)
+			end
+			umsg.Start("PHUNBASE_WEAPONGIVE_PLAYER", ply)
+				umsg.String(wep)
+			umsg.End()
+			return false
+		end
+	end
 end
 hook.Add("PlayerGiveSWEP","PHUNBASE_GiveWeaponFix",PHUNBASE_GiveWeaponFix)
-*/
+
+if CLIENT then
+	local function PHUNBASE_WEAPONGIVE_PLAYER(um)
+		local ply = LocalPlayer()
+		local wep = um:ReadString()
+
+		timer.Simple(0.01, function()
+			if !IsValid(ply) or !IsValid(ply:GetWeapon(wep)) then
+				return
+			end
+			input.SelectWeapon(ply:GetWeapon(wep))
+		end)
+		
+	end
+	usermessage.Hook("PHUNBASE_WEAPONGIVE_PLAYER", PHUNBASE_WEAPONGIVE_PLAYER)
+end

@@ -536,13 +536,13 @@ function SWEP:drawViewModel()
 end
 
 function SWEP:_drawViewModel()
-	
+	if !CLIENT then return end
 	if self.ViewModelFlip then
 		render.CullMode(MATERIAL_CULLMODE_CW)
-	end	
+	end
 	
-	self.VM:SetRenderOrigin(PB_VMPOS)
-	self.VM:SetRenderAngles(PB_VMANG)
+	//self.VM:SetRenderOrigin(PB_VMPOS)
+	//self.VM:SetRenderAngles(PB_VMANG)
 	self.VM:FrameAdvance(FrameTime())
 	self.VM:SetupBones()
 	self.VM:DrawModel()

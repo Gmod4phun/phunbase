@@ -6,6 +6,7 @@ AddCSLuaFile()
 PHUNBASE.LoadLua("cl_blur.lua")
 PHUNBASE.LoadLua("cl_crosshair.lua")
 PHUNBASE.LoadLua("cl_flashlight.lua")
+PHUNBASE.LoadLua("cl_halo.lua")
 PHUNBASE.LoadLua("cl_hooks.lua")
 PHUNBASE.LoadLua("cl_model.lua")
 PHUNBASE.LoadLua("cl_shells.lua")
@@ -15,9 +16,10 @@ PHUNBASE.LoadLua("sh_reloading.lua")
 PHUNBASE.LoadLua("sh_sequences.lua")
 PHUNBASE.LoadLua("sh_thinkfuncs.lua")
 PHUNBASE.LoadLua("sv_flashlight.lua")
+PHUNBASE.LoadLua("sh_crossbow.lua")
 
-SWEP.PrintName = "PHUN BASE"
-SWEP.Category = "PHUN BASE"
+SWEP.PrintName = "PHUNBASE"
+SWEP.Category = "PHUNBASE"
 SWEP.Slot = 1
 SWEP.SlotPos = 1
 SWEP.IconLetter = "1"
@@ -42,7 +44,7 @@ SWEP.HoldType = "pistol"
 util.PrecacheModel( SWEP.ViewModel )
 util.PrecacheModel( SWEP.WorldModel )
 
-SWEP.Weight = 5
+SWEP.Weight = -1
 SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 
@@ -58,16 +60,11 @@ SWEP.Primary.Tracer = 0
 SWEP.Primary.Spread = 0.02
 SWEP.Primary.Cone = 0.02
 
-//
-//
-
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
-
-//
-//
+SWEP.Secondary.Delay = 0.1
 
 SWEP.PB_VMPOS = Vector(0,0,0) // ViewModel position
 SWEP.PB_VMANG = Angle(0,0,0) // ViewModel angles
@@ -119,10 +116,67 @@ SWEP.ShellScale = 0.5
 SWEP.ShellModel = "models/weapons/shell.mdl"
 SWEP.ShellEjectVelocity = 75
 
-SWEP.FireSound = ""
+SWEP.FireSound = {} -- can be a string, or a table of sounds
+
+SWEP.DisableIronsights = false
+SWEP.DisableReloadBlur = false
+SWEP.ReloadAfterShot = false
+SWEP.ReloadAfterShotTime = 0.5
+
+SWEP.EmptySoundPrimary = "PB_WeaponEmpty_Primary"
+SWEP.EmptySoundSecondary = "PB_WeaponEmpty_Secondary"
+
+SWEP.HL2IconLetters = {
+	["phun_hl2_ar2"] = "l",
+	["phun_hl2_crossbow"] = "g",
+	["phun_hl2_pistol"] = "d",
+}
+
+SWEP.UseCustomWepSelectIcon = false
+function SWEP:CustomWepSelectIcon(x, y, wide, tall, alpha) -- copy this to your swep and enable custom wepselecticons on it to draw custom weapon selection icons
+end
 
 function SWEP:FireAnimationEvent(pos,ang,event,name)
 	return true
+end
+
+if CLIENT then
+	surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_1", { // weapon selecticon ghost font
+		font = "HalfLife2",
+		extended = true,
+		size = ScreenScale(54),
+		weight = 0,
+		blursize = 8,
+		scanlines = 3,
+		antialias = true,
+		additive = true,
+	} )
+
+	surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_2", { // weapon selecticons
+		font = "HalfLife2",
+		extended = true,
+		size = ScreenScale(54),
+		weight = 0,
+		antialias = true,
+		additive = true,
+	} )
+end
+
+function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
+	if self.HL2IconLetters[self:GetClass()] then -- HL2 weapons
+		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_1", x + wide / 2, y + tall * 0.05, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_2", x + wide / 2, y + tall * 0.05, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
+	elseif self.UseCustomWepSelectIcon then
+		self:CustomWepSelectIcon(x, y, wide, tall, alpha)
+	else -- default GMod swep select icon
+		surface.SetDrawColor( 255, 255, 255, alpha )
+		surface.SetTexture( surface.GetTextureID( "weapons/swep" ) )
+		-- Borders
+		y = y + 10
+		x = x + 10
+		wide = wide - 20
+		surface.DrawTexturedRect(x, y, wide, wide / 2)
+	end
 end
 
 function SWEP:Initialize()
@@ -259,19 +313,48 @@ function SWEP:Think()
 	self:_WaterLadderThink()
 	self:_ReloadThink()
 	self:_SoundTableThink()
+	
+	if CLIENT then
+		if self.ThinkOverrideClient then
+			self:ThinkOverrideClient()
+		end
+	end
+end
+
+function SWEP:Cheap_WM_ShootEffects()
+	self.Owner:MuzzleFlash()
 end
 
 function SWEP:PrimaryAttack()
 	local ply = self.Owner
-	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or self:Clip1() < 1 then return end
+	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
+	
+	if self:Clip1() < 1 then
+		self:SetNextPrimaryFire(CurTime()+0.25)
+		self:EmitSound(self.EmptySoundPrimary)
+		return
+	end
+	
+	self:SetNextPrimaryFire(CurTime()+self.Primary.Delay)
 	
 	if IsFirstTimePredicted() then
-		self:SetNextPrimaryFire(CurTime()+self.Primary.Delay)	
-		self:SetClip1(self:Clip1()-1)
-		self:EmitSound(self.FireSound)
+		if type(self.FireSound) == "table" then
+			for _, snd in pairs(self.FireSound) do
+				if type(snd) == "string" then
+					self:EmitSound(snd)
+				end
+			end			
+		elseif type(self.FireSound) == "string" then
+			self:EmitSound(self.FireSound)
+		end
 		
-		self:_FireBullets()
-		self:StopViewModelParticles()
+		if self.PrimaryAttackOverride then
+			self:PrimaryAttackOverride()
+		else
+			self:_FireBullets() 
+			self:StopViewModelParticles()
+		end
+		
 		self:FireAnimLogic()
 		self:PlayMuzzleFlashEffect()
 		self:MakeShell()
@@ -284,12 +367,24 @@ function SWEP:PrimaryAttack()
 		if SP and SERVER then
 			if !self.Owner:IsPlayer() then return end
 			SendUserMessage("PHUNBASE_Recoil", ply)
+			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
 		end
+		
+		ply:DoAttackEvent()
+		
+		if self.ReloadAfterShot then
+			timer.Simple(self.ReloadAfterShotTime, function() if !IsValid(self) then return end self:_realReloadStart() end)
+		end
+		
+		self:Cheap_WM_ShootEffects()
 	end
+	
+	self:TakePrimaryAmmo(1)
+	
 end
 
 function SWEP:FireAnimLogic()
-	local last = self:Clip1() == 0
+	local last = self:Clip1() == 1
 	if !self:GetIsDual() then
 		if self:GetIron() then
 			self:PlayVMSequence(last and "fire_iron_last" or "fire_iron")
@@ -320,6 +415,15 @@ function SWEP:FireAnimLogic()
 end
 
 function SWEP:SecondaryAttack()
+	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
+	
+	if IsFirstTimePredicted() then
+		self:SetNextSecondaryFire(CurTime()+self.Secondary.Delay)
+	end
+	
+	if self.SecondaryAttackOverride then
+		self:SecondaryAttackOverride()
+	end
 end
 
 function SWEP:OnRemove()
@@ -332,6 +436,10 @@ end
 
 function SWEP:GetViewModelPosition(pos,ang)
 	return self.PB_VMPOS, self.PB_VMANG
+end
+
+function SWEP:DrawWorldModel()
+	self:DrawModel()
 end
 
 /*
@@ -430,4 +538,23 @@ if CLIENT then
 	end
 	
 	usermessage.Hook("PHUNBASE_Recoil", GetRecoil)
+	
+	local function PHUNBASE_PrimaryAttackOverride_CL()
+		ply = LocalPlayer()
+		
+		if not ply:Alive() then
+			return
+		end
+		
+		wep = ply:GetActiveWeapon()
+		
+		if IsValid(wep) and wep.PHUNBASEWEP then
+			if wep.PrimaryAttackOverride_CL then
+				wep:PrimaryAttackOverride_CL()
+			end
+		end
+	end
+	
+	usermessage.Hook("PHUNBASE_PrimaryAttackOverride_CL", PHUNBASE_PrimaryAttackOverride_CL)
+	
 end

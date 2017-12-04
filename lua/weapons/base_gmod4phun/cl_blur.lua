@@ -30,6 +30,10 @@ function SWEP:processBlur()
 		can = true
 	end
 	
+	if self.DisableReloadBlur then
+		can = false
+	end
+	
 	if can then
 		self.BlurAmount = math.Approach(self.BlurAmount, 10, FT * 30)
 	else

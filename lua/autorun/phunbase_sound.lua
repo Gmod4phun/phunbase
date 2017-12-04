@@ -122,3 +122,6 @@ function PHUNBASE:addRegularSound(name, snd, level, noDirection)
 		util.PrecacheSound(snd)
 	end
 end
+
+PHUNBASE:addRegularSound("PB_WeaponEmpty_Primary", "weapons/pistol/pistol_empty.wav")
+PHUNBASE:addRegularSound("PB_WeaponEmpty_Secondary", "weapons/pistol/pistol_empty.wav")

@@ -67,14 +67,16 @@ local function PHUNBASE_SoundThink()
 				local t = wep.CurSoundTable[wep.CurSoundEntry]
 				local CT = UnPredictedCurTime()
 				
+				if t.time == 0 then t.time = 0.035 end // double sound fix
+				
 				if CT >= wep.SoundTime + t.time / wep.SoundSpeed then
 					if t.sound and t.sound ~= "" then
 						wep:EmitSound(t.sound, 70, 100)
 					end
 					
-					/*if t.callback then
+					if t.callback then
 						t.callback(wep)
-					end*/
+					end
 					
 					if wep.CurSoundTable[wep.CurSoundEntry + 1] then
 						wep.CurSoundEntry = wep.CurSoundEntry + 1

@@ -9,14 +9,17 @@ end
 
 function SWEP:_ReloadThink()
 	if !self:GetIsReloading() then return end
-	if IsFirstTimePredicted() then
-		if CurTime() >= self.FinishReloadTime and self:GetIsReloading() then
-			self:_reloadFinish()
+		if SERVER then
+		if IsFirstTimePredicted() then
+			if CurTime() >= self.FinishReloadTime and self:GetIsReloading() then
+				self:_reloadFinish()
+			end
 		end
 	end
 end
 
 function SWEP:_IronThink()
+	if self.DisableIronsights then return end
 	local ply = self.Owner
 	local empty = self:Clip1() == 0
 	if ((ply:KeyDown(IN_ATTACK2) and !self:GetIron())) and !self:GetIsSprinting() and !self:IsBusy() and !self:IsFlashlightBusy() then
@@ -83,6 +86,7 @@ function SWEP:_WaterLadderThink()
 end
 
 function SWEP:_SoundTableThink()
+	//if !game.SinglePlayer() then return end
 	if SERVER then
 		if self.CurSoundTable then
 			local t = self.CurSoundTable[self.CurSoundEntry]
@@ -99,7 +103,7 @@ function SWEP:_SoundTableThink()
 				end
 			else]]--
 			
-			if CT >= self.SoundTime + t.time / self.SoundSpeed then
+			if UnPredictedCurTime() >= self.SoundTime + t.time / self.SoundSpeed then
 				if t.sound and t.sound ~= "" then
 					self:EmitSound(t.sound, 70, 100)
 				end

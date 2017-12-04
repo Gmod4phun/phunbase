@@ -78,3 +78,12 @@ local function PHUNBASE_FLASHLIGHT_DESTROY()
 	end
 end
 usermessage.Hook("PHUNBASE_FLASHLIGHT_DESTROY", PHUNBASE_FLASHLIGHT_DESTROY)
+
+local function PHUNBASE_FLASHLIGHT_PLAYANIM()
+	local ply = LocalPlayer()
+	local wep = ply:GetActiveWeapon()
+	if IsValid(ply.PHUNBASE_Flashlight) and IsValid(wep) and wep.PHUNBASEWEP then
+		wep:PlayVMSequence(wep:GetIron() and "lighton_iron" or "lighton")
+	end
+end
+usermessage.Hook("PHUNBASE_FLASHLIGHT_PLAYANIM", PHUNBASE_FLASHLIGHT_PLAYANIM)
