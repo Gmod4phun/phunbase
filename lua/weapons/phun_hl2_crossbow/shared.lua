@@ -40,8 +40,8 @@ SWEP.SprintAng = Vector(-19.701, 29.7, 0)
 SWEP.HolsterPos = Vector(0,0,20)
 SWEP.HolsterAng = Vector(0,0,0)
 
-SWEP.NearWallPos = Vector(1.6, -11.5, -10.301)
-SWEP.NearWallAng = Vector(64.8, 0, 0)
+SWEP.NearWallPos = Vector(0, -10, 0)
+SWEP.NearWallAng = Vector(0, 0, 0)
 
 SWEP.PistolSprintSway = true
 
@@ -108,7 +108,7 @@ function SWEP:FireCrossbowBolt()
 	local dir = ply:EyeAngles():Forward()
 	local ent = ents.Create( "crossbow_bolt" )
 	if ( IsValid( ent ) ) then
-		ent:SetPos( ply:GetShootPos() + dir * 32 )
+		ent:SetPos( ply:GetShootPos() + dir )
 		ent:SetAngles( ply:EyeAngles() )
 		ent:Spawn()
 		ent:Activate()

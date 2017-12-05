@@ -42,8 +42,8 @@ SWEP.SprintAng = Vector(-19.701, 29.7, 0)
 SWEP.HolsterPos = Vector(0,0,20)
 SWEP.HolsterAng = Vector(0,0,0)
 
-SWEP.NearWallPos = Vector(1.6, -11.5, -10.301)
-SWEP.NearWallAng = Vector(64.8, 0, 0)
+SWEP.NearWallPos = Vector(0, -10, 0)
+SWEP.NearWallAng = Vector(0, 0, 0)
 
 SWEP.PistolSprintSway = true
 
@@ -103,11 +103,9 @@ SWEP.DisableIronsights = true
 
 SWEP.Secondary.Ammo = "AR2AltFire"
 SWEP.Secondary.Delay = 1.6
-SWEP.Secondary.ClipSize = 6
+SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = 6
-SWEP.Secondary.Automatic = false
-
-SWEP.IconLetter = "d"
+SWEP.Secondary.Automatic = true
 
 function SWEP:FireCombineBall()
 	if CLIENT then return end
@@ -115,7 +113,7 @@ function SWEP:FireCombineBall()
 	local ply = self.Owner
 	local dir = ply:EyeAngles():Forward()
 	local ent = ents.Create( "point_combine_ball_launcher" )
-	local pos = ply:GetShootPos() + dir * 64 
+	local pos = ply:GetShootPos() + dir
 	local ball = NULL
 	
 	if ( IsValid( ent ) ) then
@@ -169,7 +167,4 @@ function SWEP:SecondaryAttackOverride()
 		self:PlayVMSequence("fire_ball", 1, 0)
 		self:FireCombineBall()
 	end)
-end
-
-function SWEP:ThinkOverrideClient()
 end

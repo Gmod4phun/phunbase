@@ -299,8 +299,8 @@ function SWEP:performViewmodelMovement()
 	if self.LuaViewmodelRecoil then
 		-- the 'fake' viewmodel weapon recoil should only be reset if the weapon in question is using it 
 		self.RecoilRestoreSpeed = math.Approach(self.RecoilRestoreSpeed, 10, FT * 10)
-		self.RecoilPos2 = LerpVectorCW20(FT * self.RecoilRestoreSpeed * 0.9, self.RecoilPos2, self.RecoilPos)
-		self.RecoilAng2 = LerpAngleCW20(FT * self.RecoilRestoreSpeed * 0.9, self.RecoilAng2, self.RecoilAng)
+		self.RecoilPos2 = PHUNBASE_LerpVector(FT * self.RecoilRestoreSpeed * 0.9, self.RecoilPos2, self.RecoilPos)
+		self.RecoilAng2 = PHUNBASE_LerpAngle(FT * self.RecoilRestoreSpeed * 0.9, self.RecoilAng2, self.RecoilAng)
 		
 		self.RecoilPosDiff.x = self.RecoilPos.x - self.RecoilPos2.x
 		self.RecoilPosDiff.y = self.RecoilPos.y - self.RecoilPos2.y
@@ -310,12 +310,12 @@ function SWEP:performViewmodelMovement()
 		self.RecoilAngDiff.y = self.RecoilAng.y - self.RecoilAng2.y
 		self.RecoilAngDiff.z = self.RecoilAng.z - self.RecoilAng2.z
 		
-		self.RecoilPos = LerpVectorCW20(FT * self.RecoilRestoreSpeed, self.RecoilPos, Vec0 + self.RecoilPosDiff)
-		self.RecoilAng = LerpAngleCW20(FT * self.RecoilRestoreSpeed, self.RecoilAng, Ang0 + self.RecoilAngDiff)
+		self.RecoilPos = PHUNBASE_LerpVector(FT * self.RecoilRestoreSpeed, self.RecoilPos, Vec0 + self.RecoilPosDiff)
+		self.RecoilAng = PHUNBASE_LerpAngle(FT * self.RecoilRestoreSpeed, self.RecoilAng, Ang0 + self.RecoilAngDiff)
 	end
 	
 	-- the 'fake' viewmodel recoil from shooting while aiming
-	self.FireMove = LerpCW20(FT * 15, self.FireMove, 0)
+	self.FireMove = PHUNBASE_Lerp(FT * 15, self.FireMove, 0)
 
 end
 

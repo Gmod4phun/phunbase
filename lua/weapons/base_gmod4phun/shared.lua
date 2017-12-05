@@ -130,6 +130,15 @@ SWEP.HL2IconLetters = {
 	["phun_hl2_ar2"] = "l",
 	["phun_hl2_crossbow"] = "g",
 	["phun_hl2_pistol"] = "d",
+	["phun_hl2_smg"] = "a",
+	["phun_hl2_revolver"] = "e",
+	["phun_hl2_shotgun"] = "b",
+	["phun_hl2_rpg"] = "i",
+	["phun_hl2_grenade"] = "k",
+	["phun_hl2_bugbait"] = "j",
+	["phun_hl2_crowbar"] = "c",
+	["phun_hl2_stunstick"] = "n",
+	["phun_hl2_slam"] = "o",
 }
 
 SWEP.UseCustomWepSelectIcon = false
@@ -278,7 +287,7 @@ function SWEP:Holster(wep)
 
 	if IsFirstTimePredicted() then
 		if self:GetActiveSequence() != "holster" then
-			self:PlayVMSequence("holster")
+			self:PlayVMSequence("holster", self.HolsterAnimSpeed or 1, self.HolsterAnimStartCyc or 0)
 		end
 	end
 	
@@ -558,3 +567,11 @@ if CLIENT then
 	usermessage.Hook("PHUNBASE_PrimaryAttackOverride_CL", PHUNBASE_PrimaryAttackOverride_CL)
 	
 end
+
+hook.Add( "OnEntityCreated", "TestOnCreatedEntKeyValues", function( ent )
+	if SERVER then
+		if ent:IsValid() and ent:GetClass() == "grenade_ar2" then
+			//PrintTable(ent:GetSaveTable())
+		end
+	end
+end)
