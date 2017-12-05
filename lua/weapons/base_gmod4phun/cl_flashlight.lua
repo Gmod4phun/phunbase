@@ -3,7 +3,7 @@ if !CLIENT then return end
 
 function SWEP:_drawFlashlight()	
 	local vm = self.VM
-	local att = vm:LookupAttachment("flashlight")
+	local att = vm:LookupAttachment(self.FlashlightAttachmentName or "flashlight")
 	if !att then return end
 	
 	local att2 = vm:GetAttachment(att)
