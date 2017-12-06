@@ -40,7 +40,7 @@ hook.Add("PlayerSwitchFlashlight", "PHUNBASE_FLASHLIGHT_SWITCH", PHUNBASE_FLASHL
 local function PHUNBASE_FLASHLIGHT_BIND(ply, cmd)
 	local wep = ply:GetActiveWeapon()
 	if wep.ToggleFlashlight and cmd:GetImpulse() == 100 then
-		wep:ToggleFlashlight()
+		wep:ToggleFlashlight(tobool(wep.InstantFlashlight))
 		return
 	end
 end

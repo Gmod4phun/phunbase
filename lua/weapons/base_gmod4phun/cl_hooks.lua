@@ -58,7 +58,7 @@ if CLIENT then
 // SOUND HOOKER
 local function PHUNBASE_SoundThink()
 	local ply = LocalPlayer()
-	
+
 	if ply:Alive() then
 		local wep = ply:GetActiveWeapon()
 		

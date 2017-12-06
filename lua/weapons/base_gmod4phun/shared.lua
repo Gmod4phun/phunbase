@@ -126,6 +126,8 @@ SWEP.ReloadAfterShotTime = 0.5
 SWEP.EmptySoundPrimary = "PB_WeaponEmpty_Primary"
 SWEP.EmptySoundSecondary = "PB_WeaponEmpty_Secondary"
 
+SWEP.InstantFlashlight = false
+
 SWEP.HL2IconLetters = {
 	["phun_hl2_ar2"] = "l",
 	["phun_hl2_crossbow"] = "g",
