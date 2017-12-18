@@ -3,11 +3,10 @@ if !SERVER then return end
 	
 function SWEP:ToggleFlashlight(dontUseAnim)
 	if self:IsBusy() then return end
-	if !self.CustomFlashlight then return end
 	if self:GetNextFlashlightUse() <= CurTime() then
 		self:SetFlashlightStateOld(self:GetFlashlightState())
 		self:SetFlashlightState(!self:GetFlashlightState())
-		if !dontUseAnim then
+		if !dontUseAnim and self.CustomFlashlight then
 			self:SetNextFlashlightUse(CurTime() + 0.75)
 			SendUserMessage("PHUNBASE_FLASHLIGHT_PLAYANIM", ply)
 		end

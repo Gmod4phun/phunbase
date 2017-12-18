@@ -9,7 +9,11 @@ SWEP.ViewModelFOV = 55
 SWEP.AimViewModelFOV = 55
 SWEP.ViewModel = "models/weapons/c_crossbow.mdl"
 SWEP.WorldModel = "models/weapons/w_crossbow.mdl"
+
 SWEP.HoldType = "crossbow"
+SWEP.SprintHoldType = "passive"
+SWEP.CrouchHoldType = "crossbow"
+SWEP.ReloadHoldType = "crossbow"
 
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true

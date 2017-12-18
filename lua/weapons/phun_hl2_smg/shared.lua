@@ -9,7 +9,11 @@ SWEP.ViewModelFOV = 60
 SWEP.AimViewModelFOV = 60
 SWEP.ViewModel = "models/weapons/c_smg1.mdl"
 SWEP.WorldModel = "models/weapons/w_smg1.mdl"
+
 SWEP.HoldType = "smg"
+SWEP.SprintHoldType = "passive"
+SWEP.CrouchHoldType = "smg"
+SWEP.ReloadHoldType = "smg"
 
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true

@@ -80,12 +80,21 @@ function PHUNBASE_Lerp(val, min, max) -- basically a wrapper that limits 'val' (
 	return Lerp(val, min, max)
 end
 
+local AngleTable = Angle(0,0,0)
 function SWEP:processSwayDelta(deltaTime, eyeAngles)
 	delta = Angle(eyeAngles.p, eyeAngles.y, 0) - self.OldDelta
 	delta.p = math.Clamp(delta.p, -10, 10)
-	local FT = FrameTime()
 	
-	/*if self.SwayInterpolation == "linear" then*/
+	AngleTable.p = eyeAngles.P
+	AngleTable.y = eyeAngles.Y
+	delta = AngleTable - self.OldDelta
+		
+	self.OldDelta.p = eyeAngles.p
+	self.OldDelta.y = eyeAngles.y
+	
+	local FT = deltaTime
+	
+	--if self.SwayInterpolation == "linear" then
 		self.AngleDelta = LerpAngle(math.Clamp(FT * 15, 0, 1), self.AngleDelta, delta)
 		self.AngleDelta.y = math.Clamp(self.AngleDelta.y, -15, 15)
 	/*else
@@ -97,8 +106,8 @@ function SWEP:processSwayDelta(deltaTime, eyeAngles)
 		self.AngleDelta.y = math.Clamp(self.AngleDelta.y, -25, 25)
 	end*/
 	
-	self.OldDelta.p = eyeAngles.p
-	self.OldDelta.y = eyeAngles.y
+	--self.OldDelta.p = eyeAngles.p
+	--self.OldDelta.y = eyeAngles.y
 end
 
 function SWEP:processFOVChanges(deltaTime)
@@ -210,10 +219,9 @@ function SWEP:performViewmodelMovement()
 			td.filter = self.Owner
 			
 			tr = util.TraceLine(td)
-			
 			if tr.Hit or (IsValid(tr.Entity) and not tr.Entity:IsPlayer()) then				
-				TargetPos = self.NearWallPos * (1.5 - tr.Fraction)
-				TargetAng = self.NearWallAng * (1.5 - tr.Fraction)
+				TargetPos = self.NearWallPos * ( (1.04 - tr.Fraction)*2 )
+				TargetAng = self.NearWallAng * ( (1.04 - tr.Fraction)*2 )
 			end
 		end
 		
@@ -279,16 +287,6 @@ function SWEP:performViewmodelMovement()
 	
 	-- the position of the weapon (running/walking/aiming)
 	self.BlendPos = PHUNBASE_LerpVector(FT * self.ApproachSpeed, self.BlendPos, TargetPos)
-	
-	-- ironsight roll
-	if self.RealIronRoll > 0 and self.RealIronRoll < 1 and !gui.IsGameUIVisible() then -- some fucked up shit in menu
-		if self:GetIron() then
-			self.BlendAng.z = self.BlendAng.z - self.RealIronRoll*2
-		else
-			self.BlendAng.z = self.BlendAng.z + self.RealIronRoll*2
-		end
-	end
-	
 	self.BlendAng = PHUNBASE_LerpVector(FT * self.ApproachSpeed, self.BlendAng, TargetAng)
 	
 	-- the viewmodel movement position of the weapon
@@ -396,14 +394,18 @@ function SWEP:applyOffsetToVM()
 	pos = pos + (CurPosMod.y) * Forward(ang)
 	pos = pos + (CurPosMod.z) * Up(ang)
 	
-	self.VM:SetPos(pos)
-	self.VM:SetAngles(ang)
+	self.PB_VMPOS, self.PB_VMANG = pos, ang
+	
+	if self.Owner.SHARPEYE_HASFOCUS and self.SHARPEYE_SUPPORT then
+		self.PB_VMANG = self.SHARPEYE_VMANG
+	end
+	
+	self.VM:SetPos(self.PB_VMPOS)
+	self.VM:SetAngles(self.PB_VMANG)
 	
 	self.RealViewModel:SetPos(pos)
 	self.RealViewModel:SetAngles(ang)
 	self.RealViewModel:SetPredictable(false)
-	
-	self.PB_VMPOS, self.PB_VMANG = pos, ang
 end
 
 function SWEP:CreateClientModel(model)
@@ -541,8 +543,6 @@ function SWEP:_drawViewModel()
 		render.CullMode(MATERIAL_CULLMODE_CW)
 	end
 	
-	//self.VM:SetRenderOrigin(PB_VMPOS)
-	//self.VM:SetRenderAngles(PB_VMANG)
 	self.VM:FrameAdvance(FrameTime())
 	self.VM:SetupBones()
 	self.VM:DrawModel()

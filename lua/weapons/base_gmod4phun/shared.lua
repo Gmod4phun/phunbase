@@ -41,6 +41,9 @@ SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
 SWEP.HoldType = "pistol"
 
+SWEP.SprintHoldType = "passive"
+SWEP.SafeHoldType = "passive"
+
 util.PrecacheModel( SWEP.ViewModel )
 util.PrecacheModel( SWEP.WorldModel )
 
@@ -296,19 +299,44 @@ function SWEP:Holster(wep)
 	self.SwitchWep = wep
 end
 
-function SWEP:_CalcIronRoll()
-	if CLIENT then
-		TimeScale = game.GetTimeScale()
-		if self:GetIron() then
-			self.IronRollOffset = PHUNBASE_Lerp(FrameTime() * 20/TimeScale, self.IronRollOffset, 179)
-		else
-			self.IronRollOffset = PHUNBASE_Lerp(FrameTime() * 20/TimeScale, self.IronRollOffset, 1)
-		end
-		if !self:GetIsDual() then
-			self.RealIronRoll = math.Clamp( math.sin(math.rad(self.IronRollOffset)) , 0, 0.5 )
-		else
-			self.RealIronRoll = 0
-		end
+function SWEP:CalcHoldType()
+	if SERVER then
+		/*if self.dt.Safe then
+			if self.CurHoldType != self.SafeHoldType then
+				self:SetHoldType(self.SafeHoldType)
+				self.CurHoldType = self.SafeHoldType
+			end
+		else*/
+			if self:GetIsReloading() then
+				if self.ReloadHoldType != nil then
+					if self.CurHoldType != self.ReloadHoldType then
+						self:SetHoldType(self.ReloadHoldType)
+						self.CurHoldType = self.ReloadHoldType
+					end
+				end
+			else
+				if self:GetIsSprinting() then
+					if self.CurHoldType != self.SprintHoldType then
+						self:SetHoldType(self.SprintHoldType)
+						self.CurHoldType = self.SprintHoldType
+					end
+				else
+					if self.Owner:Crouching() then
+						if self.CrouchHoldType != nil then
+							if self.CurHoldType != self.CrouchHoldType then
+								self:SetHoldType(self.CrouchHoldType)
+								self.CurHoldType = self.CrouchHoldType
+							end
+						end
+					else
+						if self.CurHoldType != self.HoldType then
+							self:SetHoldType(self.HoldType)
+							self.CurHoldType = self.HoldType
+						end
+					end
+				end
+			end
+		--end
 	end
 end
 
@@ -319,11 +347,12 @@ function SWEP:Think()
 	self:_SprintThink()
 	self:_HideBGHands()
 	self:_DeployThink()
-	self:_CalcIronRoll()
 	self:_NearWallThink()
 	self:_WaterLadderThink()
 	self:_ReloadThink()
 	self:_SoundTableThink()
+	
+	self:CalcHoldType()
 	
 	if CLIENT then
 		if self.ThinkOverrideClient then
@@ -384,7 +413,7 @@ function SWEP:PrimaryAttack()
 		ply:DoAttackEvent()
 		
 		if self.ReloadAfterShot then
-			timer.Simple(self.ReloadAfterShotTime, function() if !IsValid(self) then return end self:_realReloadStart() end)
+			timer.Simple(self.ReloadAfterShotTime or 0.5, function() if !IsValid(self) then return end self:_realReloadStart() end)
 		end
 		
 		self:Cheap_WM_ShootEffects()
@@ -472,7 +501,7 @@ SWEP.FullAimViewmodelRecoil = true
 SWEP.LuaVMRecoilIntensity = 1
 SWEP.LuaVMRecoilLowerSpeed = 1
 SWEP.LuaVMRecoilMod = 1 -- modifier of overall intensity for the code based recoil
-SWEP.LuaVMRecoilAxisMod = {vert = 0, hor = 0, roll = 0, forward = 2, pitch = -1} -- modifier for intensity of the recoil on varying axes
+SWEP.LuaVMRecoilAxisMod = {vert = 0, hor = 0, roll = 0, forward = 0, pitch = 0} -- modifier for intensity of the recoil on varying axes
 
 function SWEP:simulateRecoil()
 	if self:GetIron() then

@@ -11,7 +11,11 @@ SWEP.ViewModelFOV = 55
 SWEP.AimViewModelFOV = 55
 SWEP.ViewModel = "models/weapons/c_irifle.mdl"
 SWEP.WorldModel = "models/weapons/w_irifle.mdl"
+
 SWEP.HoldType = "ar2"
+SWEP.SprintHoldType = "passive"
+SWEP.CrouchHoldType = "ar2"
+SWEP.ReloadHoldType = "ar2"
 
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true

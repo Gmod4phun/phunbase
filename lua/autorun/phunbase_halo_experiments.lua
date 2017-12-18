@@ -1,4 +1,4 @@
-/* -- test branch merging
+/*
 local Rags = {}
 
 hook.Add("PreDrawHalos", "PHUNBASE_Halo_Experiments", function() // uses modified halo_phunbase module

@@ -9,7 +9,11 @@ SWEP.ViewModelFOV = 60
 SWEP.AimViewModelFOV = 60
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
-SWEP.HoldType = "pistol"
+
+SWEP.HoldType = "revolver"
+SWEP.SprintHoldType = "normal"
+SWEP.CrouchHoldType = "pistol"
+SWEP.ReloadHoldType = "pistol"
 
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true

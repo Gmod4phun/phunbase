@@ -3,11 +3,12 @@ if !CLIENT then return end
 
 function SWEP:_drawFlashlight()	
 	local vm = self.VM
+	local att, att2
 	local att = vm:LookupAttachment(self.FlashlightAttachmentName or "flashlight")
-	if !att then return end
 	
-	local att2 = vm:GetAttachment(att)
-	if !att2 then return end
+	if att then
+		att2 = vm:GetAttachment(att)
+	end
 	
 	local ply = self.Owner
 	if !IsValid(ply) then return end
@@ -26,15 +27,11 @@ function SWEP:_drawFlashlight()
 	end
 	
 	if IsValid(ply.PHUNBASE_Flashlight) then
-		ply.PHUNBASE_Flashlight:SetPos(att2.Pos)
-		ply.PHUNBASE_Flashlight:SetAngles(att2.Ang)
+		ply.PHUNBASE_Flashlight:SetPos(att2 and att2.Pos or ply:EyePos())
+		ply.PHUNBASE_Flashlight:SetAngles(att2 and att2.Ang or ply:EyeAngles())
 		ply.PHUNBASE_Flashlight:SetColor(Color(200,200,255))
-		ply.PHUNBASE_Flashlight:SetNearZ(1)
-		ply.PHUNBASE_Flashlight:SetFarZ(732)
-		ply.PHUNBASE_Flashlight:SetBrightness( (ply:ShouldDrawLocalPlayer() or self:GetFlashlightState() == false) and 0 or self.FLBrightness)
+		ply.PHUNBASE_Flashlight:SetBrightness( (ply:ShouldDrawLocalPlayer() or !self:GetFlashlightState() or !self.CustomFlashlight) and 0 or self.FLBrightness)
 		ply.PHUNBASE_Flashlight:SetFOV(45 + self.FLBrightness/2)
-		ply.PHUNBASE_Flashlight:SetEnableShadows(true)
-		ply.PHUNBASE_Flashlight:SetTexture("effects/flashlight001")
 		ply.PHUNBASE_Flashlight:Update()
 	end
 end
@@ -42,7 +39,12 @@ end
 local function PHUNBASE_FLASHLIGHT_THINK_CL()
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
-	if !wep.PHUNBASEWEP then return end
+	if !wep.PHUNBASEWEP then
+		if ply.PHUNBASE_Flashlight then
+			ply.PHUNBASE_Flashlight:Remove()
+		end
+		return
+	end
 	wep:_drawFlashlight()
 end
 hook.Add("Think","PHUNBASE_FLASHLIGHT_THINK_CL",PHUNBASE_FLASHLIGHT_THINK_CL)
@@ -63,8 +65,12 @@ local function PHUNBASE_FLASHLIGHT_CREATE()
 		ply.PHUNBASE_Flashlight:SetPos(ply:GetPos())
 		ply.PHUNBASE_Flashlight:SetAngles(ply:GetAngles())
 		ply.PHUNBASE_Flashlight:SetColor(Color(0,0,0))
-		ply.PHUNBASE_Flashlight:SetNearZ(0)
-		ply.PHUNBASE_Flashlight:SetFarZ(0)
+		ply.PHUNBASE_Flashlight:SetNearZ(1)
+		ply.PHUNBASE_Flashlight:SetFarZ(732)
+		ply.PHUNBASE_Flashlight:SetBrightness(1)
+		ply.PHUNBASE_Flashlight:SetFOV(45)
+		ply.PHUNBASE_Flashlight:SetEnableShadows(true)
+		ply.PHUNBASE_Flashlight:SetTexture("effects/flashlight001")
 		ply.PHUNBASE_Flashlight:Update()
 	end
 end
