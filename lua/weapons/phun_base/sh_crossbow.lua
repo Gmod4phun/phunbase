@@ -37,7 +37,7 @@ if SERVER then
 
 	hook.Add("EntityTakeDamage", "PHUNBASE_Crossbow_Bolt_TakeDamage", function( target, dmginfo )
 		local ent = dmginfo:GetInflictor()
-		if ent:GetClass() == "crossbow_bolt" and ent.CustomXBOWBolt then	
+		if IsValid(ent) and ent:GetClass() == "crossbow_bolt" and ent.CustomXBOWBolt then	
 			dmginfo:SetMaxDamage(100)
 			dmginfo:SetDamage(100)
 			dmginfo:SetDamageForce( ent:GetVelocity() * 6)

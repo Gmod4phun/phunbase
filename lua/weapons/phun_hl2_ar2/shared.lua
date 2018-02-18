@@ -1,4 +1,4 @@
-SWEP.Base = "base_gmod4phun"
+SWEP.Base = "phun_base"
 
 SWEP.PrintName = "PULSE-RIFLE"
 SWEP.Category = "PHUNBASE | HL2"
@@ -94,6 +94,7 @@ SWEP.ShellDelay = 0.001
 SWEP.ShellScale = 0.5
 SWEP.ShellModel = "models/weapons/shell.mdl"
 SWEP.ShellEjectVelocity = 0
+SWEP.NoShells = true
 
 SWEP.MuzzleAttachmentName = "muzzle"
 SWEP.MuzzleEffect = {"weapon_muzzle_flash_smoke_small2", "PistolGlow", "muzzle_lee_simple_pistol", "muzzle_fire_pistol", "muzzle_sparks_pistol"}
@@ -111,38 +112,46 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = 6
 SWEP.Secondary.Automatic = true
 
+/*
 function SWEP:FireCombineBall()
 	if CLIENT then return end
 	
 	local ply = self.Owner
-	local dir = ply:EyeAngles():Forward()
-	local ent = ents.Create( "point_combine_ball_launcher" )
-	local pos = ply:GetShootPos() + dir
+	local launcher = ents.Create( "point_combine_ball_launcher" )
 	local ball = NULL
 	
-	if ( IsValid( ent ) ) then
-		ent:SetPos( pos )
-		ent:SetAngles( ply:EyeAngles() )
-		ent:Spawn()
-		ent:Activate()
-		ent:SetOwner( ply )
-		ent.Owner = self:GetOwner()
-		ent:SetKeyValue("speed", 1000)
-		ent:SetKeyValue("minspeed", 1000)
-		ent:SetKeyValue("maxspeed", 1000)
-		ent:SetKeyValue("maxballbounces", 0)
-		ent:Fire("LaunchBall")
+	if ( IsValid( launcher ) ) then
+		launcher:SetPos( ply:GetShootPos() + ply:EyeAngles():Forward() )
+		launcher:SetAngles( ply:EyeAngles() )
+		launcher:Spawn()
+		launcher:Activate()
+		launcher:SetOwner( ply )
+		launcher.Owner = self:GetOwner()
+		launcher:SetKeyValue("speed", 1000)
+		launcher:SetKeyValue("minspeed", 1000)
+		launcher:SetKeyValue("maxspeed", 1000)
+		launcher:SetKeyValue("maxballbounces", 0)
+		launcher:Fire("LaunchBall")
 		
 		timer.Simple(0.01, function()
-			for _, v in pairs(ents.FindInSphere(pos, 32)) do
+			if !IsValid(self) then return end
+			
+			for _, v in pairs(ents.FindInSphere(self:GetPos(), 100)) do
 				if v:GetClass() == "prop_combine_ball" then
-					ball = v
-					ball:SetOwner(ply)
-					self.AR2Ball = ball
-					ball.FiredFrom = self
+					if v:GetSaveTable().m_hSpawner == launcher then
+						v:SetOwner(ply)
+						v.FiredFrom = self
+						self.AR2Ball = v
+						ball = v
+						break
+					end
 				end
 			end
-			ent:Remove()
+
+		end)
+		
+		timer.Simple(0.1, function()
+			SafeRemoveEntity(launcher)
 		end)
 		
 		timer.Simple(4, function()
@@ -150,8 +159,41 @@ function SWEP:FireCombineBall()
 		end)
 	end
 	
-	if ply:GetAmmoCount(self:GetSecondaryAmmoType()) > 0 then // takesecondaryammo is broken
-		ply:RemoveAmmo( 1, self:GetSecondaryAmmoType() )
+	ply:ViewPunch(Angle(-8, 0, 0))
+	PHUNBASE.PlayerScreenFlash(ply, 0.1, Color(200,200,200,100))
+end
+*/
+
+function SWEP:FireCombineBall()
+	if CLIENT then return end
+	
+	local ply = self.Owner
+	local ball = ents.Create( "prop_combine_ball" )
+	
+	if ( IsValid( ball ) ) then
+		ball:SetPos( ply:GetShootPos() + ply:EyeAngles():Forward() )
+		ball:SetAngles( ply:EyeAngles() )
+		ball:SetSaveValue("m_flRadius", 10)
+		ball:SetOwner(ply)
+		ball:Spawn()
+		ball:Activate()
+		
+		local phys = ball:GetPhysicsObject()
+
+		if IsValid(phys) then
+			phys:SetVelocity(ply:EyeAngles():Forward() * 1000)
+			phys:AddGameFlag(FVPHYSICS_WAS_THROWN)
+		end
+
+		ball.FiredFrom = self
+		self.AR2Ball = ball
+		
+		ball:SetSaveValue("m_nState", 2) // STATE_NOT_THROWN = 0,STATE_HOLDING = 1,STATE_THROWN = 2, STATE_LAUNCHED = 3
+		
+		timer.Simple(4, function()
+			if IsValid(ball) then ball:Fire("explode") end
+		end)
+		
 	end
 	
 	ply:ViewPunch(Angle(-8, 0, 0))
@@ -159,7 +201,8 @@ function SWEP:FireCombineBall()
 end
 
 function SWEP:SecondaryAttackOverride()
-	if self.Owner:GetAmmoCount(self:GetSecondaryAmmoType()) < 1 then
+	local ply = self.Owner
+	if ply:GetAmmoCount(self:GetSecondaryAmmoType()) < 1 then
 		self:SetNextSecondaryFire(CurTime()+0.25)
 		self:EmitSound(self.EmptySoundSecondary)
 		return
@@ -170,5 +213,8 @@ function SWEP:SecondaryAttackOverride()
 		if !IsValid(self) then return end
 		self:PlayVMSequence("fire_ball", 1, 0)
 		self:FireCombineBall()
+		if ply:GetAmmoCount(self:GetSecondaryAmmoType()) > 0 then
+			ply:RemoveAmmo( 1, self:GetSecondaryAmmoType() )
+		end
 	end)
 end

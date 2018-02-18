@@ -143,3 +143,11 @@ end
 function SWEP:IsFlashlightBusy()
 	return self:GetNextFlashlightUse() > CurTime()
 end
+
+function SWEP:SetIsWaiting(b)
+	self:SetNW2Bool("IsWaiting",b)
+end
+
+function SWEP:GetIsWaiting()
+	return self:GetNW2Bool("IsWaiting")
+end

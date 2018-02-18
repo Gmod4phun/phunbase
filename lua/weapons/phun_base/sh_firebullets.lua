@@ -1,4 +1,4 @@
-/*
+
 local Dir, Dir2, Src, Cone
 local bul, tr = {}, {}
 local Vec0 = Vector(0, 0, 0)
@@ -30,17 +30,19 @@ function SWEP:_FireBullets()
 		bul.Spread 	= Vec0
 		bul.Tracer	= 3
 		bul.Force	= 1//self.Primary.Damage * 0.25
-		bul.Damage = self.Primary.Damage
+		bul.Damage = self.Primary.Damage / (self.Primary.Bullets / 2)
 		--bul.Callback = self.bulletCallback
 		
 		self.Owner:FireBullets(bul)
 	end
 end
-*/
+
 
 /*
 	PENETRATING BULLETS
 */
+
+if 1 == 1 then return end
 
 local Dir, Dir2, dot, sp, ent, trace, seed, hm
 

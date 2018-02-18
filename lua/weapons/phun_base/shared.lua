@@ -97,9 +97,18 @@ SWEP.DeployTime = 0.5
 SWEP.HolsterTime = 0.5
 SWEP.ReloadTime = 0.5
 
+SWEP.ShotgunReload = false
+SWEP.ShotgunReloadTime_Start = 1
+SWEP.ShotgunReloadTime_Start_Empty = 1
+SWEP.ShotgunReloadTime_Insert = 0.5
+SWEP.ShotgunReloadTime_End = 1
+SWEP.ShotgunReloadTime_End_Empty = 1
+
 SWEP.UseHands = true
 
 SWEP.IsDual = false
+SWEP.DefaultDualSide = "left"
+
 SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
 
@@ -125,6 +134,7 @@ SWEP.DisableIronsights = false
 SWEP.DisableReloadBlur = false
 SWEP.ReloadAfterShot = false
 SWEP.ReloadAfterShotTime = 0.5
+SWEP.UseIronTransitionAnims = true
 
 SWEP.EmptySoundPrimary = "PB_WeaponEmpty_Primary"
 SWEP.EmptySoundSecondary = "PB_WeaponEmpty_Secondary"
@@ -207,7 +217,7 @@ function SWEP:Initialize()
 	
 	self:SetIron(false)
 	self:SetIsDual(self.IsDual)
-	self:SetDualSide("right")
+	self:SetDualSide(self.DefaultDualSide)
 	self:SetIsReloading(false)
 	self:SetIsSprinting(false)
 	self:SetIsDeploying(false)
@@ -220,12 +230,16 @@ function SWEP:Initialize()
 	self:SetShellAttachmentName(self.ShellAttachmentName)
 	self:SetFlashlightState(false)
 	self:SetFlashlightStateOld(false)
+	self:SetIsWaiting(false)
 	
 	self._deployedShells = {}
 	
 	if CLIENT then
 		self:_CreateVM()
 		self:_CreateHands()
+		if self.AdditionalInit then
+			self:AdditionalInit()
+		end
 	end
 	
 	self.IronRollOffset = 0
@@ -270,7 +284,7 @@ function SWEP:Holster(wep)
 		return false
 	end
 
-	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) then
+	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() then
 		return false
 	end
 	
@@ -321,7 +335,7 @@ function SWEP:CalcHoldType()
 						self.CurHoldType = self.SprintHoldType
 					end
 				else
-					if self.Owner:Crouching() then
+					if self.lastOwner:Crouching() then
 						if self.CrouchHoldType != nil then
 							if self.CurHoldType != self.CrouchHoldType then
 								self:SetHoldType(self.CrouchHoldType)
@@ -342,21 +356,29 @@ end
 
 function SWEP:Think()
 	self.lastOwner = self.Owner
-	self:_IdleAnimThink()
+	//self:_IdleAnimThink()
 	self:_IronThink()
 	self:_SprintThink()
-	self:_HideBGHands()
 	self:_DeployThink()
 	self:_NearWallThink()
 	self:_WaterLadderThink()
 	self:_ReloadThink()
 	self:_SoundTableThink()
 	
+	if self.AdditionalThink then
+		self:AdditionalThink()
+	end
+	
 	self:CalcHoldType()
 	
 	if CLIENT then
 		if self.ThinkOverrideClient then
 			self:ThinkOverrideClient()
+		end
+		if GetConVarNumber("phunbase_dev_iron_toggle") == 1 then
+			self.DrawCrosshair = true
+		else
+			self.DrawCrosshair = false
 		end
 	end
 end
@@ -370,12 +392,12 @@ function SWEP:PrimaryAttack()
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
 	
 	if self:Clip1() < 1 then
-		self:SetNextPrimaryFire(CurTime()+0.25)
+		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.EmptySoundPrimary)
 		return
 	end
 	
-	self:SetNextPrimaryFire(CurTime()+self.Primary.Delay)
+	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	
 	if IsFirstTimePredicted() then
 		if type(self.FireSound) == "table" then
@@ -424,7 +446,8 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:FireAnimLogic()
-	local last = self:Clip1() == 1
+	local clip = self:Clip1() // clip before firing anim played
+	local last = clip == 1
 	if !self:GetIsDual() then
 		if self:GetIron() then
 			self:PlayVMSequence(last and "fire_iron_last" or "fire_iron")
@@ -434,18 +457,18 @@ function SWEP:FireAnimLogic()
 	else
 		if self:GetDualSide() == "left" then
 			if self:GetIron() then
-				self:PlayVMSequence("fire_left_iron")
+				self:PlayVMSequence(clip == 2 and "fire_left_iron_last" or "fire_left_iron")
 			else
-				self:PlayVMSequence("fire_left")
+				self:PlayVMSequence(clip == 2 and "fire_left_last" or "fire_left")
 			end
 			self:SetMuzzleAttachmentName(self.MuzzleAttachmentName_L)
 			self:SetShellAttachmentName(self.ShellAttachmentName_L)
 			self:SetDualSide("right")
 		elseif self:GetDualSide() == "right" then
 			if self:GetIron() then
-				self:PlayVMSequence("fire_right_iron")
+				self:PlayVMSequence(clip == 1 and "fire_right_iron_last" or "fire_right_iron")
 			else
-				self:PlayVMSequence("fire_right")
+				self:PlayVMSequence(clip == 1 and "fire_right_last" or "fire_right")
 			end
 			self:SetMuzzleAttachmentName(self.MuzzleAttachmentName_R)
 			self:SetShellAttachmentName(self.ShellAttachmentName_R)
@@ -599,10 +622,11 @@ if CLIENT then
 	
 end
 
-hook.Add( "OnEntityCreated", "TestOnCreatedEntKeyValues", function( ent )
-	if SERVER then
-		if ent:IsValid() and ent:GetClass() == "grenade_ar2" then
-			//PrintTable(ent:GetSaveTable())
-		end
+hook.Add("PlayerPostThink", "PHUNBASE_LastWeaponSwitch", function(ply)
+	if !ply.PHUNBASE_LastWeapon then ply.PHUNBASE_LastWeapon = ply:GetActiveWeapon() end
+	if !ply.curWep then ply.curWep = ply:GetActiveWeapon() end
+	if ply:GetActiveWeapon() != ply.curWep then
+		ply.PHUNBASE_LastWeapon = ply.curWep
+		ply.curWep = ply:GetActiveWeapon()
 	end
 end)

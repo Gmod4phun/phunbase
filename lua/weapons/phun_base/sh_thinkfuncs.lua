@@ -9,16 +9,47 @@ end
 
 function SWEP:_ReloadThink()
 	if !self:GetIsReloading() then return end
-		if SERVER then
+	if SERVER then
 		if IsFirstTimePredicted() then
-			if CurTime() >= self.FinishReloadTime and self:GetIsReloading() then
-				self:_reloadFinish()
+			if !self.ShotgunReload then // normal magazine reload think logic
+				if CurTime() >= self.FinishReloadTime and self:GetIsReloading() then
+					self:_reloadFinish()
+				end
+			else // shotgun reload think logic
+				if self.ShotgunReloadingState == 0 then
+					if CurTime() >= self.NextShotgunAction then
+						self.ShotgunReloadingState = 1
+					end
+				elseif self.ShotgunReloadingState == 1 then
+					if self.Owner:KeyDown(IN_ATTACK) and self.ShotgunInsertedShells > 0 then
+						self.ShouldStopReloading = true
+					end
+					if CurTime() >= self.NextShotgunAction then
+						if self.ShotgunInsertedShells < self.Primary.ClipSize - self.HadInClip and !self.ShouldStopReloading then
+							self:_shotgunReloadInsert()
+						else
+							self.ShotgunReloadingState = 2
+							self:_shotgunReloadFinish()
+						end
+					end
+				elseif self.ShotgunReloadingState == 2 then
+					if CurTime() >= self.NextShotgunAction then
+						self:SetIsReloading(false)
+					end
+				end
 			end
 		end
 	end
 end
 
 function SWEP:_IronThink()
+	if self.Owner:GetInfoNum("phunbase_dev_iron_toggle", 0) == 1 then
+		if !self:GetIron() then
+			self:SetIron(true)
+		end
+		return
+	end
+	
 	if self.DisableIronsights then return end
 	local ply = self.Owner
 	local empty = self:Clip1() == 0
@@ -27,10 +58,12 @@ function SWEP:_IronThink()
 		if IsFirstTimePredicted() then
 			//self:FrostSound( self.SND.IronIn[math.random(1,3)] )
 			if self:IsFlashlightBusy() then return end
-			if !self:GetIsDual()then
-				self:PlayVMSequence(empty and "idle_empty" or "idle")
-			else
-				self:PlayVMSequence("goto_iron", 2)
+			if self.UseIronTransitionAnims then
+				if !self:GetIsDual()then
+					self:PlayVMSequence(empty and "idle_empty" or "idle")
+				else
+					self:PlayVMSequence("goto_iron", 2)
+				end
 			end
 		end
 	end
@@ -40,10 +73,12 @@ function SWEP:_IronThink()
 		if IsFirstTimePredicted() then
 			//self:FrostSound( self.SND.IronOut[math.random(1,3)] )
 			if self:GetIsReloading() or self:GetIsHolstering() or self:IsFlashlightBusy() then return end
-			if !self:GetIsDual()then
-				self:PlayVMSequence(empty and "idle_empty" or "idle")
-			else
-				self:PlayVMSequence("goto_hip", 2)
+			if self.UseIronTransitionAnims then
+				if !self:GetIsDual()then
+					self:PlayVMSequence(empty and "idle_empty" or "idle")
+				else
+					self:PlayVMSequence("goto_hip", 2)
+				end
 			end
 		end
 	end

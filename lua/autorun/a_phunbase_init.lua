@@ -9,8 +9,16 @@ function PHUNBASE.addAmmoType(globalName,prettyName)
 	end
 end
 
-PHUNBASE.addAmmoType("phunbase_9mm","9x19MM Ammo")
-PHUNBASE.addAmmoType("phunbase_50ae",".50 AE Ammo")
+PHUNBASE.addAmmoType("phunbase_9mm","9x19mm Parabellum")
+PHUNBASE.addAmmoType("phunbase_45acp",".45 ACP")
+PHUNBASE.addAmmoType("phunbase_357sig",".357 SIG")
+PHUNBASE.addAmmoType("phunbase_57x28FN","5.7x28mm FN")
+PHUNBASE.addAmmoType("phunbase_50ae",".50 AE")
+PHUNBASE.addAmmoType("phunbase_556","5.56x45mm NATO")
+PHUNBASE.addAmmoType("phunbase_762x51","7.62x51mm NATO")
+PHUNBASE.addAmmoType("phunbase_338",".338 Lapua Magnum")
+PHUNBASE.addAmmoType("phunbase_50bmg",".50 BMG")
+PHUNBASE.addAmmoType("phunbase_12gauge","12 Gauge")
 
 function PHUNBASE.LoadLua(file)
 	if file then
@@ -94,6 +102,71 @@ local function PHUNBASE_GiveWeaponFix(ply,wep,swep) -- disable default behaviour
 	end
 end
 hook.Add("PlayerGiveSWEP","PHUNBASE_GiveWeaponFix",PHUNBASE_GiveWeaponFix)
+
+local npc_fix_table = {
+	["npc_rollermine"] = "models/roller.mdl",
+	["npc_turret_floor"] = "models/combine_turrets/floor_turret.mdl",
+}
+
+hook.Add("OnNPCKilled", "PHUNBASE_NPC_KillFix", function(npc)
+	local phys, vel, angvel, fake, fakephys, fakeangvel
+	phys = npc:GetPhysicsObject()
+	
+	if IsValid(phys) then
+		vel = phys:GetVelocity()
+		fakeangvel = phys:GetAngleVelocity()
+	end
+	
+	if npc_fix_table[npc:GetClass()] then
+		fake = ents.Create("prop_physics")
+		fake:SetModel(npc_fix_table[npc:GetClass()])
+		fake:SetPos(npc:GetPos())
+		fake:SetAngles(npc:GetAngles())
+		fake:Spawn()
+		
+		fakephys = fake:GetPhysicsObject()
+		
+		if IsValid(fakephys) then
+			fakephys:SetVelocity(vel)
+			fakephys:AddAngleVelocity(fakeangvel)
+		end
+		
+		undo.ReplaceEntity(npc, fake)
+		npc:Remove()
+	end
+end)
+
+/*
+local t1, t2 = {}, {} // test stuff
+
+hook.Add("GravGunPunt", "PHUNBASE_GravGunPunt_Magnusson", function(ply, ent)
+	if ent:GetClass() == "weapon_striderbuster" then
+		t2 = ent:GetSaveTable()
+		for k, v in pairs(t1) do
+			if v != t2[k] then
+				print(k, v, t2[k])
+			end
+		end
+		
+	end
+end)
+
+hook.Add("OnEntityCreated", "PHUNBASE_OnEntCreated_Magnusson", function(ent)
+	timer.Simple(0.5, function()
+		if !IsValid(ent) then return end
+		if ent:GetClass() == "weapon_striderbuster" then
+			t1 = ent:GetSaveTable()
+			local phys = ent:GetPhysicsObject()
+			
+			if IsValid(phys) then
+				phys:AddGameFlag(bit.bor(FVPHYSICS_PLAYER_HELD,FVPHYSICS_WAS_THROWN))
+				//phys:AddVelocity(Vector(0,0,-5000))
+				phys:SetMaterial("gmod_bouncy")
+			end
+		end
+	end)
+end)
+*/
 
 if CLIENT then
 	local function PHUNBASE_WEAPONGIVE_PLAYER(um)

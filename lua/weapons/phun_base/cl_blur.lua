@@ -26,7 +26,7 @@ function SWEP:processBlur()
 	
 	local can = false
 	
-	if string.find( string.lower(self.VM:GetSequenceName(self.VM:GetSequence())) , "reload" ) and self.Cycle < 0.95 then
+	if (!self.ShotgunReload and self:GetIsReloading() and self.Cycle < 0.95) or (self.ShotgunReload and self:GetIsReloading() ) then
 		can = true
 	end
 	

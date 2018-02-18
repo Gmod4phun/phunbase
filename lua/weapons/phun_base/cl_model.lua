@@ -162,7 +162,7 @@ function SWEP:performViewmodelMovement()
 		local runMod = 1
 		
 		-- if we're running and our movement speed is fit for run movement speed
-		if (self:GetIsReloading() and self.Cycle < 0.99) then
+		if self:GetIsReloading() then
 			-- if we're reloading, then go back to the 'gun forward' position
 			TargetPos, TargetAng = self.BasePos * 1, self.BaseAng * 1
 			self.ApproachSpeed = math.Approach(self.ApproachSpeed, 4, FT * 100)
@@ -187,7 +187,7 @@ function SWEP:performViewmodelMovement()
 		sin1 = math.sin(runTime) * mul
 		cos1 = math.cos(runTime) * mul
 		tan1 = math.atan(cos1 * sin1, cos1 * sin1) * mul
-		
+
 		if self.PistolSprintSway then
 			AngMod.x = AngMod.x + tan1 * 0.2 * self.ViewModelMovementScale * mul
 			AngMod.y = AngMod.y - cos1 * 3 * self.ViewModelMovementScale * mul
@@ -419,22 +419,13 @@ function SWEP:_IdleAnimThink()
 	if !CLIENT then return end
 	local vm = self.VM
 	local empty = self:Clip1() == 0
-	if vm:GetCycle() > 0.99 and !string.find(self:GetActiveSequence(), "holster") /*and !self:GetIsReloading()*/ then
-		if self:GetIron() then
-			self:PlayVMSequence((!self:GetIsDual() and !self:GetIsReloading() and empty) and "idle_iron_empty" or "idle_iron")
-		else
-			self:PlayVMSequence((!self:GetIsDual() and !self:GetIsReloading() and empty) and "idle_empty" or "idle")
-		end
-	end
-end
-
-function SWEP:_HideBGHands() // hide the default hands
-	if !CLIENT then return end
-	if !self.KFWEP then return end
-	local vm = self.VM
-	for i=1, #vm:GetBodyGroups() do
-		if string.match(vm:GetBodygroupName(i), "hands") then
-			vm:SetBodygroup(i,1)
+	if vm:GetCycle() > 0.99999 and !string.find(self:GetActiveSequence(), "holster") then
+		if !string.find(self:GetActiveSequence(), "idle") then
+			if self:GetIron() then
+				self:PlayVMSequence((!self:GetIsDual() and !self:GetIsReloading() and empty) and "idle_iron_empty" or "idle_iron")
+			else
+				self:PlayVMSequence((!self:GetIsDual() and !self:GetIsReloading() and empty) and "idle_empty" or "idle")
+			end
 		end
 	end
 end
@@ -460,7 +451,7 @@ function SWEP:_CreateVM()
 	end
 end
 
-local function GetPlayerColor()
+function SWEP:_GetPlayerColor()
 	local owner = LocalPlayer()
 	if owner:IsValid() and owner:IsPlayer() and owner.GetPlayerColor then
 		return owner:GetPlayerColor()
@@ -469,7 +460,7 @@ local function GetPlayerColor()
 	return Vector(1, 1, 1)
 end
 
-local function CopyBodyGroups(source, target)
+function SWEP:_CopyBodyGroups(source, target)
 	for num, _ in pairs(source:GetBodyGroups()) do
 		target:SetBodygroup(num-1, source:GetBodygroup(num-1))
 		target:SetSkin(source:GetSkin())
@@ -491,8 +482,8 @@ function SWEP:_CreateHands()
 		self.Hands:SetParent(self.VM)
 		self.Hands:AddEffects(EF_BONEMERGE)
 		self.Hands:AddEffects(EF_BONEMERGE_FASTCULL)
-		self.Hands.GetPlayerColor = GetPlayerColor
-		CopyBodyGroups(LocalPlayer():GetHands(), self.Hands)
+		self.Hands.GetPlayerColor = self._GetPlayerColor
+		self:_CopyBodyGroups(LocalPlayer():GetHands(), self.Hands)
 	end
 end
 
@@ -506,7 +497,7 @@ function SWEP:_UpdateHands()
 		if !IsValid(hands) then return end
 		if self.CustomHandsModel then return end
 		self.Hands:SetModel(hands:GetModel())
-		CopyBodyGroups(hands,self.Hands)
+		self:_CopyBodyGroups(hands,self.Hands)
 	end
 end
 
@@ -529,10 +520,6 @@ function SWEP:drawViewModel()
 		return
 	end
 	
-	if self.UseHands and not self.Hands then
-		return
-	end
-	
 	self:applyOffsetToVM()
 	self:_drawViewModel()
 end
@@ -547,10 +534,7 @@ function SWEP:_drawViewModel()
 	self.VM:SetupBones()
 	self.VM:DrawModel()
 	
-	if self.UseHands then
-		self.Hands.GetPlayerColor = GetPlayerColor
-		self.Hands:DrawModel()
-	end
+	self:_drawHands()
 	
 	if self.ViewModelFlip then
 		render.CullMode(MATERIAL_CULLMODE_CCW)
@@ -560,6 +544,13 @@ function SWEP:_drawViewModel()
 	
 	self.Cycle = vm:GetCycle()
 	
+end
+
+function SWEP:_drawHands()
+	if self.UseHands and self.Hands then
+		self.Hands.GetPlayerColor = self._GetPlayerColor
+		self.Hands:DrawModel()
+	end
 end
 
 //viewmodel fixes

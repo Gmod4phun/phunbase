@@ -1,4 +1,4 @@
-SWEP.Base = "base_gmod4phun"
+SWEP.Base = "phun_base"
 
 SWEP.PrintName = "SMG"
 SWEP.Category = "PHUNBASE | HL2"
