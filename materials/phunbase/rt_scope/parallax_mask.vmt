@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture"	"phunbase/rt_scope/parallax_mask"
+	"$translucent" 	"1"
+	"$nocull"	"1"
+}

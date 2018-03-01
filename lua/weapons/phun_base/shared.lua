@@ -1,5 +1,6 @@
-local SP, TimeScale
-SP = game.SinglePlayer()
+/*
+PHUNBASE BASE CODE
+*/
 
 AddCSLuaFile()
 
@@ -9,14 +10,17 @@ PHUNBASE.LoadLua("cl_flashlight.lua")
 PHUNBASE.LoadLua("cl_halo.lua")
 PHUNBASE.LoadLua("cl_hooks.lua")
 PHUNBASE.LoadLua("cl_model.lua")
+PHUNBASE.LoadLua("cl_model_movement.lua")
+PHUNBASE.LoadLua("cl_rtscope.lua")
 PHUNBASE.LoadLua("cl_shells.lua")
+PHUNBASE.LoadLua("cl_velements.lua")
+PHUNBASE.LoadLua("sh_crossbow.lua")
 PHUNBASE.LoadLua("sh_firebullets.lua")
 PHUNBASE.LoadLua("sh_networkfuncs.lua")
 PHUNBASE.LoadLua("sh_reloading.lua")
 PHUNBASE.LoadLua("sh_sequences.lua")
 PHUNBASE.LoadLua("sh_thinkfuncs.lua")
 PHUNBASE.LoadLua("sv_flashlight.lua")
-PHUNBASE.LoadLua("sh_crossbow.lua")
 
 SWEP.PrintName = "PHUNBASE"
 SWEP.Category = "PHUNBASE"
@@ -90,12 +94,16 @@ SWEP.NearWallAng = Vector(0,0,0)
 SWEP.InactivePos = Vector(4, 0, 0)
 SWEP.InactiveAng = Vector(-45, 45, 0)
 
+SWEP.BipodPos = Vector(0,0,0)
+SWEP.BipodAng = Vector(0,0,0)
+
 SWEP.Sequences = {}
 SWEP.Sounds = {}
 
 SWEP.DeployTime = 0.5
 SWEP.HolsterTime = 0.5
 SWEP.ReloadTime = 0.5
+SWEP.DeployTimeAnimOffset = 0
 
 SWEP.ShotgunReload = false
 SWEP.ShotgunReloadTime_Start = 1
@@ -141,12 +149,27 @@ SWEP.EmptySoundSecondary = "PB_WeaponEmpty_Secondary"
 
 SWEP.InstantFlashlight = false
 
+SWEP.MouseSensitivityHip = 1
+SWEP.MouseSensitivityIron = 1
+
+// Recoil variables
+SWEP.Recoil	= 0.5
+SWEP.Spread	= 0.02
+SWEP.Spread_Iron = 0.01
+SWEP.SpreadVel = 1.2
+SWEP.SpreadVel_Iron = 0.9
+SWEP.SpreadAdd = 0.3
+SWEP.SpreadAdd_Iron	= 0.2
+
+SWEP.MoveType = 1
+SWEP.SprintShakeMod = 0.5
+
 SWEP.HL2IconLetters = {
 	["phun_hl2_ar2"] = "l",
 	["phun_hl2_crossbow"] = "g",
 	["phun_hl2_pistol"] = "d",
 	["phun_hl2_smg"] = "a",
-	["phun_hl2_revolver"] = "e",
+	["phun_hl2_357"] = "e",
 	["phun_hl2_shotgun"] = "b",
 	["phun_hl2_rpg"] = "i",
 	["phun_hl2_grenade"] = "k",
@@ -188,8 +211,8 @@ end
 
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 	if self.HL2IconLetters[self:GetClass()] then -- HL2 weapons
-		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_1", x + wide / 2, y + tall * 0.05, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
-		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_2", x + wide / 2, y + tall * 0.05, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_1", x + wide / 2, y + tall * 0.075, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_2", x + wide / 2, y + tall * 0.075, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
 	elseif self.UseCustomWepSelectIcon then
 		self:CustomWepSelectIcon(x, y, wide, tall, alpha)
 	else -- default GMod swep select icon
@@ -237,6 +260,7 @@ function SWEP:Initialize()
 	if CLIENT then
 		self:_CreateVM()
 		self:_CreateHands()
+		self:setupAttachmentModels()
 		if self.AdditionalInit then
 			self:AdditionalInit()
 		end
@@ -270,6 +294,7 @@ function SWEP:Deploy()
 		end
 	end
 	
+	self:SetIsInUse(true)
 	self:SetHolsterDelay(0)
 	self.FinishDeployTime = CurTime() + self.DeployTime
 	self:SetIsDeploying(true)
@@ -300,6 +325,7 @@ function SWEP:Holster(wep)
 		self:SetHolsterDelay(0)
 		if SERVER then
 			self:DestroyFlashlight()
+			self:SetIsInUse(false)
 		end
 		return true
 	end
@@ -419,14 +445,16 @@ function SWEP:PrimaryAttack()
 		
 		self:FireAnimLogic()
 		self:PlayMuzzleFlashEffect()
-		self:MakeShell()
+		if !self.NoShells then
+			self:MakeShell()
+		end
 		self:MakeRecoil()
 		
 		if CLIENT then
 			self:simulateRecoil()
 		end
 		
-		if SP and SERVER then
+		if game.SinglePlayer() and SERVER then
 			if !self.Owner:IsPlayer() then return end
 			SendUserMessage("PHUNBASE_Recoil", ply)
 			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
@@ -505,6 +533,10 @@ function SWEP:DrawWorldModel()
 	self:DrawModel()
 end
 
+function SWEP:AdjustMouseSensitivity()
+	return self:GetIron() and self.MouseSensitivityIron or self.MouseSensitivityHip
+end
+
 /*
 function SWEP:PreDrawViewModel()
 	render.SetBlend(1) // dont render the default viewmodel, but we use it for particle positions later
@@ -516,8 +548,6 @@ end
 */
 
 // RECOIL
-
-SWEP.Recoil = 0.5
 SWEP.FireMoveMod = 10
 SWEP.LuaViewmodelRecoil = true
 SWEP.FullAimViewmodelRecoil = true
@@ -528,7 +558,7 @@ SWEP.LuaVMRecoilAxisMod = {vert = 0, hor = 0, roll = 0, forward = 0, pitch = 0} 
 
 function SWEP:simulateRecoil()
 	if self:GetIron() then
-		self.FireMove = math.Clamp(self.Recoil * self.FireMoveMod, 1, 3)
+		self.FireMove = math.Clamp(self.Recoil * self.FireMoveMod, -5, 5)
 	else
 		self.FireMove = 0.4
 	end
@@ -567,7 +597,7 @@ function SWEP:MakeRecoil(mod)
 	
 	if !self.Owner:IsPlayer() then return end
 	
-	if (SP and SERVER) or (not SP and CLIENT) then
+	if (game.SinglePlayer() and SERVER) or (not game.SinglePlayer() and CLIENT) then
 		ang = self.Owner:EyeAngles()
 		ang.p = ang.p - self.Recoil * 0.5 * mod
 		ang.y = ang.y + math.Rand(-1, 1) * self.Recoil * 0.5 * mod

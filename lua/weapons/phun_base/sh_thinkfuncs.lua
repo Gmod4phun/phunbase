@@ -21,7 +21,7 @@ function SWEP:_ReloadThink()
 						self.ShotgunReloadingState = 1
 					end
 				elseif self.ShotgunReloadingState == 1 then
-					if self.Owner:KeyDown(IN_ATTACK) and self.ShotgunInsertedShells > 0 then
+					if (self.Owner:KeyDown(IN_ATTACK) and self.ShotgunInsertedShells > 0) then
 						self.ShouldStopReloading = true
 					end
 					if CurTime() >= self.NextShotgunAction then
@@ -85,12 +85,19 @@ function SWEP:_IronThink()
 end
 
 function SWEP:_SprintThink()
+	if CLIENT then return end
 	local ply = self.Owner
 	local curspeed = ply:GetVelocity():Length()
-	if curspeed > ply:GetWalkSpeed() and ply:KeyDown(IN_SPEED) and ply:OnGround() and !self:GetIsDeploying() then
-		self:SetIsSprinting(true)
+	if curspeed > ply:GetWalkSpeed() and ply:KeyDown(IN_SPEED) and ply:OnGround() and (!self:GetIsDeploying() or self:GetIsDeploying() and CurTime() > self.FinishDeployTime - self.DeployTimeAnimOffset ) then
+		if !self:GetIsSprinting() then
+			self:SetIsSprinting(true)
+		end
 	else
-		self:SetIsSprinting(false)
+		if self:GetIsSprinting() then
+			self:SetIsSprinting(false)
+			self:SetNextPrimaryFire(CurTime() + 0.25)
+			self:SetNextSecondaryFire(CurTime() + 0.25)
+		end
 	end
 end
 

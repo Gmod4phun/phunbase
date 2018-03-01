@@ -8,6 +8,4 @@ function SWEP:DrawHUD()
 		draw.SimpleText("O", "PHUNBASE_HL2_SELECTICONS_1", W/2, H/2 - t_h/2 - ScreenScale(6), Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
 		draw.SimpleText("O", "PHUNBASE_HL2_SELECTICONS_2", W/2, H/2 - t_h/2 - ScreenScale(6), Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
 	end
-	
-	
 end

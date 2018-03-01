@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+	"$basetexture" "phunbase/rt_scope/lensvignette_2"
+	"$translucent" 1
+	"$vertexalpha" 1
+	"$vertexcolor" 1
+}

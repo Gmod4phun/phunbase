@@ -151,3 +151,11 @@ end
 function SWEP:GetIsWaiting()
 	return self:GetNW2Bool("IsWaiting")
 end
+
+function SWEP:SetIsInUse(b)
+	self:SetNW2Bool("IsInUse",b)
+end
+
+function SWEP:GetIsInUse()
+	return self:GetNW2Bool("IsInUse")
+end

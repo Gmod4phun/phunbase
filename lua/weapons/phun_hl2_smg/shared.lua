@@ -19,18 +19,24 @@ SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
 // weapon specific variables
-
 SWEP.Primary.Ammo = "smg1"
 SWEP.Primary.ClipSize = 45
 SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
 SWEP.Primary.Automatic = true
+SWEP.Primary.Damage = 23
 SWEP.Primary.Delay = 0.075
-SWEP.Primary.Damage = 20
-SWEP.Primary.Force = 10
+SWEP.Primary.Force = 5
 SWEP.Primary.Bullets = 1
 SWEP.Primary.Tracer = 0
-SWEP.Primary.Spread = 0
-SWEP.Primary.Cone = 0.01
+
+// Recoil variables
+SWEP.Recoil	= 0.2
+SWEP.Spread	= 0.02
+SWEP.Spread_Iron = 0.01
+SWEP.SpreadVel = 1.2
+SWEP.SpreadVel_Iron = 0.9
+SWEP.SpreadAdd = 0.3
+SWEP.SpreadAdd_Iron	= 0.2
 
 SWEP.BasePos = Vector(0,0,0)
 SWEP.BaseAng = Vector(0,0,0)
@@ -135,7 +141,7 @@ function SWEP:FireSMGGrenade()
 		ply:RemoveAmmo( 1, self:GetSecondaryAmmoType() )
 	end
 	
-	ply:ViewPunch(Angle(-8, 0, 0))
+	ply:ViewPunch(Angle(-2, 0, 0))
 end
 
 function SWEP:SecondaryAttackOverride()

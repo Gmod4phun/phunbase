@@ -77,9 +77,7 @@ function Render( entry )
 						RenderEnt = v
 						
 						if !LocalPlayer():ShouldDrawLocalPlayer() then
-						
-						v:DrawModel()
-						
+							v:DrawModel()
 						end
 
 					end

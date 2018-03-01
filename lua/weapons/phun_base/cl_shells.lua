@@ -50,13 +50,13 @@ local vm, att, pos, ang, velocity, align, shellEnt
 local shellTable = {}
 
 function SWEP:_makeShell()
-	if self.NoShells or self.Owner:ShouldDrawLocalPlayer() then
+	if self.Owner:ShouldDrawLocalPlayer() then
 		return
 	end
 	
 	shellTable.model = self.ShellModel or "models/weapons/shell.mdl"
 	shellTable.scale = self.ShellScale or 0.75
-	shellTable.sound = /*self.ShellSound or */"player/pl_shell"..math.random(1,3)..".wav"
+	shellTable.sound = self.ShellSound or "player/pl_shell"..math.random(1,3)..".wav"
 	
 	shellTable.velmin_P = self.ShellAngularVelocity.Pitch_Min or 0
 	shellTable.velmax_P = self.ShellAngularVelocity.Pitch_Max or 0

@@ -1,0 +1,5 @@
+"UnlitGeneric"
+{
+	"$basetexture"	"phunbase/reticles/scope_crosshair_simple"
+	"$translucent" "1"
+}

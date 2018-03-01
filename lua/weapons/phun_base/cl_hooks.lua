@@ -53,6 +53,21 @@ local function PHUNBASE_PostDrawGMHands()
 end
 hook.Add("PostDrawPlayerHands", "PHUNBASE_PostDrawGMHands", PHUNBASE_PostDrawGMHands)
 
+function PHUNBASE_RenderScene()
+	local ply = LocalPlayer()
+	local wep = ply:GetActiveWeapon()
+		
+	if not IsValid(wep) or not wep.PHUNBASEWEP then
+		return
+	end
+	
+	if wep.DrawRT and wep.RTScope_Enabled then
+		wep:DrawRT()
+	end
+	
+end
+hook.Add("RenderScene", "PHUNBASE_RenderScene", PHUNBASE_RenderScene)
+
 if CLIENT then
 
 // SOUND HOOKER
@@ -78,7 +93,7 @@ local function PHUNBASE_SoundThink()
 						t.callback(wep)
 					end
 					
-					if wep.CurSoundTable[wep.CurSoundEntry + 1] then
+					if wep.CurSoundEntry and wep.CurSoundTable[wep.CurSoundEntry + 1] then
 						wep.CurSoundEntry = wep.CurSoundEntry + 1
 					else
 						wep.CurSoundTable = nil

@@ -34,7 +34,7 @@ PHUNBASE.cmodel.Models = PHUNBASE.cmodel.Models or {}
 
 function PHUNBASE.cmodel:Add(ent,weapon)
 	ent.Parent = weapon
-	PHUNBASE.cmodel[#PHUNBASE.cmodel.Models + 1] = ent
+	PHUNBASE.cmodel.Models[#PHUNBASE.cmodel.Models + 1] = ent
 end
 
 function PHUNBASE.cmodel:Empty()
@@ -45,7 +45,7 @@ function PHUNBASE.cmodel:LoopCheck()
 	local tableindex = 1
 	for i = 1, #self.Models do
 		local ent = self.Models[tableindex]
-		if !IsValid(ent) or !IsValid(ent.Parent) then
+		if !IsValid(ent) or !IsValid(ent.Parent) /*or ( IsValid(ent) and IsValid(ent.WeaponObject) and !ent.WeaponObject:GetIsInUse() )*/ then
 			SafeRemoveEntity(ent)
 			table.remove(self.Models, tableindex)
 		else
@@ -136,37 +136,15 @@ hook.Add("OnNPCKilled", "PHUNBASE_NPC_KillFix", function(npc)
 	end
 end)
 
-/*
-local t1, t2 = {}, {} // test stuff
-
-hook.Add("GravGunPunt", "PHUNBASE_GravGunPunt_Magnusson", function(ply, ent)
-	if ent:GetClass() == "weapon_striderbuster" then
-		t2 = ent:GetSaveTable()
-		for k, v in pairs(t1) do
-			if v != t2[k] then
-				print(k, v, t2[k])
-			end
-		end
-		
+hook.Add("OnEntityCreated", "PHUNBASE_OnEntCreated_Test", function(ent)
+	timer.Simple(1, function()
+	if !IsValid(ent) then return end
+	if ent:GetClass() == "rpg_missile" then
+		PrintTable(ent:GetSaveTable())
+		//ent:SetModelScale(5)
 	end
-end)
-
-hook.Add("OnEntityCreated", "PHUNBASE_OnEntCreated_Magnusson", function(ent)
-	timer.Simple(0.5, function()
-		if !IsValid(ent) then return end
-		if ent:GetClass() == "weapon_striderbuster" then
-			t1 = ent:GetSaveTable()
-			local phys = ent:GetPhysicsObject()
-			
-			if IsValid(phys) then
-				phys:AddGameFlag(bit.bor(FVPHYSICS_PLAYER_HELD,FVPHYSICS_WAS_THROWN))
-				//phys:AddVelocity(Vector(0,0,-5000))
-				phys:SetMaterial("gmod_bouncy")
-			end
-		end
 	end)
 end)
-*/
 
 if CLIENT then
 	local function PHUNBASE_WEAPONGIVE_PLAYER(um)

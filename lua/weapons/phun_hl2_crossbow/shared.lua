@@ -49,6 +49,10 @@ SWEP.NearWallAng = Vector(0, 0, 0)
 
 SWEP.PistolSprintSway = true
 
+SWEP.VElements = {
+	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true }
+}
+
 SWEP.Sequences = {
 	idle = "idle",
 	idle_empty = "idle_empty",
@@ -93,8 +97,8 @@ SWEP.ShellScale = 0.5
 SWEP.ShellModel = "models/weapons/shell.mdl"
 SWEP.ShellEjectVelocity = 0
 
-SWEP.MuzzleAttachmentName = "muzzle"
-SWEP.MuzzleEffect = {"weapon_muzzle_flash_smoke_small2", "PistolGlow", "muzzle_lee_simple_pistol", "muzzle_fire_pistol", "muzzle_sparks_pistol", "smoke_trail"}
+SWEP.MuzzleAttachmentName = "spark"
+SWEP.MuzzleEffect = {}
 
 SWEP.FireSound = {"Weapon_Crossbow.Single", "Weapon_Crossbow.BoltFly"}
 
@@ -121,6 +125,8 @@ function SWEP:FireCrossbowBolt()
 		ent.Owner = self:GetOwner()
 		ent:SetMoveCollide(MOVECOLLIDE_FLY_CUSTOM)
 		ent.CustomXBOWBolt = true
+		ent:SetSaveValue("m_flDamage", 150)
+		ent:SetSaveValue("m_hOwner", self)
 	end
 	
 	local tr = util.TraceLine({
@@ -155,3 +161,13 @@ function SWEP:ThinkOverrideClient()
 		end
 	end
 end
+
+SWEP.RTScope_Enabled = true
+SWEP.RTScope_Zoom = 7.25
+SWEP.RTScope_Align = Angle(0,0,-90)
+SWEP.RTScope_Reticle = Material("phunbase/reticles/scope_crosshair_simple")
+SWEP.RTScope_DrawIris = true
+SWEP.RTScope_DrawParallax = true
+
+SWEP.MouseSensitivityHip = 1
+SWEP.MouseSensitivityIron = 0.25

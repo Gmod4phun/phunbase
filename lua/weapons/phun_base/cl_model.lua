@@ -48,6 +48,7 @@ local mod2 = 0
 local PB_VMPOS, PB_VMANG
 
 function SWEP:scaleMovement(val, mod)
+	if !mod then mod = 1 end
 	return val * self.ViewModelMovementScale * mod
 end
 
@@ -94,20 +95,20 @@ function SWEP:processSwayDelta(deltaTime, eyeAngles)
 	
 	local FT = deltaTime
 	
-	--if self.SwayInterpolation == "linear" then
+	if self.SwayInterpolation == "linear" then
 		self.AngleDelta = LerpAngle(math.Clamp(FT * 15, 0, 1), self.AngleDelta, delta)
 		self.AngleDelta.y = math.Clamp(self.AngleDelta.y, -15, 15)
-	/*else
+	else
 		delta.p = math.Clamp(delta.p, -5, 5)
 		self.AngleDelta2 = LerpAngle(math.Clamp(FT * 12, 0, 1), self.AngleDelta2, self.AngleDelta)
 		self.AngDiff.p = (self.AngleDelta.p - self.AngleDelta2.p)
 		self.AngDiff.y = (self.AngleDelta.y - self.AngleDelta2.y)
 		self.AngleDelta = LerpAngle(math.Clamp(FT * 10, 0, 1), self.AngleDelta, delta + self.AngDiff)
 		self.AngleDelta.y = math.Clamp(self.AngleDelta.y, -25, 25)
-	end*/
+	end
 	
-	--self.OldDelta.p = eyeAngles.p
-	--self.OldDelta.y = eyeAngles.y
+	self.OldDelta.p = eyeAngles.p
+	self.OldDelta.y = eyeAngles.y
 end
 
 function SWEP:processFOVChanges(deltaTime)
@@ -120,7 +121,7 @@ function SWEP:processFOVChanges(deltaTime)
 	self.ViewModelFOV = self.CurVMFOV
 end
 
-function SWEP:performViewmodelMovement()
+function SWEP:performViewmodelMovement_old() // old, CW 2.0 vm movement
 	CT = UnPredictedCurTime()
 	vm = self.VM
 	
@@ -227,6 +228,11 @@ function SWEP:performViewmodelMovement()
 		
 		self.ApproachSpeed = math.Approach(self.ApproachSpeed, 10, FT * 100)
 
+	end
+	
+	if self:GetIsDeploying() and !self:GetIsSprinting() then
+		TargetPos, TargetAng = self.BasePos * 1, self.BaseAng * 1
+		self.ApproachSpeed = math.Approach(self.ApproachSpeed, 5, FT * 100)
 	end
 	
 	if len < 10 or not self.Owner:OnGround() then
@@ -411,6 +417,7 @@ end
 function SWEP:CreateClientModel(model)
 	if !CLIENT then return end
 	local ent = ClientsideModel(model, RENDERGROUP_BOTH)
+	ent.WeaponObject = self
 	PHUNBASE.cmodel:Add(ent, self)
 	return ent
 end
@@ -520,7 +527,7 @@ function SWEP:drawViewModel()
 		return
 	end
 	
-	self:applyOffsetToVM()
+	//self:applyOffsetToVM()
 	self:_drawViewModel()
 end
 
@@ -541,8 +548,9 @@ function SWEP:_drawViewModel()
 	end
 	
 	self:drawVMShells()
+	self:drawAttachments()
 	
-	self.Cycle = vm:GetCycle()
+	self.Cycle = self.VM:GetCycle()
 	
 end
 
