@@ -30,11 +30,6 @@ function SWEP:drawVMShells()
 				v:DrawModel()
 			else
 				v:SetNoDraw(false)
-				/*if !v._pattached then
-					v._pattached = true
-					ParticleEffectAttach("smoke_trail", PATTACH_ABSORIGIN_FOLLOW, v, 0)
-					timer.Simple(1, function() if v then v:StopParticles() end end)
-				end*/
 			end
 		end
 	end
@@ -56,7 +51,7 @@ function SWEP:_makeShell()
 	
 	shellTable.model = self.ShellModel or "models/weapons/shell.mdl"
 	shellTable.scale = self.ShellScale or 0.75
-	shellTable.sound = self.ShellSound or "player/pl_shell"..math.random(1,3)..".wav"
+	shellTable.sound = self.ShellSound or "PB_SHELLIMPACT_BRASS"
 	
 	shellTable.velmin_P = self.ShellAngularVelocity.Pitch_Min or 0
 	shellTable.velmax_P = self.ShellAngularVelocity.Pitch_Max or 0
@@ -75,7 +70,7 @@ function SWEP:_makeShell()
 	att = vm:GetAttachment(vm:LookupAttachment( self:GetShellAttachmentName() ))
 	
 	if att then
-		timer.Simple(self.ShellDelay or 0.01, function() if !IsValid(self) then return end
+		self:DelayedEvent(self.ShellDelay or 0.01, function()
 			att = vm:GetAttachment(vm:LookupAttachment( self:GetShellAttachmentName() ))
 			
 			pos = att.Pos

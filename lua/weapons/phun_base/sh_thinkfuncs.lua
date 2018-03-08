@@ -56,7 +56,7 @@ function SWEP:_IronThink()
 	if ((ply:KeyDown(IN_ATTACK2) and !self:GetIron())) and !self:GetIsSprinting() and !self:IsBusy() and !self:IsFlashlightBusy() then
 		self:SetIron(true)
 		if IsFirstTimePredicted() then
-			//self:FrostSound( self.SND.IronIn[math.random(1,3)] )
+			self:EmitSound("PB_IronIn")
 			if self:IsFlashlightBusy() then return end
 			if self.UseIronTransitionAnims then
 				if !self:GetIsDual()then
@@ -71,7 +71,7 @@ function SWEP:_IronThink()
 	if (!ply:KeyDown(IN_ATTACK2) and self:GetIron()) or ((self:GetIsSprinting() or self:IsBusy()) and self:GetIron() and !string.find(self:GetActiveSequence(), "lighton") ) then
 		self:SetIron(false)
 		if IsFirstTimePredicted() then
-			//self:FrostSound( self.SND.IronOut[math.random(1,3)] )
+			self:EmitSound("PB_IronOut")
 			if self:GetIsReloading() or self:GetIsHolstering() or self:IsFlashlightBusy() then return end
 			if self.UseIronTransitionAnims then
 				if !self:GetIsDual()then
@@ -95,8 +95,8 @@ function SWEP:_SprintThink()
 	else
 		if self:GetIsSprinting() then
 			self:SetIsSprinting(false)
-			self:SetNextPrimaryFire(CurTime() + 0.25)
-			self:SetNextSecondaryFire(CurTime() + 0.25)
+			self:SetNextPrimaryFire(CurTime() + 0.15)
+			self:SetNextSecondaryFire(CurTime() + 0.15)
 		end
 	end
 end

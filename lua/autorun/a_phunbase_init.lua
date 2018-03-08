@@ -136,16 +136,6 @@ hook.Add("OnNPCKilled", "PHUNBASE_NPC_KillFix", function(npc)
 	end
 end)
 
-hook.Add("OnEntityCreated", "PHUNBASE_OnEntCreated_Test", function(ent)
-	timer.Simple(1, function()
-	if !IsValid(ent) then return end
-	if ent:GetClass() == "rpg_missile" then
-		PrintTable(ent:GetSaveTable())
-		//ent:SetModelScale(5)
-	end
-	end)
-end)
-
 if CLIENT then
 	local function PHUNBASE_WEAPONGIVE_PLAYER(um)
 		local ply = LocalPlayer()

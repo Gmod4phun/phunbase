@@ -1,0 +1,16 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phunbase\shells\12GaugeWad"
+	"$bumpmap" "phunbase\shells\12GaugeWad_Normal"
+	"$phongexponenttexture" "models/albedotint"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[0.1 0.08 0.05]"
+	"$phong" 			"1"
+	"$phongexponent"		"10"
+	"$phongboost" 			"0.5"
+	"$phongfresnelranges"		"[1.0 2.5 10.5]"//"[0.1 0.4 .8]"
+	$phongdisablehalflambert 1
+	$halflambert 0
+	$PhongAlbedoTint 1
+	"$normalmapalphaenvmapmask"	"1"
+}

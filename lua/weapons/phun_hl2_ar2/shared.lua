@@ -118,58 +118,6 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = 6
 SWEP.Secondary.Automatic = true
 
-/*
-function SWEP:FireCombineBall()
-	if CLIENT then return end
-	
-	local ply = self.Owner
-	local launcher = ents.Create( "point_combine_ball_launcher" )
-	local ball = NULL
-	
-	if ( IsValid( launcher ) ) then
-		launcher:SetPos( ply:GetShootPos() + ply:EyeAngles():Forward() )
-		launcher:SetAngles( ply:EyeAngles() )
-		launcher:Spawn()
-		launcher:Activate()
-		launcher:SetOwner( ply )
-		launcher.Owner = self:GetOwner()
-		launcher:SetKeyValue("speed", 1000)
-		launcher:SetKeyValue("minspeed", 1000)
-		launcher:SetKeyValue("maxspeed", 1000)
-		launcher:SetKeyValue("maxballbounces", 0)
-		launcher:Fire("LaunchBall")
-		
-		timer.Simple(0.01, function()
-			if !IsValid(self) then return end
-			
-			for _, v in pairs(ents.FindInSphere(self:GetPos(), 100)) do
-				if v:GetClass() == "prop_combine_ball" then
-					if v:GetSaveTable().m_hSpawner == launcher then
-						v:SetOwner(ply)
-						v.FiredFrom = self
-						self.AR2Ball = v
-						ball = v
-						break
-					end
-				end
-			end
-
-		end)
-		
-		timer.Simple(0.1, function()
-			SafeRemoveEntity(launcher)
-		end)
-		
-		timer.Simple(4, function()
-			if IsValid(ball) then ball:Fire("explode") end
-		end)
-	end
-	
-	ply:ViewPunch(Angle(-8, 0, 0))
-	PHUNBASE.PlayerScreenFlash(ply, 0.1, Color(200,200,200,100))
-end
-*/
-
 function SWEP:FireCombineBall()
 	if CLIENT then return end
 	
@@ -215,8 +163,7 @@ function SWEP:SecondaryAttackOverride()
 	end
 	self:SetNextPrimaryFire(CurTime() + 1.2)
 	self:PlayVMSequence("shake", 1, 0)
-	timer.Simple(0.5, function()
-		if !IsValid(self) then return end
+	self:DelayedEvent(0.5, function()
 		self:PlayVMSequence("fire_ball", 1, 0)
 		self:FireCombineBall()
 		if ply:GetAmmoCount(self:GetSecondaryAmmoType()) > 0 then

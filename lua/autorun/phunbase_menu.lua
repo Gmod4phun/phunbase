@@ -378,6 +378,42 @@ end
 local function PHUNBASE_MENU_PANEL(panel)
 
 	panel:ClearControls()
+	local katkaID64 = "76561198024742819"
+	local katkaName = ""
+	local pbby = "PHUNBASE by  "
+	
+	local bg = vgui.Create("DPanel", panel)
+	bg:DockMargin(35,0,35,0)
+	bg.Paint = function(self, w, h)
+		surface.SetDrawColor(Color(85,165,195,255))
+		surface.DrawRect(0, 0, w, h)
+		surface.SetDrawColor(Color(65,120,145,255))
+		surface.DrawRect(2, 2, w-4, h-4)
+	end
+	local katka = vgui.Create("AvatarImage", bg)
+	katka:Dock(FILL)
+	katka:DockMargin(4,4,4,4)
+	katka:SetSteamID(katkaID64, 184)
+	katka.Think = function(self)
+		bg:SetTall(bg:GetWide())
+		self:SetSize(bg:GetWide() - 8, bg:GetWide() - 8)
+	end
+	katka.OnMousePressed = function()
+		gui.OpenURL("http://steamcommunity.com/profiles/76561198024742819/")
+	end
+	panel:AddItem(bg)
+	
+	local txt = vgui.Create("DLabel", katka)
+	txt:SetWrap(true)
+	txt:SetTextColor(Color(0,0,0,255))
+	txt:SetFont("Trebuchet24")
+	txt:SetText(pbby..katkaName)
+	txt.Think = function(self)
+		self:SetPos(katka:GetWide()/2 - self:GetWide()/2, katka:GetTall() - self:GetTall())
+		local w, h = self:GetTextSize()
+		self:SetWide(w)
+	end
+	steamworks.RequestPlayerInfo( katkaID64 , function(returnedName) katkaName = returnedName txt:SetText(pbby..katkaName) end) // update name
 	
 	panel:AddControl("Label", {Text = "Weapon Settings"})
 	

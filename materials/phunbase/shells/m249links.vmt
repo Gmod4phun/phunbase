@@ -1,0 +1,11 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phunbase\shells\M249links"
+	"$bumpmap"	"models\weapons\v_models\default_normal"
+	"$phong" 			"1"
+	"$phongexponent" 		"90"
+	"$phongboost" 			"0.5"
+	"$phongtint" 			"[.93 .85 0.68]"
+	"$phongfresnelranges"		"[0.5 0.6 1.0]"
+	"$halflambert"			"1"
+}

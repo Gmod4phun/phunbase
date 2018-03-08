@@ -114,10 +114,10 @@ SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw
 SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
 SWEP.ShellAttachmentName = "1"
 SWEP.ShellDelay = 0.45
-SWEP.ShellScale = 0.6
-SWEP.ShellModel = "models/weapons/shotgun_shell.mdl"
+SWEP.ShellScale = 1
+SWEP.ShellModel = "models/phunbase/shells/12g_slug_open.mdl"
+SWEP.ShellSound = "PB_SHELLIMPACT_SHOTGUN"
 SWEP.ShellEjectVelocity = 10
-SWEP.ShellSound = "weapons/fx/tink/shotgun_shell1.wav"
 
 SWEP.MuzzleAttachmentName = "muzzle"
 SWEP.MuzzleEffect = {"weapon_muzzle_flash_smoke_small2", "PistolGlow", "muzzle_lee_simple_pistol", "muzzle_fire_pistol", "muzzle_sparks_pistol", "smoke_trail"}

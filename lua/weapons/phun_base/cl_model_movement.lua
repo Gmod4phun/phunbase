@@ -63,6 +63,8 @@ function SWEP:performViewmodelMovement()
 			BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
 		end
 		
+		move = math.Clamp(len / self.Owner:GetWalkSpeed(), 0, 1)
+		
 		if self:GetIron() then		
 			TargetPos = self.IronsightPos * 1
 			TargetAng = self.IronsightAng * 1
@@ -71,7 +73,6 @@ function SWEP:performViewmodelMovement()
 			CurPosMod, CurAngMod = Vec0 * 1, Vec0 * 1
 		
 			self.SlowDownBlend = true
-			move = math.Clamp(len / self.Owner:GetWalkSpeed(), 0, 1)
 			
 			if len > 30 and ong then
 				cos1, sin1 = math.cos(CT * 8), math.sin(CT * 8)

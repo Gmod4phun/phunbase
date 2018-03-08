@@ -326,9 +326,9 @@ end
 function SWEP:makeVMRecoil(mod)
 	mod = mod or 1
 	
-	if self:GetIron() then
+	/*if self:GetIron() then
 		mod = 0
-	end
+	end*/
 	
 	-- make the recoil get stronger as the player spends more time firing the weapon non-stop
 	local overallMul = 0.25 + 0.75 * self.LuaVMRecoilIntensity * self.LuaVMRecoilMod

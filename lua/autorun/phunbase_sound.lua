@@ -125,3 +125,12 @@ end
 
 PHUNBASE:addRegularSound("PB_WeaponEmpty_Primary", "weapons/pistol/pistol_empty.wav")
 PHUNBASE:addRegularSound("PB_WeaponEmpty_Secondary", "weapons/pistol/pistol_empty.wav")
+
+PHUNBASE:addRegularSound("PB_IronIn", "phunbase/ironsight_on.wav", 50)
+PHUNBASE:addRegularSound("PB_IronOut", "phunbase/ironsight_off.wav", 50)
+
+PHUNBASE:addRegularSound("PB_SHELLIMPACT_BRASS", {"player/pl_shell1.wav", "player/pl_shell2.wav", "player/pl_shell3.wav"})
+PHUNBASE:addRegularSound("PB_SHELLIMPACT_SHOTGUN", {"weapons/fx/tink/shotgun_shell1.wav", "weapons/fx/tink/shotgun_shell2.wav", "weapons/fx/tink/shotgun_shell3.wav"})
+
+PHUNBASE:addRegularSound("PB_WEAPONIMPACT_SOFT", {"physics/metal/weapon_impact_soft1.wav", "physics/metal/weapon_impact_soft2.wav", "physics/metal/weapon_impact_soft3.wav"})
+PHUNBASE:addRegularSound("PB_WEAPONIMPACT_HARD", {"physics/metal/weapon_impact_hard1.wav", "physics/metal/weapon_impact_hard2.wav", "physics/metal/weapon_impact_hard3.wav"})

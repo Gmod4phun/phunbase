@@ -14,6 +14,7 @@ PHUNBASE.LoadLua("cl_model_movement.lua")
 PHUNBASE.LoadLua("cl_rtscope.lua")
 PHUNBASE.LoadLua("cl_shells.lua")
 PHUNBASE.LoadLua("cl_velements.lua")
+PHUNBASE.LoadLua("sh_ammo.lua")
 PHUNBASE.LoadLua("sh_crossbow.lua")
 PHUNBASE.LoadLua("sh_firebullets.lua")
 PHUNBASE.LoadLua("sh_networkfuncs.lua")
@@ -44,7 +45,7 @@ SWEP.AimViewModelFOV = 70
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
 SWEP.HoldType = "pistol"
-
+ 
 SWEP.SprintHoldType = "passive"
 SWEP.SafeHoldType = "passive"
 
@@ -179,6 +180,8 @@ SWEP.HL2IconLetters = {
 	["phun_hl2_slam"] = "o",
 }
 
+SWEP.Events = {}
+
 SWEP.UseCustomWepSelectIcon = false
 function SWEP:CustomWepSelectIcon(x, y, wide, tall, alpha) -- copy this to your swep and enable custom wepselecticons on it to draw custom weapon selection icons
 end
@@ -304,6 +307,11 @@ function SWEP:Deploy()
 end
 
 function SWEP:Holster(wep)
+	if self.Owner.PB_IsPickingUpObject and !self:IsBusy() and !self:GetIsWaiting() then
+		self.Owner.PB_IsPickingUpObject = false
+		return true
+	end
+
 	if not IsValid(wep) and not IsValid(self.SwitchWep) then
 		self.SwitchWep = nil
 		return false
@@ -407,6 +415,17 @@ function SWEP:Think()
 			self.DrawCrosshair = false
 		end
 	end
+
+	for k, v in pairs(self.Events) do
+		if CurTime() > v.time then
+			v.func()
+			table.remove(self.Events, k)
+		end
+	end
+end
+
+function SWEP:DelayedEvent(time, func)
+	table.insert(self.Events, {time = CurTime() + time, func = func})
 end
 
 function SWEP:Cheap_WM_ShootEffects()
@@ -463,7 +482,7 @@ function SWEP:PrimaryAttack()
 		ply:DoAttackEvent()
 		
 		if self.ReloadAfterShot then
-			timer.Simple(self.ReloadAfterShotTime or 0.5, function() if !IsValid(self) then return end self:_realReloadStart() end)
+			self:DelayedEvent(self.ReloadAfterShotTime or 0.5, function() self:_realReloadStart() end)
 		end
 		
 		self:Cheap_WM_ShootEffects()

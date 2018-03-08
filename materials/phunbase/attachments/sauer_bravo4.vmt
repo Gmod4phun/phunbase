@@ -1,0 +1,23 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phunbase\attachments\sauer_bravo4"
+	"$bumpmap" "phunbase\attachments\sauer_bravo4_n"
+	"$phongexponenttexture" 	"phunbase\attachments\sauer_bravo4_G"
+
+	"$envmaptint" "[0.3 0.3 0.3]"
+	"$basemapalphaenvmapmask"		1
+	"$envmapfresnel" "0.7"
+
+	"$phong" 1
+	"$normalmapalphaphongmask"	1
+	"$phongexponent" 30
+	"$phongboost" 6
+	"$phongfresnelranges" "[0.1 0.5 1.1]"
+	"$phongalbedotint" "1"
+	"$phongalbedoboost" "38"
+
+	"$rimlight" "1"
+	"$rimlightexponent" "88"
+	"$rimlightboost""0.5"
+	"$rimmask" "1"
+}
