@@ -15,7 +15,6 @@ PHUNBASE.LoadLua("cl_rtscope.lua")
 PHUNBASE.LoadLua("cl_shells.lua")
 PHUNBASE.LoadLua("cl_velements.lua")
 PHUNBASE.LoadLua("sh_ammo.lua")
-PHUNBASE.LoadLua("sh_crossbow.lua")
 PHUNBASE.LoadLua("sh_firebullets.lua")
 PHUNBASE.LoadLua("sh_networkfuncs.lua")
 PHUNBASE.LoadLua("sh_reloading.lua")
@@ -213,9 +212,10 @@ if CLIENT then
 end
 
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
+	local iconcolor = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) + self:Clip1() == 0 and Color(255, 0, 0, alpha) or Color(255, 235, 20, alpha)
 	if self.HL2IconLetters[self:GetClass()] then -- HL2 weapons
-		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_1", x + wide / 2, y + tall * 0.075, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
-		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_2", x + wide / 2, y + tall * 0.075, Color(255, 235, 20, alpha), TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_1", x + wide / 2, y + tall * 0.075, iconcolor, TEXT_ALIGN_CENTER)
+		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_2", x + wide / 2, y + tall * 0.075, iconcolor, TEXT_ALIGN_CENTER)
 	elseif self.UseCustomWepSelectIcon then
 		self:CustomWepSelectIcon(x, y, wide, tall, alpha)
 	else -- default GMod swep select icon
@@ -228,6 +228,50 @@ function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 		surface.DrawTexturedRect(x, y, wide, wide / 2)
 	end
 end
+
+PB_HL2_Weapon_Counterparts = {
+	["weapon_ar2"] = "phun_hl2_ar2",
+	["weapon_crossbow"] = "phun_hl2_crossbow",
+	["weapon_pistol"] = "phun_hl2_pistol",
+	["weapon_smg1"] = "phun_hl2_smg",
+	["weapon_357"] = "phun_hl2_357",
+	["weapon_shotgun"] = "phun_hl2_shotgun",
+	//["weapon_rpg"] = "phun_hl2_rpg",
+	["weapon_frag"] = "phun_hl2_grenade",
+	//["weapon_bugbait"] = "phun_hl2_bugbait",
+	["weapon_crowbar"] = "phun_hl2_crowbar",
+	//["weapon_stunstick"] = "phun_hl2_stunstick",
+	//["weapon_slam"] = "phun_hl2_slam",
+}
+
+hook.Add("PlayerCanPickupWeapon", "PB_HL2_Weapons_CanPickup", function(ply, wep)
+	if PHUNBASE_HL2_REPLACE_DEFAULT then
+		local new = PB_HL2_Weapon_Counterparts[wep:GetClass()]
+		local tbl = weapons.GetStored(new)
+		if new then
+			if ply:HasWeapon(new) then
+				ply:GiveAmmo(tbl.Primary.ClipSize, tbl.Primary.Ammo)
+			else
+				ply:Give(new)
+			end
+			wep:Remove()
+			return false
+		end
+	end
+end)
+
+hook.Add("PlayerGiveSWEP", "PB_HL2_Weapons_GiveSWEP", function(ply, wep)
+	if PHUNBASE_HL2_REPLACE_DEFAULT then
+		local new = PB_HL2_Weapon_Counterparts[wep]
+		if new then
+			if !ply:HasWeapon(new) then
+				ply:Give(new)
+			end
+			ply:SelectWeapon(new)
+			return false
+		end
+	end
+end)
 
 function SWEP:Initialize()
 	self:InitRealViewModel()
@@ -264,6 +308,7 @@ function SWEP:Initialize()
 		self:_CreateVM()
 		self:_CreateHands()
 		self:setupAttachmentModels()
+		self:setupBoneTable()
 		if self.AdditionalInit then
 			self:AdditionalInit()
 		end

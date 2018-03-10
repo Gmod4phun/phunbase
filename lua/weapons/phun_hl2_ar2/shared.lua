@@ -7,8 +7,8 @@ SWEP.SlotPos = 1
 
 include("sounds.lua")
 
-SWEP.ViewModelFOV = 55
-SWEP.AimViewModelFOV = 55
+SWEP.ViewModelFOV = 54
+SWEP.AimViewModelFOV = 54
 SWEP.ViewModel = "models/weapons/c_irifle.mdl"
 SWEP.WorldModel = "models/weapons/w_irifle.mdl"
 

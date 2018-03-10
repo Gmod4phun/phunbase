@@ -21,7 +21,7 @@ function SWEP:_ReloadThink()
 						self.ShotgunReloadingState = 1
 					end
 				elseif self.ShotgunReloadingState == 1 then
-					if (self.Owner:KeyDown(IN_ATTACK) and self.ShotgunInsertedShells > 0) then
+					if ((self.Owner:KeyDown(IN_ATTACK) or self.Owner:KeyDown(IN_ATTACK2)) and self.ShotgunInsertedShells > 0) then
 						self.ShouldStopReloading = true
 					end
 					if CurTime() >= self.NextShotgunAction then
@@ -105,6 +105,7 @@ local td = {}
 function SWEP:_NearWallThink()
 	local ply = self.Owner
 	if SERVER then
+		if self.DisableNearwall then return end
 		td.start = ply:GetShootPos()
 		td.endpos = td.start + ply:EyeAngles():Forward() * 30
 		td.filter = ply

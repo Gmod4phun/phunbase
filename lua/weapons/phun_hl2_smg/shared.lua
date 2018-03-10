@@ -5,8 +5,8 @@ SWEP.Category = "PHUNBASE | HL2"
 SWEP.Slot = 2
 SWEP.SlotPos = 0
 
-SWEP.ViewModelFOV = 60
-SWEP.AimViewModelFOV = 60
+SWEP.ViewModelFOV = 54
+SWEP.AimViewModelFOV = 54
 SWEP.ViewModel = "models/weapons/c_smg1.mdl"
 SWEP.WorldModel = "models/weapons/w_smg1.mdl"
 

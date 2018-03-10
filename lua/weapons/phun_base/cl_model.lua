@@ -527,6 +527,8 @@ function SWEP:drawViewModel()
 		return
 	end
 	
+	//self:offsetBones() // not today :)
+	
 	//self:applyOffsetToVM()
 	self:_drawViewModel()
 end
@@ -559,6 +561,74 @@ function SWEP:_drawHands()
 		self.Hands.GetPlayerColor = self._GetPlayerColor
 		self.Hands:DrawModel()
 	end
+end
+
+SWEP.BoneManipTable = {}
+
+function SWEP:buildBoneTable()
+	local vm = self.VM
+	
+	for i = 0, vm:GetBoneCount() - 1 do
+		local boneName = vm:GetBoneName(i)
+		local bone
+		
+		if boneName then
+			bone = vm:LookupBone(boneName)
+		end
+		
+		self.vmBones[i + 1] = {boneName = boneName, bone = bone, curPos = Vector(0, 0, 0), curAng = Angle(0, 0, 0), targetPos = Vector(0, 0, 0), targetAng = Angle(0, 0, 0)}
+	end
+end
+
+function SWEP:setupBoneTable()
+	self.vmBones = {}
+	-- this sets up a table for things like bone position/angle manipulation
+	-- we do everything in advance to avoid expensive function calls (such as LookupBone) later on
+	self:buildBoneTable()
+end
+
+function SWEP:offsetBones()
+	local vm = self.VM
+	
+	-- if the animation cycle is past reload/draw no offset time of bones, then it falls within the bone offset timeline
+	local FT = FrameTime()
+	
+	local can = !self:IsBusy() and self.EnableBoneManipulation
+	local canModifyBones = true
+	
+	local targetTbl = false
+	
+	-- select the desired offset table
+	if self.BoneManipTable then
+		local desiredTarget = self.BoneManipTable
+		
+		if desiredTarget then
+			targetTbl = desiredTarget
+			canModifyBones = true
+		end
+	end
+	
+	if not targetTbl then
+		can = false
+	end
+	
+	if canModifyBones then
+		for k, v in pairs(self.vmBones) do
+			if can then
+				local index = targetTbl[v.boneName]
+
+				v.curPos = PHUNBASE_LerpVector(FT * 15, v.curPos, (index and index.pos or Vec0))
+				v.curAng = PHUNBASE_LerpAngle(FT * 15, v.curAng, (index and index.angle or Ang0))
+			else
+				v.curPos = PHUNBASE_LerpVector(FT * 15, v.curPos, Vec0)
+				v.curAng = PHUNBASE_LerpAngle(FT * 15, v.curAng, Ang0)
+			end
+			
+			ManipulateBonePosition(vm, v.bone, v.curPos)
+			ManipulateBoneAngles(vm, v.bone, v.curAng)
+		end
+	end
+	
 end
 
 //viewmodel fixes

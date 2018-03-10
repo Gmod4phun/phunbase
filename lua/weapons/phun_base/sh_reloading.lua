@@ -14,7 +14,6 @@ function SWEP:_realReloadStart()
 			self.FinishReloadTime = CurTime() + self.ReloadTime
 			self:_reloadBegin()
 		else
-			//self.ShotgunReload = CurTime() + self.ReloadTime
 			self:_shotgunReloadBegin()
 		end
 	end

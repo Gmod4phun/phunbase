@@ -5,8 +5,8 @@ SWEP.Category = "PHUNBASE | HL2"
 SWEP.Slot = 3
 SWEP.SlotPos = 1
 
-SWEP.ViewModelFOV = 55
-SWEP.AimViewModelFOV = 55
+SWEP.ViewModelFOV = 54
+SWEP.AimViewModelFOV = 54
 SWEP.ViewModel = "models/weapons/c_crossbow.mdl"
 SWEP.WorldModel = "models/weapons/w_crossbow.mdl"
 
@@ -50,7 +50,8 @@ SWEP.NearWallAng = Vector(0, 0, 0)
 SWEP.PistolSprintSway = true
 
 SWEP.VElements = {
-	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true }
+	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },
+	["xbow_model_fix"] = { model = "models/phunbase/attachments/hl2_crossbow_modelfix.mdl", size = Vector(1, 1, 1), bonemerge = true, active = true }
 }
 
 SWEP.Sequences = {
@@ -109,6 +110,8 @@ SWEP.DisableReloadBlur = true
 SWEP.ReloadAfterShot = true
 SWEP.ReloadAfterShotTime = 0.1
 SWEP.XBOWGLOW = true
+
+SWEP.FireMoveMod = 1
 
 function SWEP:FireCrossbowBolt()
 	if CLIENT then return end
@@ -171,3 +174,25 @@ SWEP.RTScope_DrawParallax = true
 
 SWEP.MouseSensitivityHip = 1
 SWEP.MouseSensitivityIron = 0.25
+
+if SERVER then
+	hook.Add("EntityTakeDamage", "PHUNBASE_Crossbow_Bolt_TakeDamage", function( target, dmginfo )
+		local ent = dmginfo:GetInflictor()
+		if IsValid(ent) and ent:GetClass() == "crossbow_bolt" and ent.CustomXBOWBolt then	
+			dmginfo:SetMaxDamage(100)
+			dmginfo:SetDamage(100)
+			dmginfo:SetDamageForce( ent:GetVelocity() * 6)
+			dmginfo:SetDamageType( bit.bor(DMG_GENERIC, DMG_NEVERGIB) )
+			
+			if target:IsNPC() and target:GetBloodColor() != -1 then
+				local ed = EffectData()
+				ed:SetOrigin(dmginfo:GetDamagePosition())
+				ed:SetStart(ent:GetPos())
+				ed:SetEntity(target)
+				ed:SetEntIndex(target:EntIndex())
+				ed:SetColor(target:GetBloodColor())
+				util.Effect("BloodImpact", ed)
+			end
+		end
+	end)
+end

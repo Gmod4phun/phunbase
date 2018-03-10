@@ -1,4 +1,4 @@
-if !CLIENT then return end
+if CLIENT then
 
 AddCSLuaFile()
 
@@ -21,6 +21,8 @@ CreateClientConVar("phunbase_dev_iron_pos_z", "0", true, false)
 CreateClientConVar("phunbase_dev_iron_ang_p", "0", true, false)
 CreateClientConVar("phunbase_dev_iron_ang_y", "0", true, false)
 CreateClientConVar("phunbase_dev_iron_ang_r", "0", true, false)
+
+CreateClientConVar("phunbase_hl2_crosshair", "0", true, false)
 
 function PHUNBASE.DEV.ENABLED()
 	return GetConVar("phunbase_devmode"):GetInt() == 1
@@ -375,12 +377,10 @@ local function PHUNBASE_DEV_MENU_PANEL(panel)
 	
 end
 
-local function PHUNBASE_MENU_PANEL(panel)
-
-	panel:ClearControls()
+local function PHUNBASE_KATKA_PANELPART(panel)
 	local katkaID64 = "76561198024742819"
 	local katkaName = ""
-	local pbby = "PHUNBASE by  "
+	local pbby = "PHUNBASE by "
 	
 	local bg = vgui.Create("DPanel", panel)
 	bg:DockMargin(35,0,35,0)
@@ -401,22 +401,46 @@ local function PHUNBASE_MENU_PANEL(panel)
 	katka.OnMousePressed = function()
 		gui.OpenURL("http://steamcommunity.com/profiles/76561198024742819/")
 	end
-	panel:AddItem(bg)
 	
-	local txt = vgui.Create("DLabel", katka)
-	txt:SetWrap(true)
+	local txt = vgui.Create("DButton", panel)
 	txt:SetTextColor(Color(0,0,0,255))
-	txt:SetFont("Trebuchet24")
+	txt:DockMargin(2,0,2,0)
 	txt:SetText(pbby..katkaName)
-	txt.Think = function(self)
-		self:SetPos(katka:GetWide()/2 - self:GetWide()/2, katka:GetTall() - self:GetTall())
-		local w, h = self:GetTextSize()
-		self:SetWide(w)
-	end
+	txt:SetCursor("arrow")
+	txt.Paint = function(self, w, h) end
+	panel:AddItem(txt)
 	steamworks.RequestPlayerInfo( katkaID64 , function(returnedName) katkaName = returnedName txt:SetText(pbby..katkaName) end) // update name
 	
-	panel:AddControl("Label", {Text = "Weapon Settings"})
+	panel:AddItem(bg)
+end
+
+local function PHUNBASE_MENU_PANEL(panel)
+	panel:ClearControls()
 	
+	PHUNBASE_KATKA_PANELPART(panel)
+	
+	panel:AddControl("Label", {Text = "HL2 Weapon Settings"})
+	
+	local hl2_replace_checkbox = vgui.Create("DCheckBoxLabel", panel)
+	hl2_replace_checkbox:SetText("ADMIN: Replace default HL2 Weapons?")
+	hl2_replace_checkbox:SetTextColor(Color(0,0,0,255))
+	hl2_replace_checkbox:SetConVar("phunbase_hl2_replace_weapons")
+	hl2_replace_checkbox:SetValue(0)
+	hl2_replace_checkbox:SizeToContents()
+	hl2_replace_checkbox.Think = function(self)
+		if !LocalPlayer():IsAdmin() then
+			self:SetTextColor(Color(255,10,10,255))
+			self.Button:SetEnabled(false)
+			self.Label:SetEnabled(false)
+		else
+			self:SetTextColor(Color(0,0,0,255))
+			self.Button:SetEnabled(true)
+			self.Label:SetEnabled(true)
+		end
+	end
+	panel:AddItem(hl2_replace_checkbox)
+	
+	panel:AddControl("CheckBox", {Label = "Use HL2 crosshair?", Command = "phunbase_hl2_crosshair"})
 end
 
 local function PHUNBASE_PopulateToolMenu()
@@ -467,3 +491,16 @@ local function PHUNBASE_CVMT_HUDPaint()
 end
 
 hook.Add("HUDPaint", "PHUNBASE_CVMT_HUDPaint", PHUNBASE_CVMT_HUDPaint)
+
+end
+
+if SERVER then
+	CreateConVar("phunbase_hl2_replace_weapons", 0, {FCVAR_ARCHIVE, FCVAR_REPLICATED})
+	
+	PHUNBASE_HL2_REPLACE_DEFAULT = GetConVar("phunbase_hl2_replace_weapons"):GetInt() == 1
+	
+	cvars.RemoveChangeCallback("phunbase_hl2_replace_weapons", "phunbase_hl2_replace_weapons_callbackidentifier")
+	cvars.AddChangeCallback("phunbase_hl2_replace_weapons", function(cvar, old, new)
+		PHUNBASE_HL2_REPLACE_DEFAULT = tobool(new)
+	end, "phunbase_hl2_replace_weapons_callbackidentifier")
+end

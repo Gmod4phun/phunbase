@@ -5,8 +5,8 @@ SWEP.Category = "PHUNBASE | HL2"
 SWEP.Slot = 4
 SWEP.SlotPos = 0
 
-SWEP.ViewModelFOV = 60
-SWEP.AimViewModelFOV = 60
+SWEP.ViewModelFOV = 54
+SWEP.AimViewModelFOV = 54
 SWEP.ViewModel = "models/weapons/c_grenade.mdl"
 SWEP.WorldModel = "models/weapons/w_grenade.mdl"
 
@@ -54,12 +54,6 @@ SWEP.Sequences = {
 	throw = "throw",
 	underhand = "lob",
 	holster = "drawbacklow"
-}
-
-SWEP.Sounds = {
-	draw = {
-		{time = 0, sound = "PB_CSGO_FLASHBANG_DRAW"}
-	}
 }
 
 SWEP.DeployTime = 1.1
