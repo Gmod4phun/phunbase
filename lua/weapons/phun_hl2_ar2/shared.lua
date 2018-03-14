@@ -20,6 +20,8 @@ SWEP.ReloadHoldType = "ar2"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 SWEP.Primary.Ammo = "ar2"
 SWEP.Primary.ClipSize = 30
@@ -171,3 +173,5 @@ function SWEP:SecondaryAttackOverride()
 		end
 	end)
 end
+
+SWEP.HL2_IconParams = {dist = 40, mdlOffset = Vector(-6,0,0), camOffset = -2}

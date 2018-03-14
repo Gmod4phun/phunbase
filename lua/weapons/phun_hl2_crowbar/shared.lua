@@ -18,6 +18,8 @@ SWEP.ReloadHoldType = "melee"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 
 SWEP.Primary.Ammo = ""
@@ -62,6 +64,8 @@ SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
 SWEP.FlashlightAttachmentName = "1"
 SWEP.InstantFlashlight = false
+
+SWEP.HL2_IconParams = {dist = 40, mdlOffset = Vector(0,0,0), camOffset = -2}
 
 SWEP.MeleeAttackWaitTime = 0.025
 SWEP.MeleeRedeployWaitTime = 0.4

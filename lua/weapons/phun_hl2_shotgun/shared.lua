@@ -18,6 +18,8 @@ SWEP.ReloadHoldType = "shotgun"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 SWEP.Primary.Ammo = "buckshot"
 SWEP.Primary.ClipSize = 6
@@ -127,6 +129,8 @@ SWEP.FireSoundSecondary = "Weapon_Shotgun.Double"
 
 SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
+
+SWEP.HL2_IconParams = {dist = 35, mdlOffset = Vector(0,0,0), camOffset = -1}
 
 SWEP.ShotgunReload = true
 SWEP.ShotgunReloadTime_Start = 0.4

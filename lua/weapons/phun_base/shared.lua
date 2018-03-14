@@ -223,25 +223,36 @@ function SWEP:FireAnimationEvent(pos,ang,event,name)
 end
 
 if CLIENT then
-	surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_1", { // weapon selecticon ghost font
-		font = "HalfLife2",
-		extended = true,
-		size = ScreenScale(54),
-		weight = 0,
-		blursize = 8,
-		scanlines = 3,
-		antialias = true,
-		additive = true,
-	} )
+	function PHUNBASE.SetupFonts()
+		surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_1", { // weapon selecticon ghost font
+			font = "HalfLife2",
+			extended = true,
+			size = ScreenScale(54),
+			weight = 0,
+			blursize = 8,
+			scanlines = 3,
+			antialias = true,
+			additive = true,
+		} )
 
-	surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_2", { // weapon selecticons
-		font = "HalfLife2",
-		extended = true,
-		size = ScreenScale(54),
-		weight = 0,
-		antialias = true,
-		additive = true,
-	} )
+		surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_2", { // weapon selecticons
+			font = "HalfLife2",
+			extended = true,
+			size = ScreenScale(54),
+			weight = 0,
+			antialias = true,
+			additive = true,
+		} )
+	end
+	PHUNBASE.SetupFonts()
+	
+	local font_scrH = ScrH()
+	hook.Add("Think", "PHUNBASE_FontThink", function()
+		if font_scrH != ScrH() then
+			font_scrH = ScrH()
+			PHUNBASE.SetupFonts()
+		end
+	end)
 end
 
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)

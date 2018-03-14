@@ -18,6 +18,8 @@ SWEP.ReloadHoldType = "grenade"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 
 SWEP.Primary.Ammo = "grenade"
@@ -66,6 +68,8 @@ SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
 SWEP.FlashlightAttachmentName = "1"
 SWEP.InstantFlashlight = false
+
+SWEP.HL2_IconParams = {dist = 16, mdlOffset = Vector(0,0,0), camOffset = -4}
 
 SWEP.NadeClass = "npc_grenade_frag"
 SWEP.NadeModel = "models/weapons/w_npcnade.mdl"

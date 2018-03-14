@@ -13,9 +13,12 @@ function PHUNBASE.ApproachVector(v, t, c)
 end
 
 if CLIENT then
+	local RTSize
+	function SWEP:InitRT(size)
+		RTSize = size
+		self._ScopeRT = GetRenderTarget("phunbase_scope_rt_"..RTSize, RTSize, RTSize, false) // make sure we dont go further than this, or things get screwed up
+	end
 
-	local RTSize = ScrH() // make sure we dont go further than this, or things get screwed up
-	SWEP._ScopeRT = GetRenderTarget("phunbase_scope_rt", RTSize, RTSize, false)
 	SWEP.ScopeAlpha = 0
 	SWEP.Lens = surface.GetTextureID("phunbase/rt_scope/lens")
 	SWEP.LensMask = Material("phunbase/rt_scope/lensring")
@@ -37,8 +40,6 @@ if CLIENT then
 	local viewdata = {
 		x = 0,
 		y = 0,
-		w = RTSize,
-		h = RTSize,
 		drawviewmodel = false,
 		drawhud = false,
 		dopostprocess = false
@@ -89,7 +90,6 @@ if CLIENT then
 		surface.DrawPoly(b4)
 	end
 	
-	
 	SWEP.LenseTintIdle = Vector(2.0, 2.0, 2.5)
 	SWEP.LenseTintZoom = Vector(0.1, 0.1, 0.15)
 	SWEP.LenseTint = Vector(1, 1, 1)
@@ -104,6 +104,10 @@ if CLIENT then
 	end
 	
 	function SWEP:DrawRT()
+		if !self._ScopeRT then
+			self:InitRT(ScrH())
+		end
+		
 		local oldX, oldY = ScrW(), ScrH()
 		local oldRT = render.GetRenderTarget()
 
@@ -125,6 +129,8 @@ if CLIENT then
 		viewdata.origin = self.Owner:GetShootPos()
 		viewdata.angles = vm_ang
 		viewdata.fov = self.RTScope_Zoom
+		viewdata.w = RTSize
+		viewdata.h = RTSize
 		
 		render.SetRenderTarget(self._ScopeRT)
 		render.SetViewPort(0, 0, RTSize, RTSize)
@@ -172,6 +178,5 @@ if CLIENT then
 		render.SetRenderTarget(oldRT)
 		
 		self:DrawScopeLense()
-		
 	end
 end

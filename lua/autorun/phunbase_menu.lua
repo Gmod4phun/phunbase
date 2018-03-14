@@ -419,6 +419,12 @@ local function PHUNBASE_MENU_PANEL(panel)
 	
 	PHUNBASE_KATKA_PANELPART(panel)
 	
+	local vercheckbtn = vgui.Create("DButton", panel)
+	vercheckbtn:SetText("Check PHUNBASE version")
+	vercheckbtn:SetTextColor(Color(0,120,0,255))
+	vercheckbtn.DoClick = function() PHUNBASE.CheckVersion() end
+	panel:AddItem(vercheckbtn)
+	
 	panel:AddControl("Label", {Text = "HL2 Weapon Settings"})
 	
 	local hl2_replace_checkbox = vgui.Create("DCheckBoxLabel", panel)

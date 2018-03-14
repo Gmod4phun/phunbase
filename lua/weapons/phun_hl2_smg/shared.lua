@@ -18,6 +18,8 @@ SWEP.ReloadHoldType = "smg"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 SWEP.Primary.Ammo = "smg1"
 SWEP.Primary.ClipSize = 45
@@ -109,6 +111,8 @@ SWEP.FireSound = "Weapon_SMG1.Single"
 
 SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
+
+SWEP.HL2_IconParams = {dist = 24, mdlOffset = Vector(0,0,0), camOffset = 0.5}
 
 SWEP.Secondary.Ammo = "SMG1_Grenade"
 SWEP.Secondary.Delay = 1

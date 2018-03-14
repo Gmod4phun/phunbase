@@ -18,6 +18,8 @@ SWEP.ReloadHoldType = "pistol"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 SWEP.Primary.Ammo = "pistol"
 SWEP.Primary.ClipSize = 18
@@ -108,3 +110,5 @@ SWEP.FireSound = "Weapon_Pistol.Single"
 
 SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
+
+SWEP.HL2_IconParams = {dist = 18, mdlOffset = Vector(0,0,0), camOffset = 1.5}

@@ -18,6 +18,8 @@ SWEP.ReloadHoldType = "crossbow"
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
 
+SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
+
 // weapon specific variables
 
 SWEP.Primary.Ammo = "xbowbolt"
@@ -105,6 +107,8 @@ SWEP.FireSound = {"Weapon_Crossbow.Single", "Weapon_Crossbow.BoltFly"}
 
 SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
+
+SWEP.HL2_IconParams = {dist = 42, mdlOffset = Vector(-9,0,0), camOffset = -3.5}
 
 SWEP.DisableReloadBlur = true
 SWEP.ReloadAfterShot = true
