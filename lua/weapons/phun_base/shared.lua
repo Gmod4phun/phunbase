@@ -28,7 +28,8 @@ SWEP.Slot = 1
 SWEP.SlotPos = 1
 SWEP.IconLetter = "1"
 SWEP.DrawAmmo = false
-SWEP.DrawCrosshair = false
+SWEP.DrawCrosshair = true
+SWEP.ShouldDrawDefaultCrosshair = false
 SWEP.SwayScale = 1
 SWEP.BobScale = 1
 
@@ -43,10 +44,12 @@ SWEP.ViewModelFOV = 70
 SWEP.AimViewModelFOV = 70
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
+
 SWEP.HoldType = "pistol"
- 
-SWEP.SprintHoldType = "passive"
 SWEP.SafeHoldType = "passive"
+SWEP.SprintHoldType = "passive"
+SWEP.CrouchHoldType = "pistol"
+SWEP.ReloadHoldType = "pistol"
 
 util.PrecacheModel( SWEP.ViewModel )
 util.PrecacheModel( SWEP.WorldModel )
@@ -164,6 +167,38 @@ SWEP.SpreadAdd_Iron	= 0.2
 SWEP.MoveType = 1
 SWEP.SprintShakeMod = 0.5
 
+function SWEP:DoDrawCrosshair()
+	if GetConVarNumber("phunbase_dev_iron_toggle") == 1 or self.ShouldDrawDefaultCrosshair then
+		return false
+	else
+		return true
+	end
+end
+
+SWEP.HL2KillIcons = {
+	["phun_hl2_ar2"] = "2",
+	["phun_hl2_crossbow"] = "1",
+	["phun_hl2_pistol"] = "-",
+	["phun_hl2_smg"] = "/",
+	["phun_hl2_357"] = ".",
+	["phun_hl2_shotgun"] = "0",
+	["phun_hl2_rpg"] = "3",
+	["phun_hl2_grenade"] = "4",
+	["phun_hl2_bugbait"] = "5",
+	["phun_hl2_crowbar"] = "6",
+	["phun_hl2_stunstick"] = "!",
+	["phun_hl2_slam"] = "*",
+}
+
+function SWEP:InitHL2KillIcons()
+	if CLIENT then
+		local icon = self.HL2KillIcons[self.ClassName]
+		if icon and !killicon.Exists(self.ClassName) then
+			killicon.AddFont(self.ClassName, "HL2MPTypeDeath", icon, Color( 255, 80, 0, 255 ))
+		end
+	end
+end
+
 SWEP.HL2IconLetters = {
 	["phun_hl2_ar2"] = "l",
 	["phun_hl2_crossbow"] = "g",
@@ -178,8 +213,6 @@ SWEP.HL2IconLetters = {
 	["phun_hl2_stunstick"] = "n",
 	["phun_hl2_slam"] = "o",
 }
-
-SWEP.Events = {}
 
 SWEP.UseCustomWepSelectIcon = false
 function SWEP:CustomWepSelectIcon(x, y, wide, tall, alpha) -- copy this to your swep and enable custom wepselecticons on it to draw custom weapon selection icons
@@ -214,13 +247,27 @@ end
 function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
 	local iconcolor = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) + self:Clip1() == 0 and Color(255, 0, 0, alpha) or Color(255, 235, 20, alpha)
 	if self.HL2IconLetters[self:GetClass()] then -- HL2 weapons
-		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_1", x + wide / 2, y + tall * 0.075, iconcolor, TEXT_ALIGN_CENTER)
-		draw.SimpleText(self.HL2IconLetters[self:GetClass()], "PHUNBASE_HL2_SELECTICONS_2", x + wide / 2, y + tall * 0.075, iconcolor, TEXT_ALIGN_CENTER)
-	elseif self.UseCustomWepSelectIcon then
+		draw.Text({
+			text = self.HL2IconLetters[self:GetClass()],
+			font = "PHUNBASE_HL2_SELECTICONS_1",
+			pos = {x + wide/2, y + tall/10},
+			xalign = TEXT_ALIGN_CENTER,
+			yalign = TEXT_ALIGN_TOP,
+			color = iconcolor
+		})
+		draw.Text({
+			text = self.HL2IconLetters[self:GetClass()],
+			font = "PHUNBASE_HL2_SELECTICONS_2",
+			pos = {x + wide/2, y + tall/10},
+			xalign = TEXT_ALIGN_CENTER,
+			yalign = TEXT_ALIGN_TOP,
+			color = iconcolor
+		})
+	elseif self.UseCustomWepSelectIcon and self.CustomWepSelectIcon then
 		self:CustomWepSelectIcon(x, y, wide, tall, alpha)
 	else -- default GMod swep select icon
 		surface.SetDrawColor( 255, 255, 255, alpha )
-		surface.SetTexture( surface.GetTextureID( "weapons/swep" ) )
+		surface.SetTexture( self.WepSelectIcon or surface.GetTextureID( "weapons/swep" ) )
 		-- Borders
 		y = y + 10
 		x = x + 10
@@ -238,9 +285,9 @@ PB_HL2_Weapon_Counterparts = {
 	["weapon_shotgun"] = "phun_hl2_shotgun",
 	//["weapon_rpg"] = "phun_hl2_rpg",
 	["weapon_frag"] = "phun_hl2_grenade",
-	//["weapon_bugbait"] = "phun_hl2_bugbait",
+	["weapon_bugbait"] = "phun_hl2_bugbait",
 	["weapon_crowbar"] = "phun_hl2_crowbar",
-	//["weapon_stunstick"] = "phun_hl2_stunstick",
+	["weapon_stunstick"] = "phun_hl2_stunstick",
 	//["weapon_slam"] = "phun_hl2_slam",
 }
 
@@ -274,6 +321,7 @@ hook.Add("PlayerGiveSWEP", "PB_HL2_Weapons_GiveSWEP", function(ply, wep)
 end)
 
 function SWEP:Initialize()
+	self:InitHL2KillIcons()
 	self:InitRealViewModel()
 	
 	self:SetHoldType(self.HoldType)
@@ -303,6 +351,7 @@ function SWEP:Initialize()
 	self:SetIsWaiting(false)
 	
 	self._deployedShells = {}
+	self.Events = {}
 	
 	if CLIENT then
 		self:_CreateVM()
@@ -454,11 +503,6 @@ function SWEP:Think()
 		if self.ThinkOverrideClient then
 			self:ThinkOverrideClient()
 		end
-		if GetConVarNumber("phunbase_dev_iron_toggle") == 1 then
-			self.DrawCrosshair = true
-		else
-			self.DrawCrosshair = false
-		end
 	end
 
 	for k, v in pairs(self.Events) do
@@ -524,7 +568,7 @@ function SWEP:PrimaryAttack()
 			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
 		end
 		
-		ply:DoAttackEvent()
+		ply:SetAnimation(PLAYER_ATTACK1)
 		
 		if self.ReloadAfterShot then
 			self:DelayedEvent(self.ReloadAfterShotTime or 0.5, function() self:_realReloadStart() end)

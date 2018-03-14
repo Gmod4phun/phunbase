@@ -6,7 +6,7 @@ SWEP.Slot = 1
 SWEP.SlotPos = 1
 SWEP.IconLetter = "1"
 SWEP.DrawAmmo = false
-SWEP.DrawCrosshair = false
+SWEP.DrawCrosshair = true
 SWEP.SwayScale = 1
 SWEP.BobScale = 1
 
@@ -21,10 +21,12 @@ SWEP.ViewModelFOV = 70
 SWEP.AimViewModelFOV = 70
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
-SWEP.HoldType = "pistol"
 
-SWEP.SprintHoldType = "passive"
-SWEP.SafeHoldType = "passive"
+SWEP.HoldType = "melee"
+SWEP.SafeHoldType = "normal"
+SWEP.SprintHoldType = "normal"
+SWEP.CrouchHoldType = "melee"
+SWEP.ReloadHoldType = "melee"
 
 util.PrecacheModel( SWEP.ViewModel )
 util.PrecacheModel( SWEP.WorldModel )
@@ -194,7 +196,7 @@ function SWEP:DoDamage()
 		util.Effect(effect, ed)
 		
 		if self.OnMeleeHit then
-			self:OnMeleeHit()
+			self:OnMeleeHit(tr2)
 		end
 	end
 end
@@ -224,6 +226,7 @@ function SWEP:AdditionalThink()
 		self.NextMeleeAction = nil
 		self:DoDamage()
 		self.RedeployTime = CurTime() + self.MeleeRedeployWaitTime
+		ply:SetAnimation(PLAYER_ATTACK1)
 	end
 	if self.RedeployTime and CurTime() > self.RedeployTime then
 		self.RedeployTime = nil

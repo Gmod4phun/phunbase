@@ -11,7 +11,7 @@ SWEP.ViewModel = "models/weapons/c_shotgun.mdl"
 SWEP.WorldModel = "models/weapons/w_shotgun.mdl"
 
 SWEP.HoldType = "shotgun"
-SWEP.SprintHoldType = "normal"
+SWEP.SprintHoldType = "passive"
 SWEP.CrouchHoldType = "shotgun"
 SWEP.ReloadHoldType = "shotgun"
 

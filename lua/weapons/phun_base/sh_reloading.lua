@@ -17,6 +17,9 @@ function SWEP:_realReloadStart()
 			self:_shotgunReloadBegin()
 		end
 	end
+	if !self.NoReloadAnimation then
+		ply:SetAnimation(PLAYER_RELOAD)
+	end
 end
 
 function SWEP:_reloadBegin()
@@ -26,7 +29,6 @@ function SWEP:_reloadBegin()
 		local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
 		ply:SetAmmo(TotalAmmo + self:Clip1(), self:GetPrimaryAmmoType())
 		self:SetClip1(0)
-		ply:DoReloadEvent()
 	end
 end
 

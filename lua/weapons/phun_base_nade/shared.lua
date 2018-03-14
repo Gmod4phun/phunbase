@@ -6,7 +6,7 @@ SWEP.Slot = 1
 SWEP.SlotPos = 1
 SWEP.IconLetter = "1"
 SWEP.DrawAmmo = false
-SWEP.DrawCrosshair = false
+SWEP.DrawCrosshair = true
 SWEP.SwayScale = 1
 SWEP.BobScale = 1
 
@@ -21,10 +21,12 @@ SWEP.ViewModelFOV = 70
 SWEP.AimViewModelFOV = 70
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
-SWEP.HoldType = "pistol"
 
-SWEP.SprintHoldType = "passive"
+SWEP.HoldType = "grenade"
 SWEP.SafeHoldType = "passive"
+SWEP.SprintHoldType = "passive"
+SWEP.CrouchHoldType = "grenade"
+SWEP.ReloadHoldType = "grenade"
 
 util.PrecacheModel( SWEP.ViewModel )
 util.PrecacheModel( SWEP.WorldModel )
@@ -212,6 +214,7 @@ function SWEP:AdditionalThink()
 		self.ReadyToThrow = false
 		self:CreateNade()
 		self.RedeployTime = CurTime() + self.NadeRedeployWaitTime
+		ply:SetAnimation(PLAYER_ATTACK1)
 	end
 	if self.RedeployTime and CurTime() > self.RedeployTime then
 		self.RedeployTime = nil

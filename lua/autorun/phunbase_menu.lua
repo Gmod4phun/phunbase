@@ -317,7 +317,7 @@ local function PHUNBASE_DEV_MENU_PANEL_UPDATE(panel)
 		return
 	else
 		panel:AddControl("CheckBox", {Label = "Enable DEV Mode?", Command = "phunbase_devmode"})
-		panel:AddControl("CheckBox", {Label = "Toggle Ironsights?", Command = "phunbase_dev_iron_toggle"})
+		panel:AddControl("CheckBox", {Label = "Force toggle Ironsights?", Command = "phunbase_dev_iron_toggle"})
 	end
 	
 	local ply = LocalPlayer()
@@ -439,8 +439,16 @@ local function PHUNBASE_MENU_PANEL(panel)
 		end
 	end
 	panel:AddItem(hl2_replace_checkbox)
-	
-	panel:AddControl("CheckBox", {Label = "Use HL2 crosshair?", Command = "phunbase_hl2_crosshair"})
+
+	local slider = vgui.Create("DNumSlider", panel)
+	slider:SetDecimals(0)
+	slider:SetMin(0)
+	slider:SetMax(2)
+	slider:SetConVar("phunbase_hl2_crosshair")
+	slider:SetValue(GetConVarNumber("phunbase_hl2_crosshair"))
+	slider:SetText("Use HL2 crosshair?")
+	slider:SetTooltip("0 = disable, 1 = HL2 weapons only, 2 = all weapons")
+	panel:AddItem(slider)
 end
 
 local function PHUNBASE_PopulateToolMenu()

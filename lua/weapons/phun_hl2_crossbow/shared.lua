@@ -110,6 +110,7 @@ SWEP.DisableReloadBlur = true
 SWEP.ReloadAfterShot = true
 SWEP.ReloadAfterShotTime = 0.1
 SWEP.XBOWGLOW = true
+SWEP.NoReloadAnimation = true
 
 SWEP.FireMoveMod = 1
 

@@ -150,4 +150,55 @@ if CLIENT then
 		
 	end
 	usermessage.Hook("PHUNBASE_WEAPONGIVE_PLAYER", PHUNBASE_WEAPONGIVE_PLAYER)
+	
+	local function BuildFixedWeaponList() // addition of ScriptedEntityType into weapons list
+		local WEAPONS_ClassToType = {}
+		for _, v in pairs(weapons.GetList()) do
+			if v.ScriptedEntityType != nil then
+				WEAPONS_ClassToType[v.ClassName] = v.ScriptedEntityType
+			end
+		end
+		
+		for _, v in pairs(list.GetForEdit("Weapon")) do
+			v.ScriptedEntityType = WEAPONS_ClassToType[v.ClassName]
+		end
+	end
+	
+	function PHUNBASE.FixWeaponList()
+		timer.Simple(0.5, function() 
+			BuildFixedWeaponList()
+			RunConsoleCommand("spawnmenu_reload")
+			print("PHUNBASE ScriptedEntityClass fix applied!")
+		end)
+	end
+	
+	hook.Add("InitPostEntity", "PHUNBASE_SCRIPTEDENTITYTYPE_FIX", function()
+		PHUNBASE.FixWeaponList()
+	end)
+	
+	/* // does not work yet, since Subrect shader is not creatable from Lua
+	function PHUNBASE.SubrectMaterial(name, file, x, y, w, h)
+		local params = {
+			["$Material"] = file,
+			["$Pos"] = string.format("%d %d", x, y),
+			["$Size"] = string.format("%d %d", w, h)
+		}
+		return CreateMaterial(name, "Subrect", params)
+	end
+	*/
+	
+	/* // wip, still sux ass
+	function PHUNBASE.DrawSubrect(mat, x, y, pU, pV, sU, sV, base, custW, custH)
+		custW = custW or 0
+		custH = custH or 0
+		x, y = x + 1, y + 1
+		local pU1, pV1, sU1, sV1  = pU/base, pV/base, sU/base, sV/base
+		local w, h = math.abs(sU - pU), math.abs(sV - pV)
+		if custW != 0 then w = custW end
+		if custH != 0 then h = custH end
+		surface.SetDrawColor(255, 255, 255, 255)
+		surface.SetMaterial(mat)
+		surface.DrawTexturedRectUV(x - w/2, y - h/2, w, h, (0 - 2.3)/base, (48)/base, (0 + 24 - 2.3)/base, (48 + 24)/base)
+	end
+	*/
 end

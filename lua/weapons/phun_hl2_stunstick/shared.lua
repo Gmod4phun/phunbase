@@ -1,14 +1,14 @@
 SWEP.Base = "phun_base_melee"
 
-SWEP.PrintName = "CROWBAR"
+SWEP.PrintName = "STUNSTICK"
 SWEP.Category = "PHUNBASE | HL2"
 SWEP.Slot = 0
-SWEP.SlotPos = 0
+SWEP.SlotPos = 3
 
 SWEP.ViewModelFOV = 54
 SWEP.AimViewModelFOV = 54
-SWEP.ViewModel = "models/weapons/c_crowbar.mdl"
-SWEP.WorldModel = "models/weapons/w_crowbar.mdl"
+SWEP.ViewModel = "models/weapons/c_stunstick.mdl"
+SWEP.WorldModel = "models/weapons/w_stunbaton.mdl"
 
 SWEP.HoldType = "melee"
 SWEP.SprintHoldType = "normal"
@@ -52,6 +52,15 @@ SWEP.Sequences = {
 	holster = "holster"
 }
 
+SWEP.Sounds = {
+	draw = {
+		{time = 0.1, sound = "Weapon_Stunstick.Activate", callback = function(wep) wep:StunstickSparks() end},
+	},
+	holster = {
+		{time = 0.05, sound = "Weapon_Stunstick.Deactivate", callback = function(wep) wep:StunstickSparks() end},
+	}
+}
+
 SWEP.DeployTime = 0.75
 SWEP.HolsterTime = 0.25
 SWEP.ReloadTime = 0
@@ -64,17 +73,29 @@ SWEP.FlashlightAttachmentName = "1"
 SWEP.InstantFlashlight = false
 
 SWEP.MeleeAttackWaitTime = 0.025
-SWEP.MeleeRedeployWaitTime = 0.4
+SWEP.MeleeRedeployWaitTime = 0.8
 SWEP.MeleeDamage = 25
 SWEP.MeleeDamageType = DMG_CLUB
 SWEP.MeleeRange = 70
 
-SWEP.MeleeSoundHitFlesh = "Weapon_Crowbar.Melee_Hit"
+SWEP.MeleeSoundHitFlesh = "Weapon_Stunstick.Melee_HitWorld"
 SWEP.MeleeSoundHitWorld = "physics/concrete/concrete_impact_bullet1.wav"
-SWEP.MeleeSoundSwing = "Weapon_Crowbar.Single"
+SWEP.MeleeSoundSwing = "Weapon_StunStick.Swing"
 
-function SWEP:OnMeleeHit()
-	self:EmitSound("Flesh.BulletImpact")
+function SWEP:StunstickSparks()
+	local att = self.VM:GetAttachment(self.VM:LookupAttachment("Sparkrear"))
+	local ed = EffectData()
+	ed:SetOrigin(att.Pos)
+	ed:SetNormal(EyeAngles():Forward():GetNormalized())
+	util.Effect("StunstickImpact", ed)
+end
+
+function SWEP:OnMeleeHit(trace)
+	self:EmitSound("Weapon_StunStick.Melee_HitWorld")
+	local ed = EffectData()
+	ed:SetOrigin(trace.HitPos)
+	ed:SetNormal(trace.HitNormal)
+	util.Effect("StunstickImpact", ed)
 end
 
 function SWEP:SecondaryAttack()

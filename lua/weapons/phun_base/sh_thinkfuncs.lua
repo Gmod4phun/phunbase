@@ -50,13 +50,20 @@ function SWEP:_IronThink()
 		return
 	end
 	
-	if self.DisableIronsights then return end
+	if self.DisableIronsights then
+		if self:GetIron() then
+			self:SetIron(false)
+		end
+		return
+	end
+	
 	local ply = self.Owner
 	local empty = self:Clip1() == 0
 	if ((ply:KeyDown(IN_ATTACK2) and !self:GetIron())) and !self:GetIsSprinting() and !self:IsBusy() and !self:IsFlashlightBusy() then
 		self:SetIron(true)
 		if IsFirstTimePredicted() then
 			self:EmitSound("PB_IronIn")
+			ply:SetAnimation(PLAYER_START_AIMING)
 			if self:IsFlashlightBusy() then return end
 			if self.UseIronTransitionAnims then
 				if !self:GetIsDual()then
@@ -72,6 +79,7 @@ function SWEP:_IronThink()
 		self:SetIron(false)
 		if IsFirstTimePredicted() then
 			self:EmitSound("PB_IronOut")
+			ply:SetAnimation(PLAYER_LEAVE_AIMING)
 			if self:GetIsReloading() or self:GetIsHolstering() or self:IsFlashlightBusy() then return end
 			if self.UseIronTransitionAnims then
 				if !self:GetIsDual()then

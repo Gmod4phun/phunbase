@@ -10,10 +10,10 @@ SWEP.AimViewModelFOV = 54
 SWEP.ViewModel = "models/weapons/c_grenade.mdl"
 SWEP.WorldModel = "models/weapons/w_grenade.mdl"
 
-SWEP.HoldType = "revolver"
+SWEP.HoldType = "grenade"
 SWEP.SprintHoldType = "normal"
-SWEP.CrouchHoldType = "pistol"
-SWEP.ReloadHoldType = "pistol"
+SWEP.CrouchHoldType = "grenade"
+SWEP.ReloadHoldType = "grenade"
 
 SWEP.Spawnable = true
 SWEP.AdminSpawnable = true
