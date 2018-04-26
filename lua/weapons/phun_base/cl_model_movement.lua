@@ -57,11 +57,10 @@ function SWEP:performViewmodelMovement()
 		
 		self:processFOVChanges(FT)
 		
-		if !self:GetIsSprinting() then
-			TargetPos = self.BasePos * 1
-			TargetAng = self.BaseAng * 1
-			BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
-		end
+		// base idle pos
+		TargetPos = self.BasePos * 1
+		TargetAng = self.BaseAng * 1
+		BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
 		
 		move = math.Clamp(len / self.Owner:GetWalkSpeed(), 0, 1)
 		
@@ -96,15 +95,14 @@ function SWEP:performViewmodelMovement()
 			if self:GetIsReloading() then
 				TargetPos, TargetAng = self.BasePos * 1, self.BaseAng * 1
 				BlendSpeed = math.Approach(BlendSpeed, 5, FT * 100)
+			elseif self:GetIsDeploying() then
+				TargetPos, TargetAng = self.SprintPos * 1, self.SprintAng * 1
+				BlendSpeed = math.Approach(BlendSpeed, 5, FT * 500)
 			else
-				if self:GetIsDeploying() then
-					TargetPos, TargetAng = self.BasePos * 1, self.BaseAng * 1
-					BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
-				else
-					TargetPos, TargetAng = self.SprintPos * 1, self.SprintAng * 1
-					BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
-				end
+				TargetPos, TargetAng = self.SprintPos * 1, self.SprintAng * 1
+				BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
 			end
+			
 		
 			rs = self.Owner:GetRunSpeed()
 			mul = math.Clamp(len / rs, 0, 1)

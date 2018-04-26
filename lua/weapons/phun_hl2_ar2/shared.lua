@@ -58,6 +58,7 @@ SWEP.NearWallPos = Vector(0, -10, 0)
 SWEP.NearWallAng = Vector(0, 0, 0)
 
 SWEP.PistolSprintSway = true
+SWEP.Chamberable = false
 
 SWEP.Sequences = {
 	idle = "ir_idle",

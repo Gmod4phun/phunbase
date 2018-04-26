@@ -47,6 +47,7 @@ if CLIENT then
 	
 	function SWEP:DrawScopeIris()
 		local mod = math.abs(1 - (self.ScopeAlpha / 255)) + 0.35
+		
 		local size = (RTSize * mod)
 		
 		local pos = RTSize/2 - size/2
@@ -104,7 +105,7 @@ if CLIENT then
 	end
 	
 	function SWEP:DrawRT()
-		if !self._ScopeRT then
+		if !RTSize or !self._ScopeRT then
 			self:InitRT(ScrH())
 		end
 		
@@ -126,7 +127,7 @@ if CLIENT then
 
 		local angDif = PHUNBASE.NormalizeAngles( (vm_ang - EyeAngles()) - (self.AngleDelta or angle) * 3 ) * self.RTScope_ShakeMul
 
-		viewdata.origin = self.Owner:GetShootPos()
+		viewdata.origin = self.Owner:GetShootPos() - Vector(angDif.y, angDif.p, 0) * 0.1
 		viewdata.angles = vm_ang
 		viewdata.fov = self.RTScope_Zoom
 		viewdata.w = RTSize

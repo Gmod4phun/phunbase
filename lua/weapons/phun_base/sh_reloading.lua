@@ -5,13 +5,19 @@ end
 function SWEP:_realReloadStart()
 	local ply = self.Owner
 	if self:IsBusy() or self:IsFlashlightBusy() then return end
-	if !(self:Clip1() < self.Primary.ClipSize) or ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then return end
+	
+	self.HadInClip = self:Clip1()
+	self.WasEmpty = self.HadInClip == 0
+	
+	if !(self.HadInClip < self.Primary.ClipSize + ((!self.WasEmpty and self.Chamberable and !self.ShotgunReload) and 1 or 0)) or ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then return end
 	if self:GetNextPrimaryFire() > CurTime() or self:GetNextSecondaryFire() > CurTime() then return end
+	
 	self:SetIsReloading(true)
 	self:CalcHoldType()
+	
 	if IsFirstTimePredicted() then
 		if !self.ShotgunReload then
-			self.FinishReloadTime = CurTime() + self.ReloadTime
+			self.FinishReloadTime = CurTime() + ((self.WasEmpty and self.ReloadTime_Empty) and self.ReloadTime_Empty or self.ReloadTime)
 			self:_reloadBegin()
 		else
 			self:_shotgunReloadBegin()
@@ -24,10 +30,10 @@ end
 
 function SWEP:_reloadBegin()
 	if IsFirstTimePredicted() then
-		self:PlayVMSequence("reload")
+		self:PlayVMSequence(((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload"))
 		local ply = self.Owner
 		local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
-		ply:SetAmmo(TotalAmmo + self:Clip1(), self:GetPrimaryAmmoType())
+		ply:SetAmmo(TotalAmmo + self.HadInClip, self:GetPrimaryAmmoType())
 		self:SetClip1(0)
 	end
 end
@@ -35,7 +41,7 @@ end
 function SWEP:calcAmmoLeft()
 	local ply = self.Owner
 	local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
-	local MagCapacity = self.Primary.ClipSize
+	local MagCapacity = self.Primary.ClipSize + ((!self.WasEmpty and self.Chamberable) and 1 or 0)
 	if TotalAmmo >= MagCapacity then
 		return MagCapacity
 	else
@@ -47,9 +53,10 @@ function SWEP:_reloadFinish()
 	if IsFirstTimePredicted() then
 		local ply = self.Owner
 		local AmmoToReload = self:calcAmmoLeft()
+		
 		self:SetClip1(AmmoToReload)
 		ply:RemoveAmmo(AmmoToReload, self:GetPrimaryAmmoType())
-		self:PlayVMSequence("idle")
+		
 		if AmmoToReload % 2 == self.Primary.ClipSize % 2 then
 			self:SetDualSide(self.DefaultDualSide)
 		else
@@ -64,33 +71,51 @@ function SWEP:_reloadFinish()
 end
 
 // ShotgunReloadingState - 0 = start, 1 = inserting, 2 = end
+function SWEP:_shotgunReloadAddAmmo(delay)
+	timer.Simple(delay or 0, function() if !IsValid(self) or !IsValid(self.Owner) then return end
+		local TotalAmmo = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
+		if TotalAmmo > 0 then
+			self:SetClip1(self:Clip1() + 1)
+			self.Owner:RemoveAmmo(1, self:GetPrimaryAmmoType())
+		end
+		if TotalAmmo == 1 then // if we plan to load last shell, stop reloading next time
+			self.ShouldStopReloading = true
+		end
+	end)
+end
+
 function SWEP:_shotgunReloadBegin()
-	self.HadInClip = self:Clip1()
-	self.WasEmpty = self.HadInClip == 0
+	local TotalAmmo = self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType())
 	self.ShotgunReloadingState = 0
 	self.ShouldStopReloading = false
 	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_Start_Empty) or (CurTime() + self.ShotgunReloadTime_Start)
 	self:PlayVMSequence(self.WasEmpty and "reload_shell_start_empty" or "reload_shell_start")
-	self.ShotgunInsertedShells = 0
+	
+	// a very special occasion, but it can happen, so it needs to be taken care of
+	if TotalAmmo == 1 and self.ShotgunReload_InsertOnStart and self.WasEmpty and self.ShotgunReload_InsertOnEndEmpty then // only inserts 1 last shell available, starts empty, and should insert shell on both start and end
+		self.ShotgunReloadingState = 2
+		self:DelayedEvent(self.ShotgunReloadTime_Start_EmptyOneAndOnly or 0.1, function() self:_shotgunReloadFinish() end)
+		return
+	end
+	
+	self.ShotgunInsertedShells = self.ShotgunReload_InsertOnStart and 1 or 0
+	if self.ShotgunReload_InsertOnStart then
+		self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertOnStartAmmoWait)
+	end
 end
 
 function SWEP:_shotgunReloadInsert()
 	self.NextShotgunAction = CurTime() + self.ShotgunReloadTime_Insert
 	self:PlayVMSequence("reload_shell_insert")
 	self.ShotgunInsertedShells = self.ShotgunInsertedShells + 1
-	local ply = self.Owner
-	local clip = self:Clip1()
-	local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
-	if TotalAmmo > 0 then
-		self:SetClip1(clip + 1)
-		ply:RemoveAmmo(1, self:GetPrimaryAmmoType())
-	end
-	if TotalAmmo == 1 then // if we plan to load last shell, stop reloading next time
-		self.ShouldStopReloading = true
-	end
+	self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertAmmoWait)
 end
 
 function SWEP:_shotgunReloadFinish()
-	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_End_Empty) or CurTime() + self.ShotgunReloadTime_End
+	self.ShotgunReloadingState = 2
+	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_End_Empty) or (CurTime() + self.ShotgunReloadTime_End)
 	self:PlayVMSequence(self.WasEmpty and "reload_shell_end_empty" or "reload_shell_end")
+	if self.ShotgunReload_InsertOnEnd or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty) then
+		self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertOnEndAmmoWait)
+	end
 end

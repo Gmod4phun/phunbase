@@ -184,6 +184,7 @@ local function PHUNBASE_DEV_MENU_PANEL_ANIMS(panel, wep)
 		GetConVar("phunbase_dev_base_ang_r"):SetFloat(weapons.GetStored(wep:GetClass()).BaseAng.z)
 	end
 	panel:AddItem(restorebtn)
+	restorebtn:DoClick()
 	
 	//IRONPOS
 	panel:AddControl("Label", {Text = "IRONSIGHT SETUP"})
@@ -296,6 +297,7 @@ local function PHUNBASE_DEV_MENU_PANEL_ANIMS(panel, wep)
 		GetConVar("phunbase_dev_iron_ang_r"):SetFloat(weapons.GetStored(wep:GetClass()).IronsightAng.z)
 	end
 	panel:AddItem(restorebtn)
+	restorebtn:DoClick()
 	
 end
 
@@ -425,6 +427,18 @@ local function PHUNBASE_MENU_PANEL(panel)
 	vercheckbtn.DoClick = function() PHUNBASE.CheckVersion() end
 	panel:AddItem(vercheckbtn)
 	
+	local rebuildiconsbtn = vgui.Create("DButton", panel)
+	rebuildiconsbtn:SetText("Rebuild PHUNBASE Spawn Icons")
+	rebuildiconsbtn:SetTextColor(Color(0,0,0,255))
+	rebuildiconsbtn.DoClick = function()
+		for classname, icon in pairs(PHUNBASE.SpawnIcons) do
+			if IsValid(icon) and icon.PB_UpdateSpawnIcon then
+				icon:PB_UpdateSpawnIcon()
+			end
+		end
+	end
+	panel:AddItem(rebuildiconsbtn)
+	
 	panel:AddControl("Label", {Text = "HL2 Weapon Settings"})
 	
 	local hl2_replace_checkbox = vgui.Create("DCheckBoxLabel", panel)
@@ -505,6 +519,13 @@ local function PHUNBASE_CVMT_HUDPaint()
 end
 
 hook.Add("HUDPaint", "PHUNBASE_CVMT_HUDPaint", PHUNBASE_CVMT_HUDPaint)
+
+hook.Add( "PostDrawTranslucentRenderables", "test", function()
+	if PHUNBASE.DEV.ENABLED() then
+		render.SetColorMaterial()
+		render.DrawSphere(LocalPlayer():GetEyeTrace().HitPos, 2, 30, 30, Color(0,255,0,255))
+	end
+end)
 
 end
 

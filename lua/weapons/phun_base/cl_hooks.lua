@@ -82,11 +82,13 @@ local function PHUNBASE_SoundThink()
 				local t = wep.CurSoundTable[wep.CurSoundEntry]
 				local CT = UnPredictedCurTime()
 				
-				if t.time == 0 then t.time = 0.035 end // double sound fix
+				//if t.time == 0 then t.time = 0.035 end // double sound fix
 				
 				if CT >= wep.SoundTime + t.time / wep.SoundSpeed then
-					if t.sound and t.sound ~= "" then
+					if t.sound and t.sound ~= "" and !t.wasplayed then
 						wep:EmitSound(t.sound, 70, 100)
+						t.wasplayed = true
+						wep:DelayedEvent(0.1, function() t.wasplayed = false end) // double sound fix
 					end
 					
 					if t.callback then

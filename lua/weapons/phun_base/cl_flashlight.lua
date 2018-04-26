@@ -52,6 +52,8 @@ hook.Add("Think","PHUNBASE_FLASHLIGHT_THINK_CL",PHUNBASE_FLASHLIGHT_THINK_CL)
 local function PHUNBASE_FLASHLIGHT_CREATE()
 	local ply = LocalPlayer()
 	
+	if !IsValid(ply) then return end
+	
 	if IsValid(ply.PHUNBASE_Flashlight) then
 		ply.PHUNBASE_Flashlight:Remove()
 	end
@@ -89,7 +91,11 @@ local function PHUNBASE_FLASHLIGHT_PLAYANIM()
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
 	if IsValid(ply.PHUNBASE_Flashlight) and IsValid(wep) and wep.PHUNBASEWEP then
-		wep:PlayVMSequence(wep:GetIron() and "lighton_iron" or "lighton")
+		local seq = wep:GetIron() and "lighton_iron" or "lighton"
+		if wep.Sequences[seq] then
+			wep:PlayVMSequence(seq)
+			wep:DelayedEvent(wep.VM:SequenceDuration(wep.VM:LookupSequence(wep.Sequences[seq])), function() wep:PlayIdleAnim() end)
+		end
 	end
 end
 usermessage.Hook("PHUNBASE_FLASHLIGHT_PLAYANIM", PHUNBASE_FLASHLIGHT_PLAYANIM)

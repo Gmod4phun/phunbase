@@ -58,6 +58,7 @@ SWEP.NearWallAng = Vector(0, 0, 0)
 SWEP.PistolSprintSway = true
 
 SWEP.DisableIronsights = true
+SWEP.Chamberable = false
 
 SWEP.Sequences = {
 	idle = "idle01",
@@ -95,7 +96,16 @@ SWEP.Sequences = {
 SWEP.DeployTime = 0.8
 SWEP.HolsterTime = 0.25
 SWEP.ReloadTime = 3.65
-SWEP.DeployTimeAnimOffset = 0.3
+
+SWEP.ShotgunReload = false // shotgun reload does not use speedloader, but reloads single bullets
+SWEP.ShotgunReload_InsertOnStart = true
+SWEP.ShotgunReloadTime_Start = 1.75
+SWEP.ShotgunReloadTime_Start_Empty = 1.75
+SWEP.ShotgunReloadTime_Insert = 1
+SWEP.ShotgunReloadTime_End = 1.3
+SWEP.ShotgunReloadTime_End_Empty = 1.3
+SWEP.ShotgunReloadTime_InsertAmmoWait = 0.95
+SWEP.ShotgunReloadTime_InsertOnStartAmmoWait = 1.7
 
 SWEP.ViewModelMovementScale = 0.8
 

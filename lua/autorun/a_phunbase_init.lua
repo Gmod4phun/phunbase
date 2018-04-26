@@ -1,6 +1,7 @@
 AddCSLuaFile()
 
 PHUNBASE = PHUNBASE or {}
+PHUNBASE.SpawnIcons = PHUNBASE.SpawnIcons or {}
 
 function PHUNBASE.addAmmoType(globalName,prettyName)
 	game.AddAmmoType({name = globalName, dmgtype = DMG_BULLET, tracer = TRACER_NONE})
@@ -136,7 +137,51 @@ hook.Add("OnNPCKilled", "PHUNBASE_NPC_KillFix", function(npc)
 	end
 end)
 
+if SERVER then
+	util.AddNetworkString("PHUNBASE_SELECTWEAPON")
+	util.AddNetworkString("PHUNBASE_FORCEDEPLOYWEAPON")
+	
+	function PHUNBASE.ForceDeployWeapon(ply, class)
+		if !IsValid(ply) then return end
+		if !ply:HasWeapon(class) then return end
+		
+		local wep = ply:GetWeapon(class)
+		
+		if !wep.PHUNBASEWEP then return end
+		
+		net.Start("PHUNBASE_FORCEDEPLOYWEAPON")
+			net.WriteString(class)
+		net.Send(ply)
+		
+		ply:SetActiveWeapon(wep)
+		wep:Deploy()
+	end
+end
+
+function PHUNBASE.SelectWeapon(ply, class)
+	if !IsValid(ply) then return end
+	if !ply:HasWeapon(class) then return end
+	
+	if CLIENT then
+		input.SelectWeapon(ply:GetWeapon(class))
+	end
+	
+	if SERVER then
+		net.Start("PHUNBASE_SELECTWEAPON")
+			net.WriteString(class)
+		net.Send(ply)
+	end
+end
+
 if CLIENT then
+	net.Receive("PHUNBASE_SELECTWEAPON", function()
+		input.SelectWeapon(LocalPlayer():GetWeapon(net.ReadString()))
+	end)
+	
+	net.Receive("PHUNBASE_FORCEDEPLOYWEAPON", function()
+		LocalPlayer():GetWeapon(net.ReadString()):Deploy()
+	end)
+
 	local function PHUNBASE_WEAPONGIVE_PLAYER(um)
 		local ply = LocalPlayer()
 		local wep = um:ReadString()

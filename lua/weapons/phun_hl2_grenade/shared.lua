@@ -23,9 +23,6 @@ SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
 // weapon specific variables
 
 SWEP.Primary.Ammo = "grenade"
-SWEP.Primary.ClipSize = -1
-SWEP.Primary.DefaultClip = 1
-SWEP.Primary.Automatic = true
 
 SWEP.BasePos = Vector(0.000, 0.000, 0.000)
 SWEP.BaseAng = Vector(0.000, 0.000, 0.000)

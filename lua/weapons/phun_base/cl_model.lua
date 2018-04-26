@@ -26,7 +26,7 @@ SWEP.NoStockShells = true
 SWEP.NoStockMuzzle = true
 SWEP.SprintViewNormals = {x = 1, y = 1, z = 1}
 
-local Vec0, Ang0 = Vector(0, 0, 0), Angle(0, 0, 0)
+local Vec0, Ang0, Vec1 = Vector(0, 0, 0), Angle(0, 0, 0), Vector(1, 1, 1)
 local TargetPos, TargetAng, cos1, sin1, tan, ws, rs, mod, EA, EA2, delta, sin2, mul, vm, muz, muz2, tr, att, CT
 local td = {}
 local LerpVector, LerpAngle, Lerp = LerpVector, LerpAngle, Lerp
@@ -53,7 +53,7 @@ function SWEP:scaleMovement(val, mod)
 end
 
 -- since these are often-called functions (and somewhat expensive), we make local references to them to reduce the overhead as much as possible
-local ManipulateBonePosition, ManipulateBoneAngles = reg.Entity.ManipulateBonePosition, reg.Entity.ManipulateBoneAngles
+local ManipulateBonePosition, ManipulateBoneAngles, ManipulateBoneScale = reg.Entity.ManipulateBonePosition, reg.Entity.ManipulateBoneAngles, reg.Entity.ManipulateBoneScale
 
 -- default GMod LerpVector/LerpAngle generate a new vector/angle object every time they're called (wtf garry ???), so I wrote my own to keep garbage generation low
 function PHUNBASE_LerpVector(delta, start, finish)
@@ -422,21 +422,6 @@ function SWEP:CreateClientModel(model)
 	return ent
 end
 
-function SWEP:_IdleAnimThink()
-	if !CLIENT then return end
-	local vm = self.VM
-	local empty = self:Clip1() == 0
-	if vm:GetCycle() > 0.99999 and !string.find(self:GetActiveSequence(), "holster") then
-		if !string.find(self:GetActiveSequence(), "idle") then
-			if self:GetIron() then
-				self:PlayVMSequence((!self:GetIsDual() and !self:GetIsReloading() and empty) and "idle_iron_empty" or "idle_iron")
-			else
-				self:PlayVMSequence((!self:GetIsDual() and !self:GetIsReloading() and empty) and "idle_empty" or "idle")
-			end
-		end
-	end
-end
-
 function SWEP:InitRealViewModel()
 	if CLIENT then
 		self.RealViewModel = LocalPlayer():GetViewModel() // the REAL ViewModel - used for particle positions
@@ -511,6 +496,9 @@ end
 if CLIENT then
 	local function PHUNBASE_UMSG_UPDATEHANDS()
 		local ply = LocalPlayer()
+		
+		if !IsValid(ply) then return end
+		
 		local wep = ply:GetActiveWeapon()
 		
 		if not IsValid(wep) or not wep.PHUNBASEWEP then
@@ -527,7 +515,7 @@ function SWEP:drawViewModel()
 		return
 	end
 	
-	//self:offsetBones() // not today :)
+	self:offsetBones() // not today :)
 	
 	//self:applyOffsetToVM()
 	self:_drawViewModel()
@@ -563,7 +551,7 @@ function SWEP:_drawHands()
 	end
 end
 
-SWEP.BoneManipTable = {}
+// SWEP.BoneManipTable = {}
 
 function SWEP:buildBoneTable()
 	local vm = self.VM
@@ -576,7 +564,7 @@ function SWEP:buildBoneTable()
 			bone = vm:LookupBone(boneName)
 		end
 		
-		self.vmBones[i + 1] = {boneName = boneName, bone = bone, curPos = Vector(0, 0, 0), curAng = Angle(0, 0, 0), targetPos = Vector(0, 0, 0), targetAng = Angle(0, 0, 0)}
+		self.vmBones[i + 1] = {boneName = boneName, bone = bone, curPos = Vector(0, 0, 0), curAng = Angle(0, 0, 0), curScale = Vector(1, 1, 1), targetPos = Vector(0, 0, 0), targetAng = Angle(0, 0, 0)}
 	end
 end
 
@@ -593,8 +581,8 @@ function SWEP:offsetBones()
 	-- if the animation cycle is past reload/draw no offset time of bones, then it falls within the bone offset timeline
 	local FT = FrameTime()
 	
-	local can = !self:IsBusy() and self.EnableBoneManipulation
-	local canModifyBones = true
+	local can = !self:IsBusy()
+	local canModifyBones = false
 	
 	local targetTbl = false
 	
@@ -613,19 +601,25 @@ function SWEP:offsetBones()
 	end
 	
 	if canModifyBones then
+		if !self.vmBones then return end
 		for k, v in pairs(self.vmBones) do
 			if can then
 				local index = targetTbl[v.boneName]
 
 				v.curPos = PHUNBASE_LerpVector(FT * 15, v.curPos, (index and index.pos or Vec0))
-				v.curAng = PHUNBASE_LerpAngle(FT * 15, v.curAng, (index and index.angle or Ang0))
+				v.curAng = PHUNBASE_LerpAngle(FT * 15, v.curAng, (index and index.ang or Ang0))
+				v.curScale = PHUNBASE_LerpVector(FT * 15, v.curScale, (index and index.scale or Vec1))
 			else
 				v.curPos = PHUNBASE_LerpVector(FT * 15, v.curPos, Vec0)
 				v.curAng = PHUNBASE_LerpAngle(FT * 15, v.curAng, Ang0)
+				v.curScale = PHUNBASE_LerpVector(FT * 15, v.curScale, Vec1)
 			end
 			
-			ManipulateBonePosition(vm, v.bone, v.curPos)
-			ManipulateBoneAngles(vm, v.bone, v.curAng)
+			if v.bone and self.EnableBoneManipulation then
+				ManipulateBonePosition(vm, v.bone, v.curPos)
+				ManipulateBoneAngles(vm, v.bone, v.curAng)
+				ManipulateBoneScale(vm, v.bone, v.curScale)
+			end
 		end
 	end
 	

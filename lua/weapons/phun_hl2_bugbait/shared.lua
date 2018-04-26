@@ -127,12 +127,6 @@ function SWEP:OnNadeTossed()
 	nade:SetSaveValue("m_hThrower", ply)
 end
 
-local IdleAfterSeq = {
-	["idle"] = true,
-	["deploy"] = true,
-	["squeeze"] = true
-}
-
 function SWEP:AdditionalThink()
 	local ply = self.Owner
 	if !self.ReadyToThrow and self.NextNadeAction and CurTime() > self.NextNadeAction then
@@ -155,11 +149,5 @@ function SWEP:AdditionalThink()
 		self.RedeployTime = nil
 		self:SetIsWaiting(false)
 		self:Deploy()
-	end
-	if CLIENT then
-		local seq = self:GetActiveSequence()
-		if self.Cycle > 0.99 and !self:GetIsDeploying() and IdleAfterSeq[seq] then
-			self:PlayVMSequence("idle")
-		end
 	end
 end

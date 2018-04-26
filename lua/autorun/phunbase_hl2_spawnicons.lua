@@ -1,6 +1,6 @@
 if CLIENT then
 	spawnmenu.AddContentType("phunbase_weapon_hl2", function(container, obj) // spawn icons for hl2 weapons
-
+	
 		if ( !obj.material ) then return end
 		if ( !obj.nicename ) then return end
 		if ( !obj.spawnname ) then return end

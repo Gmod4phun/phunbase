@@ -87,11 +87,13 @@ SWEP.MeleeSoundHitWorld = "physics/concrete/concrete_impact_bullet1.wav"
 SWEP.MeleeSoundSwing = "Weapon_StunStick.Swing"
 
 function SWEP:StunstickSparks()
-	local att = self.VM:GetAttachment(self.VM:LookupAttachment("Sparkrear"))
-	local ed = EffectData()
-	ed:SetOrigin(att.Pos)
-	ed:SetNormal(EyeAngles():Forward():GetNormalized())
-	util.Effect("StunstickImpact", ed)
+	if CLIENT then
+		local att = self.VM:GetAttachment(self.VM:LookupAttachment("Sparkrear"))
+		local ed = EffectData()
+		ed:SetOrigin(att.Pos)
+		ed:SetNormal(EyeAngles():Forward():GetNormalized())
+		util.Effect("StunstickImpact", ed)
+	end
 end
 
 function SWEP:OnMeleeHit(trace)

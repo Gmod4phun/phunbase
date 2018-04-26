@@ -3,6 +3,7 @@ if !SERVER then return end
 	
 function SWEP:ToggleFlashlight(dontUseAnim)
 	if self:IsBusy() then return end
+	if wep:GetIsSprinting() and !dontUseAnim then return end
 	if self:GetNextFlashlightUse() <= CurTime() then
 		self:SetFlashlightStateOld(self:GetFlashlightState())
 		self:SetFlashlightState(!self:GetFlashlightState())
@@ -38,6 +39,7 @@ hook.Add("PlayerSwitchFlashlight", "PHUNBASE_FLASHLIGHT_SWITCH", PHUNBASE_FLASHL
 
 local function PHUNBASE_FLASHLIGHT_BIND(ply, cmd)
 	local wep = ply:GetActiveWeapon()
+	if !IsValid(wep) then return end
 	if wep.ToggleFlashlight and cmd:GetImpulse() == 100 then
 		wep:ToggleFlashlight(tobool(wep.InstantFlashlight))
 		return

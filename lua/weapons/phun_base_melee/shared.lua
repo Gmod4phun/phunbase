@@ -125,6 +125,8 @@ FX_BLOODSPRAY_GORE = 0x02
 FX_BLOODSPRAY_CLOUD = 0x04
 FX_BLOODSPRAY_ALL = 0xFF
 
+local SP = game.SinglePlayer()
+
 function SWEP:PrimaryAttack()
 	self:InitiateAttack()
 end
@@ -156,19 +158,23 @@ function SWEP:DoDamage()
 		local ed = EffectData()
 		
 		if IsValid(ent) then
-			local dmg = DamageInfo()
-			dmg:SetAttacker(ply)
-			dmg:SetInflictor(self)
-			dmg:SetDamageType(self.MeleeDamageType)
-			dmg:SetDamage(self.MeleeDamage)
-			dmg:SetDamagePosition(tr.HitPos)
-			dmg:SetDamageForce(ply:GetAimVector() * self.MeleeDamage * 200)			
-			ent:TakeDamageInfo(dmg)
+			if SERVER then
+				local dmg = DamageInfo()
+				dmg:SetAttacker(ply)
+				dmg:SetInflictor(self)
+				dmg:SetDamageType(self.MeleeDamageType)
+				dmg:SetDamage(self.MeleeDamage)
+				dmg:SetDamagePosition(tr.HitPos)
+				dmg:SetDamageForce(ply:GetAimVector() * self.MeleeDamage * 200)			
+				ent:TakeDamageInfo(dmg)
+			end
 			
-			if ent:IsNPC() and ent:GetBloodColor() != -1 then
+			if ent:IsNPC() then
+				if SERVER and ent:GetBloodColor() != -1 then
+					ed:SetColor(ent:GetBloodColor())
+					ed:SetFlags(FX_BLOODSPRAY_ALL)
+				end
 				effect = "BloodImpact"
-				ed:SetColor(ent:GetBloodColor())
-				ed:SetFlags(FX_BLOODSPRAY_ALL)
 			end
 			
 			if ent:GetClass() == "npc_hunter" then // white blood color does not exist, needs it's own effect
@@ -182,7 +188,6 @@ function SWEP:DoDamage()
 			filter = ply
 		})
 		
-		
 		ed:SetOrigin(tr2.HitPos)
 		ed:SetStart(tr.StartPos)
 		ed:SetSurfaceProp(tr.SurfaceProps)
@@ -191,9 +196,14 @@ function SWEP:DoDamage()
 		
 		if (IsValid(ent) or ent:IsWorld()) then
 			ed:SetEntity(ent)
-			ed:SetEntIndex(ent:EntIndex())
+			if SERVER then
+				ed:SetEntIndex(ent:EntIndex())
+			end
 		end
-		util.Effect(effect, ed)
+		
+		if (!SP and CLIENT) or SERVER then
+			util.Effect(effect, ed)
+		end
 		
 		if self.OnMeleeHit then
 			self:OnMeleeHit(tr2)
@@ -204,33 +214,32 @@ end
 // https://github.com/ValveSoftware/source-sdk-2013/blob/0d8dceea4310fde5706b3ce1c70609d72a38efdf/sp/src/game/shared/shareddefs.h#L627
 
 function SWEP:InitiateAttack()
-	if SERVER then
-		local ply = self.Owner
-		if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or self:GetIsWaiting() then return end
-		
-		self:SetIsWaiting(true)
-		
-		if IsFirstTimePredicted() then
-			self:PlayVMSequence(ply:KeyDown(IN_ATTACK2) and "attack2" or "attack1")
-			self:EmitSound(self.MeleeSoundSwing, 70, 100)
-			self.NextMeleeAction = CurTime() + self.MeleeAttackWaitTime
-			self.ReadyToAttack = true
-		end
+	local ply = self.Owner
+	
+	if self:GetIsDeploying() or self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
+	
+	if IsFirstTimePredicted() then
+		self:PlayVMSequence(ply:KeyDown(IN_ATTACK2) and "attack2" or "attack1")
 	end
+	
+	local t = CurTime() + self.MeleeAttackWaitTime + self.MeleeRedeployWaitTime
+	self:SetNextPrimaryFire(t)
+	self:SetNextSecondaryFire(t)
+	
+	self:EmitSound(self.MeleeSoundSwing, 70, 100)
+	self.ReadyToAttack = true
+	self.NextMeleeAction = CurTime() + self.MeleeAttackWaitTime
 end
 
 function SWEP:AdditionalThink()
-	local ply = self.Owner
-	if self.ReadyToAttack and self.NextMeleeAction and CurTime() > self.NextMeleeAction then
-		self.ReadyToAttack = false
-		self.NextMeleeAction = nil
-		self:DoDamage()
-		self.RedeployTime = CurTime() + self.MeleeRedeployWaitTime
-		ply:SetAnimation(PLAYER_ATTACK1)
-	end
-	if self.RedeployTime and CurTime() > self.RedeployTime then
-		self.RedeployTime = nil
-		self:SetIsWaiting(false)
+	if (SP and SERVER) or IsFirstTimePredicted() then
+		if self.ReadyToAttack and self.NextMeleeAction and CurTime() > self.NextMeleeAction then
+			self.ReadyToAttack = false
+			self.NextMeleeAction = nil
+			self:DoDamage()
+			self.RedeployTime = CurTime() + self.MeleeRedeployWaitTime
+			self.Owner:SetAnimation(PLAYER_ATTACK1)
+		end
 	end
 end
 

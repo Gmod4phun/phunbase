@@ -50,6 +50,7 @@ SWEP.NearWallPos = Vector(0, -10, 0)
 SWEP.NearWallAng = Vector(0, 0, 0)
 
 SWEP.PistolSprintSway = true
+SWEP.Chamberable = false
 
 SWEP.VElements = {
 	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },

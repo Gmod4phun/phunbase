@@ -106,4 +106,5 @@ function bullet:penetrate(attacker, tr, dmginfo)
 			util.Decal( Decal[tr.MatType] or "Impact.Concrete", trace.HitPos + tr.Normal * 0.1, trace.HitPos - tr.Normal * 2 )
 		end)
 	end
+	
 end

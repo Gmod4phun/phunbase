@@ -30,9 +30,31 @@ function SWEP:_setupAttachmentModel(data)
 		end
 	end
 	
+	-- if data.bonemerge then
+		-- if data.mergeparent and self.VElements[data.mergeparent] then
+			-- data.ent:SetParent(self.VElements[data.mergeparent].ent)
+		-- else
+			-- data.ent:SetParent(self.VM)
+		-- end
+		-- print("Merging ", data.model, "to ", data.ent:GetParent())
+		-- data.ent:AddEffects(EF_BONEMERGE)
+	-- end
+	
+	data.ent:SetupBones()
+end
+
+function SWEP:_setupAttachmentModelsMerge(data)
 	if data.bonemerge then
-		data.ent:SetParent(self.VM)
+		if data.mergeparent and self.VElements[data.mergeparent] then
+			data.ent:SetParent(self.VElements[data.mergeparent].ent)
+		else
+			data.ent:SetParent(self.VM)
+		end
+		//print("Merging ", data.model, "to ", data.ent:GetParent())
 		data.ent:AddEffects(EF_BONEMERGE)
+		if data.mergefast then
+			data.ent:AddEffects(EF_BONEMERGE_FASTCULL)
+		end
 	end
 	
 	data.ent:SetupBones()
@@ -47,6 +69,18 @@ function SWEP:setupAttachmentModels()
 				end
 			else
 				self:_setupAttachmentModel(v)
+			end
+		end
+	end
+	
+	if self.VElements then
+		for k, v in pairs(self.VElements) do
+			if v.models then
+				for key, data in ipairs(v.models) do
+					self:_setupAttachmentModelsMerge(data)
+				end
+			else
+				self:_setupAttachmentModelsMerge(v)
 			end
 		end
 	end

@@ -35,15 +35,15 @@ SWEP.Weight = -1
 SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 
-SWEP.Primary.Ammo = "pistol"
+SWEP.Primary.Ammo = "none"
 SWEP.Primary.ClipSize = -1
 SWEP.Primary.DefaultClip = 1
-SWEP.Primary.Automatic = false
+SWEP.Primary.Automatic = true
 
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
-SWEP.Secondary.Automatic = false
+SWEP.Secondary.Automatic = true
 
 SWEP.PB_VMPOS = Vector(0,0,0) // ViewModel position
 SWEP.PB_VMANG = Angle(0,0,0) // ViewModel angles
@@ -117,6 +117,8 @@ SWEP.NadeRedeployWaitTime = 0.25
 SWEP.ThrowPower = 1
 SWEP.SwitchAfterThrow = false
 
+local SP = game.SinglePlayer()
+
 function SWEP:OnNadeTossed() // called after creating the nade, use when needed
 end
 
@@ -173,75 +175,79 @@ function SWEP:SecondaryAttack()
 	self:InitiateThrow()
 end
 
+// NadeThrowState - 0 = getting ready to throw, 1 = throwing, 2 = redeploying
 function SWEP:InitiateThrow()
 	local ply = self.Owner
-	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or self:GetIsWaiting() then return end
 	
-	if ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		self:EmitSound(self.EmptySoundPrimary)
-		return
-	end
+	if self:GetIsDeploying() or self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or self:GetIsWaiting() then return end
 	
 	self:SetIsWaiting(true)
 	
 	if IsFirstTimePredicted() then
 		self:PlayVMSequence(ply:KeyDown(IN_ATTACK2) and "pullpin_alt" or "pullpin")
-		self.NextNadeAction = CurTime() + self.NadeGetReadyTime
-		self.ReadyToThrow = false
 	end
+	
+	self.NadeThrowState = 0
+	self.NextNadeAction = CurTime() + self.NadeGetReadyTime
 end
 
 function SWEP:AdditionalThink()
-	local ply = self.Owner
-	if !self.ReadyToThrow and self.NextNadeAction and CurTime() > self.NextNadeAction then
-		if !ply:KeyDown(IN_ATTACK) and !ply:KeyDown(IN_ATTACK2) then
-			if ply:KeyDownLast(IN_ATTACK) then
-				self:PlayVMSequence("throw")
-				self.ThrowPower = 1
-				self.WasPrimary = true
-			elseif ply:KeyDownLast(IN_ATTACK2) then
-				self.ThrowPower = 0.2
-				self:PlayVMSequence("underhand")
-				self.WasPrimary = false
-			end
-			self.ReadyToThrow = true
-			self.NextNadeAction = CurTime() + self.NadeThrowWaitTime
-		end
-	end
-	if self.ReadyToThrow and self.NextNadeAction and CurTime() > self.NextNadeAction then
-		self.NextNadeAction = nil
-		self.ReadyToThrow = false
-		self:CreateNade()
-		self.RedeployTime = CurTime() + self.NadeRedeployWaitTime
-		ply:SetAnimation(PLAYER_ATTACK1)
-	end
-	if self.RedeployTime and CurTime() > self.RedeployTime then
-		self.RedeployTime = nil
-		self:SetIsWaiting(false)
-		if !ply:KeyDown(IN_ATTACK) then
-			self.SwitchAfterThrow = true
-		else
-			self.SwitchAfterThrow = false
-		end
-		if !self.SwitchAfterThrow then
-			if ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then
-				local wep = ply.PHUNBASE_LastWeapon
-				if IsValid(wep) then
-					ply:SelectWeapon(wep:GetClass())
+	if (SP and SERVER) or IsFirstTimePredicted() then
+		local ply = self.Owner
+		if self.NadeThrowState == 0 and self.NextNadeAction and CurTime() > self.NextNadeAction then
+			if !ply:KeyDown(IN_ATTACK) and !ply:KeyDown(IN_ATTACK2) then
+				if ply:KeyDownLast(IN_ATTACK) then
+					self:PlayVMSequence("throw")
+					self.ThrowPower = 1
+					self.WasPrimary = true
+				elseif ply:KeyDownLast(IN_ATTACK2) then
+					self.ThrowPower = 0.2
+					self:PlayVMSequence("underhand")
+					self.WasPrimary = false
 				end
-				timer.Simple(self.HolsterTime + 0.05, function() if IsValid(ply) and IsValid(self) then ply:StripWeapon(self:GetClass()) end end)
-			else
-				self:Deploy()
+				
+				self.NadeThrowState = 1
+				self.NextNadeAction = CurTime() + self.NadeThrowWaitTime
 			end
-		else
-			local wep = ply.PHUNBASE_LastWeapon
-			if IsValid(wep) then
-				ply:SelectWeapon(wep:GetClass())
+		end
+		
+		if self.NadeThrowState == 1 and self.NextNadeAction and CurTime() > self.NextNadeAction then
+			self:CreateNade()
+			ply:SetAnimation(PLAYER_ATTACK1)
+			
+			self.NadeThrowState = 2
+			self.NextNadeAction = CurTime() + self.NadeRedeployWaitTime
+		end
+		
+		if self.NadeThrowState == 2 and self.NextNadeAction and CurTime() > self.NextNadeAction then
+			if SERVER then
+				if !self.SwitchAfterThrow then
+					if ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then
+						local wep = ply.PHUNBASE_LastWeapon
+						if IsValid(wep) then
+							//ply:SelectWeapon(wep:GetClass())
+							PHUNBASE.SelectWeapon(self.Owner, wep:GetClass())
+						end
+						timer.Simple(self.HolsterTime + 0.05, function() if IsValid(ply) and IsValid(self) then ply:StripWeapon(self:GetClass()) end end)
+					else
+						//self:Deploy()
+						PHUNBASE.ForceDeployWeapon(self.Owner, self:GetClass())
+					end
+				else
+					local wep = ply.PHUNBASE_LastWeapon
+					if IsValid(wep) then
+						//ply:SelectWeapon(wep:GetClass())
+						PHUNBASE.SelectWeapon(self.Owner, wep:GetClass())
+					end
+					if ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then
+						timer.Simple(self.HolsterTime + 0.05, function() if IsValid(ply) and IsValid(self) then ply:StripWeapon(self:GetClass()) end end)
+					end
+				end
 			end
-			if ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then
-				timer.Simple(self.HolsterTime + 0.05, function() if IsValid(ply) and IsValid(self) then ply:StripWeapon(self:GetClass()) end end)
-			end
+			
+			self.NadeThrowState = nil
+			self.NextNadeAction = nil
+			self:SetIsWaiting(false)
 		end
 	end
 end

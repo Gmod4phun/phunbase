@@ -40,8 +40,9 @@ SWEP.Spawnable = false
 SWEP.AdminSpawnable = false
 
 SWEP.ViewModelFlip = false
-SWEP.ViewModelFOV = 70
-SWEP.AimViewModelFOV = 70
+SWEP.ViewModelFOV = 70 // the viewmodel fov
+SWEP.AimViewModelFOV = 70 // the viewmodel fov when aiming
+
 SWEP.ViewModel = "models/weapons/c_pistol.mdl"
 SWEP.WorldModel = "models/weapons/w_pistol.mdl"
 
@@ -58,17 +59,16 @@ SWEP.Weight = -1
 SWEP.AutoSwitchTo = false
 SWEP.AutoSwitchFrom = false
 
-SWEP.Primary.Ammo = "pistol"
-SWEP.Primary.ClipSize = 30
-SWEP.Primary.DefaultClip = 30
-SWEP.Primary.Automatic = false
-SWEP.Primary.Delay = 0.1
-SWEP.Primary.Damage = 20
-SWEP.Primary.Force = 10
-SWEP.Primary.Bullets = 0
+// weapon specific variables
+SWEP.Primary.Ammo = "phunbase_9mm" // ammo type used by the weapon
+SWEP.Primary.ClipSize = 15 // clip size
+SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
+SWEP.Primary.Automatic = false // automatic or not
+SWEP.Primary.Damage = 20 // damage per bullet
+SWEP.Primary.Delay = 0.1 // fire delay, use 60 divided by RPM when using RoundsPerMinute information about weapon, example 0.1 = 600RPM
+SWEP.Primary.Force = 10 // bullet force, more force = better penetration
+SWEP.Primary.Bullets = 1 // number of bullets per shot
 SWEP.Primary.Tracer = 0
-SWEP.Primary.Spread = 0.02
-SWEP.Primary.Cone = 0.02
 
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
@@ -76,99 +76,168 @@ SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = false
 SWEP.Secondary.Delay = 0.1
 
-SWEP.PB_VMPOS = Vector(0,0,0) // ViewModel position
+SWEP.PB_VMPOS = Vector(0,0,0) // ViewModel position, these are default values, shouldn't touch them
 SWEP.PB_VMANG = Angle(0,0,0) // ViewModel angles
 
-SWEP.BasePos = Vector(0,0,0)
+SWEP.BasePos = Vector(0,0,0) // base viewmodel position
 SWEP.BaseAng = Vector(0,0,0)
 
-SWEP.IronsightPos = Vector(0,0,0)
+SWEP.IronsightPos = Vector(0,0,0) // vm position when aiming
 SWEP.IronsightAng = Vector(0,0,0)
 
-SWEP.SprintPos = Vector(0,0,0)
+SWEP.SprintPos = Vector(0,0,0) // vm position when sprinting
 SWEP.SprintAng = Vector(0,0,0)
 
-SWEP.HolsterPos = Vector(0,0,0)
+SWEP.HolsterPos = Vector(0,0,0) // vm position when holstering
 SWEP.HolsterAng = Vector(0,0,0)
 
-SWEP.NearWallPos = Vector(0,0,0)
+SWEP.NearWallPos = Vector(0,0,0) // vm position when near a wall
 SWEP.NearWallAng = Vector(0,0,0)
 
-SWEP.InactivePos = Vector(4, 0, 0)
+SWEP.InactivePos = Vector(4, 0, 0) // vm position underwater / on ladder
 SWEP.InactiveAng = Vector(-45, 45, 0)
 
-SWEP.BipodPos = Vector(0,0,0)
+SWEP.BipodPos = Vector(0,0,0) // not implemented
 SWEP.BipodAng = Vector(0,0,0)
 
-SWEP.Sequences = {}
-SWEP.Sounds = {}
+SWEP.Sequences = {} // a table of sequences, can be either single anim or a table of anims, for things like multiple fire animations
+/* // example table with sequence names and what they are used for
 
-SWEP.DeployTime = 0.5
-SWEP.HolsterTime = 0.5
-SWEP.ReloadTime = 0.5
-SWEP.DeployTimeAnimOffset = 0
+SWEP.Sequences = {
+	idle = "", // base idle
+	idle_empty = "", // empty idle
+	idle_iron = "", // iron idle
+	idle_iron_empty = "", // empty iron idle
+	fire = "", // fire
+	fire_last = "", // last shot fire
+	fire_iron = "", // fire when aiming
+	fire_iron_last = "", // last shot fire when aiming
+	fire_left = "", // used by dual weapons, left weapon fire
+	fire_left_iron = "", // used by dual weapons, left weapon fire when aiming
+	fire_right = "", // used by dual weapons, right weapon fire
+	fire_right_iron = "", // used by dual weapons, right weapon fire when aiming
+	fire_left_last = "", // used by dual weapons, last shot left weapon fire, if not defined, uses non-last variant
+	fire_left_iron_last = "", // used by dual weapons, last shot left weapon fire when aiming, if not defined, uses non-last variant
+	fire_right_last = "", // used by dual weapons, last shot right weapon fire, if not defined, uses non-last variant
+	fire_right_iron_last = "", // used by dual weapons, last shot right weapon fire when aiming, if not defined, uses non-last variant
+	reload = "", // normal/wet reload
+	reload_empty = "", // empty/dry reload, if not defined, uses normal reload sequence
+	deploy = "", // deploy
+	holster = "", // holster
+	goto_iron = "", // transition to ironsights, used by dual weapons or nondual when ForceGotoTransitionAnims is enabled
+	goto_hip = "", // transition to hip, used by dual weapons or nondual when ForceGotoTransitionAnims is enabled
+	reload_shell_start = "", // starting a shotgun reload
+	reload_shell_start_empty = "", // starting empty shotgun reload
+	reload_shell_insert = "", // inserting a round
+	reload_shell_end = "", // ending shotgun reload
+	reload_shell_end_empty = "", // ending empty shotgun reload
+	sprint_start = "", // starting sprinting
+	sprint_idle = "", // sprinting loop
+	sprint_end = "", // ending sprint
+	lighton = "", // sequence when toggling flashlight, InstantFlashlight must be disabled
+	lighton_iron = "", // sequence when toggling flashlight while aiming, InstantFlashlight must be disabled
+}
 
-SWEP.ShotgunReload = false
-SWEP.ShotgunReloadTime_Start = 1
-SWEP.ShotgunReloadTime_Start_Empty = 1
-SWEP.ShotgunReloadTime_Insert = 0.5
-SWEP.ShotgunReloadTime_End = 1
-SWEP.ShotgunReloadTime_End_Empty = 1
+*/
 
-SWEP.UseHands = true
+SWEP.Sounds = {} // a table of sounds
+/* // example sound table, anim name is the viewmodel animation name, aka the right part of SWEP.Sequences, check example files, can have an optional callback function, where self is the weapon
 
-SWEP.IsDual = false
-SWEP.DefaultDualSide = "left"
+SWEP.Sounds = {
+	glock_deploy = {
+		{time = 0, sound = "GLOCK_DRAW", callback = function(self) end}
+	},
+	glock_reload = {
+		{time = 0, sound = "GLOCK_MAGOUT"},
+		{time = 0.2, sound = "GLOCK_MAGIN"},
+		{time = 0.7, sound = "GLOCK_SLIDE"}
+	}
+}
 
-SWEP.NormalFlashlight = true
-SWEP.CustomFlashlight = false
+*/
 
-SWEP.MuzzleAttachmentName = "muzzle"
-SWEP.MuzzleAttachmentName_L = "muzzle_left"
-SWEP.MuzzleAttachmentName_R = "muzzle_right"
-SWEP.MuzzleEffect = {"smoke_trail"}
+SWEP.DeployTime = 0.5 // time taken to finish deploying the weapon
+SWEP.HolsterTime = 0.5 // time taken to finish holstering the weapon
+SWEP.ReloadTime = 0.5 // time taken to reload, use ReloadTime_Empty for empty reloads
 
-SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0}
-SWEP.ShellAngularVelocity = {Pitch_Min = 0, Pitch_Max = 0, Yaw_Min = 0, Yaw_Max = 0, Roll_Min = 0, Roll_Max = 0}
-SWEP.ShellViewAngleAlign = {Forward = 0, Right = 0, Up = 0}
-SWEP.ShellAttachmentName = "shelleject"
-SWEP.ShellAttachmentName_L = "shelleject_left"
-SWEP.ShellAttachmentName_R = "shelleject_right"
-SWEP.ShellDelay = 0.03
-SWEP.ShellScale = 0.5
-SWEP.ShellModel = "models/weapons/shell.mdl"
-SWEP.ShellEjectVelocity = 75
+SWEP.Chamberable = true // enables room for an extra round in the chamber, should be disabled for revolvers/projectile type weapons
 
-SWEP.FireSound = {} -- can be a string, or a table of sounds
+SWEP.ShotgunReload = false // enables shotgun reload mechanics
+SWEP.ShotgunReload_InsertOnStart = false // should insert a round on reload start
+SWEP.ShotgunReload_InsertOnEnd = false // should insert a round on reload end
+SWEP.ShotgunReload_InsertOnEndEmpty = false // should insert a round on reload end, started by empty reload
 
-SWEP.DisableIronsights = false
-SWEP.DisableReloadBlur = false
-SWEP.ReloadAfterShot = false
-SWEP.ReloadAfterShotTime = 0.5
-SWEP.UseIronTransitionAnims = true
+SWEP.ShotgunReloadTime_Start = 1 // time until inserting begins
+SWEP.ShotgunReloadTime_Start_Empty = 1 // time until inserting begins, started by empty reload
+SWEP.ShotgunReloadTime_Start_EmptyOneAndOnly = 0.25 // very special case only, happens when start and empty end inserts are enabled and there is 1 round available, time to wait between starting and ending the reload
+SWEP.ShotgunReloadTime_Insert = 0.5 // time between the individual inserts
+SWEP.ShotgunReloadTime_End = 1 // time taken for the weapon to stop reloading
+SWEP.ShotgunReloadTime_End_Empty = 1.5 // time for the weapon to stop reloading, started by empty reload
+
+SWEP.ShotgunReloadTime_InsertAmmoWait = 0 // time until ammo changes on insert
+SWEP.ShotgunReloadTime_InsertOnStartAmmoWait = 0.25 // time until ammo changes on reload start, if start insert is enabled
+SWEP.ShotgunReloadTime_InsertOnEndAmmoWait = 0.25 // time until ammo changes on reload end, if end or empty end insert is enabled
+
+SWEP.UseHands = true // use gmod hands or not
+
+SWEP.IsDual = false // is the weapon akimbo
+SWEP.DefaultDualSide = "left" // which side is default, used to determine if left or right gun fires last
+
+SWEP.NormalFlashlight = true // enables the HL2 flashlight
+SWEP.CustomFlashlight = false // enables a ProjectedTexture flashlight, you should disable the Normal one
+SWEP.InstantFlashlight = false // whether turning the flashlight on/off is instant or it has a 0.5 second delay
+
+SWEP.MuzzleAttachmentName = "muzzle" // vm attachment name for muzzleflash
+SWEP.MuzzleAttachmentName_L = "muzzle_left" // used by dual weapons, vm attachment name for muzzleflash, left gun
+SWEP.MuzzleAttachmentName_R = "muzzle_right" // used by dual weapons, vm attachment name for muzzleflash, right gun
+SWEP.MuzzleEffect = {"smoke_trail"} // table of Particle Effect names to use as muzzleflash
+
+SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0} // the directional velocity applied to the shell
+SWEP.ShellAngularVelocity = {Pitch_Min = 0, Pitch_Max = 0, Yaw_Min = 0, Yaw_Max = 0, Roll_Min = 0, Roll_Max = 0} // angular velocity of the shell
+SWEP.ShellViewAngleAlign = {Forward = 0, Right = 0, Up = 0} // adjustment of the shell angles
+SWEP.ShellAttachmentName = "shelleject" // vm attachment name for shell ejection
+SWEP.ShellAttachmentName_L = "shelleject_left" // used by dual weapons, vm attachment name for shell ejection, left gun
+SWEP.ShellAttachmentName_R = "shelleject_right" // used by dual weapons, vm attachment name for shell ejection, right gun
+SWEP.ShellDelay = 0.03 // time taken to create the shell after firing the weapon
+SWEP.ShellScale = 0.5 // scale of the shell model
+SWEP.ShellModel = "models/weapons/shell.mdl" // the shell model
+SWEP.ShellEjectVelocity = 75 // additional velocity in the direction of the shell attachment
+
+SWEP.FireSound = {} // can be a single sound, or a table of sounds
+
+SWEP.DisableIronsights = false // disable the ironsights
+SWEP.DisableReloadBlur = false // disables blur while reloading
+SWEP.ReloadAfterShot = false // automatically reloads the weapon after shooting
+SWEP.ReloadAfterShotTime = 0.5 // delay between firing and starting the reloading
+SWEP.UseIronTransitionAnims = true // enables iron transition sequences to be used
+SWEP.ForceGotoTransitionAnims = false // forces the use of goto_iron and goto_idle sequences instead of a built-in function to decide between individual idle animations
+SWEP.IronTransitionAnimsSpeed = 1 // speed of the transition sequences
+SWEP.DisableIronWhileFiring = false // disables going into ironsights while there is a PrimaryAttack delay
+SWEP.IronTransitionFireWaitTime = 0 // delay between going into ironsights and being able to shoot
+SWEP.OnlyIronFire = false // only allow firing when in ironsights
+SWEP.UnIronAfterShot = false // force back to hip after shooting
+SWEP.UnIronAfterShotTime = 0 // delay to wait between firing and hip
 
 SWEP.EmptySoundPrimary = "PB_WeaponEmpty_Primary"
 SWEP.EmptySoundSecondary = "PB_WeaponEmpty_Secondary"
 
-SWEP.InstantFlashlight = false
-
-SWEP.MouseSensitivityHip = 1
-SWEP.MouseSensitivityIron = 1
+SWEP.MouseSensitivityHip = 1 // mouse sensitivity when not aiming
+SWEP.MouseSensitivityIron = 1 // mouse sensitivity when aiming
 
 // Recoil variables
-SWEP.Recoil	= 0.5
-SWEP.Spread	= 0.02
-SWEP.Spread_Iron = 0.01
-SWEP.SpreadVel = 1.2
-SWEP.SpreadVel_Iron = 0.9
-SWEP.SpreadAdd = 0.3
-SWEP.SpreadAdd_Iron	= 0.2
+SWEP.Recoil	= 0.5 // how much does the weapon kick
+SWEP.Spread	= 0.02 // how precise is the weapon: smaller values = more precise
+SWEP.Spread_Iron = 0.01 // how precise is the weapon when aiming: smaller values = more precise
+SWEP.SpreadVel = 1.2 // additional spread multiplier depending on player velocity
+SWEP.SpreadVel_Iron = 0.9 // additional spread multiplier depending on player velocity when aiming
+SWEP.SpreadAdd = 0.3 // additional spread multiplier
+SWEP.SpreadAdd_Iron	= 0.2 // additional spread multiplier when aiming
 
 SWEP.MoveType = 1
-SWEP.SprintShakeMod = 0.5
+SWEP.SprintShakeMod = 0.5 // how much the viewmodel shakes when sprinting
 
 function SWEP:DoDrawCrosshair()
-	if GetConVarNumber("phunbase_dev_iron_toggle") == 1 or self.ShouldDrawDefaultCrosshair then
+	if self.Owner:GetInfoNum("phunbase_dev_iron_toggle", 0) == 1 or self.ShouldDrawDefaultCrosshair then
 		return false
 	else
 		return true
@@ -214,8 +283,8 @@ SWEP.HL2IconLetters = {
 	["phun_hl2_slam"] = "o",
 }
 
-SWEP.UseCustomWepSelectIcon = false
-function SWEP:CustomWepSelectIcon(x, y, wide, tall, alpha) -- copy this to your swep and enable custom wepselecticons on it to draw custom weapon selection icons
+SWEP.UseCustomWepSelectIcon = false // enables using a custom weapon selection icon
+function SWEP:CustomWepSelectIcon(x, y, wide, tall, alpha) -- copy this to your swep and enable custom wepselecticons to draw custom weapon selection icons
 end
 
 function SWEP:FireAnimationEvent(pos,ang,event,name)
@@ -405,8 +474,20 @@ function SWEP:Deploy()
 	self:SetIsInUse(true)
 	self:SetHolsterDelay(0)
 	self.FinishDeployTime = CurTime() + self.DeployTime
+	
 	self:SetIsDeploying(true)
+	self:DelayedEvent(self.DeployTime, function() self:SetIsDeploying(false) end)
+	
+	if !self.IdleAfterDeployTime then
+		self.IdleAfterDeployTime = self.DeployTime - 0.1
+	end
+	
 	self:PlayVMSequence("deploy")
+	
+	if !self.DisableIdleAfterDeploy then
+		self:DelayedEvent(self.IdleAfterDeployTime, function() self:PlayIdleAnim() end)
+	end
+	
 	self.SwitchWep = nil
 	return true
 end
@@ -422,7 +503,7 @@ function SWEP:Holster(wep)
 		return false
 	end
 
-	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() then
+	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() or self:IsFiring() then
 		return false
 	end
 	
@@ -436,9 +517,10 @@ function SWEP:Holster(wep)
 	if self.SwitchWep and self:GetIsHolstering() and CurTime() > self:GetHolsterDelay() then
 		self:SetIsHolstering(false)
 		self:SetHolsterDelay(0)
+		self:SetIsSprinting(false)
+		self:SetIsInUse(false)
 		if SERVER then
 			self:DestroyFlashlight()
-			self:SetIsInUse(false)
 		end
 		return true
 	end
@@ -495,10 +577,8 @@ end
 
 function SWEP:Think()
 	self.lastOwner = self.Owner
-	//self:_IdleAnimThink()
 	self:_IronThink()
 	self:_SprintThink()
-	self:_DeployThink()
 	self:_NearWallThink()
 	self:_WaterLadderThink()
 	self:_ReloadThink()
@@ -524,19 +604,48 @@ function SWEP:Think()
 	end
 end
 
-function SWEP:DelayedEvent(time, func)
-	table.insert(self.Events, {time = CurTime() + time, func = func})
+function SWEP:DelayedEvent(t, f)
+	local i = #self.Events + 1
+	self.Events[i] = {time = CurTime() + t, func = function() if !IsValid(self) then return end f() end}
+	return i
+end
+
+function SWEP:RemoveDelayedEvent(i)
+	table.remove(self.Events, i)
 end
 
 function SWEP:Cheap_WM_ShootEffects()
 	self.Owner:MuzzleFlash()
 end
 
+function SWEP:IsFiring()
+	return self:GetNextPrimaryFire() > CurTime()
+end
+
+function SWEP:CanFire()
+	if self:IsFiring() or self:GetIsReloading() then
+		return false
+	else
+		return true
+	end
+end
+
+function SWEP:HasEnoughAmmo()
+	local ammo = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
+	local clip = self:Clip1()
+	
+	if (self.UsesAmmoCountLogic and ammo > 0) or (!self.UsesAmmoCountLogic and clip > 0) then
+		return true
+	else
+		return false
+	end
+end
+
 function SWEP:PrimaryAttack()
 	local ply = self.Owner
-	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
+	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or (self.OnlyIronFire and !self:GetIron()) or self.IronTransitionWaiting then return end
 	
-	if self:Clip1() < 1 then
+	if !self:HasEnoughAmmo() then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.EmptySoundPrimary)
 		return
@@ -582,7 +691,11 @@ function SWEP:PrimaryAttack()
 		ply:SetAnimation(PLAYER_ATTACK1)
 		
 		if self.ReloadAfterShot then
-			self:DelayedEvent(self.ReloadAfterShotTime or 0.5, function() self:_realReloadStart() end)
+			self:DelayedEvent(self.ReloadAfterShotTime, function() self:_realReloadStart() end)
+		end
+		
+		if self.UnIronAfterShot then
+			self:DelayedEvent(self.UnIronAfterShotTime, function() self:SetIron(false) end)
 		end
 		
 		self:Cheap_WM_ShootEffects()
@@ -604,18 +717,18 @@ function SWEP:FireAnimLogic()
 	else
 		if self:GetDualSide() == "left" then
 			if self:GetIron() then
-				self:PlayVMSequence(clip == 2 and "fire_left_iron_last" or "fire_left_iron")
+				self:PlayVMSequence(clip == 2 and (self.Sequences.fire_left_iron_last and "fire_left_iron_last" or "fire_left_iron") or "fire_left_iron")
 			else
-				self:PlayVMSequence(clip == 2 and "fire_left_last" or "fire_left")
+				self:PlayVMSequence(clip == 2 and (self.Sequences.fire_left_last and "fire_left_last" or "fire_left") or "fire_left")
 			end
 			self:SetMuzzleAttachmentName(self.MuzzleAttachmentName_L)
 			self:SetShellAttachmentName(self.ShellAttachmentName_L)
 			self:SetDualSide("right")
 		elseif self:GetDualSide() == "right" then
 			if self:GetIron() then
-				self:PlayVMSequence(clip == 1 and "fire_right_iron_last" or "fire_right_iron")
+				self:PlayVMSequence(clip == 1 and (self.Sequences.fire_right_iron_last and "fire_right_iron_last" or "fire_right_iron") or "fire_right_iron")
 			else
-				self:PlayVMSequence(clip == 1 and "fire_right_last" or "fire_right")
+				self:PlayVMSequence(clip == 1 and (self.Sequences.fire_right_last and "fire_right_last" or "fire_right") or "fire_right")
 			end
 			self:SetMuzzleAttachmentName(self.MuzzleAttachmentName_R)
 			self:SetShellAttachmentName(self.ShellAttachmentName_R)
@@ -667,7 +780,8 @@ end
 */
 
 // RECOIL
-SWEP.FireMoveMod = 10
+SWEP.FireMoveMod = 1
+SWEP.FireMoveMod_Iron = 10
 SWEP.LuaViewmodelRecoil = true
 SWEP.FullAimViewmodelRecoil = true
 SWEP.LuaVMRecoilIntensity = 1
@@ -677,9 +791,13 @@ SWEP.LuaVMRecoilAxisMod = {vert = 0, hor = 0, roll = 0, forward = 0, pitch = 0} 
 
 function SWEP:simulateRecoil()
 	if self:GetIron() then
-		self.FireMove = math.Clamp(self.Recoil * self.FireMoveMod, -5, 5)
+		self.FireMove = math.Clamp(self.Recoil * self.FireMoveMod_Iron, -5, 5)
 	else
-		self.FireMove = 0.4
+		if self.FullAimViewmodelRecoil then
+			self.FireMove = math.Clamp(self.Recoil * self.FireMoveMod, -5, 5)
+		else
+			self.FireMove = 0.4
+		end
 	end
 	
 	/*if !self:GetIron() then
@@ -709,6 +827,7 @@ function SWEP:simulateRecoil()
 			self:makeVMRecoil()
 		end
 	end
+	
 end
 
 function SWEP:MakeRecoil(mod)

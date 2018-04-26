@@ -2,7 +2,6 @@ local SP = game.SinglePlayer()
 local vm
 
 function SWEP:PlayVMSequence(anim, speed, cycle)
-	
 	if not anim then
 		return
 	end
@@ -27,9 +26,7 @@ function SWEP:PlayVMSequence(anim, speed, cycle)
 	self:_playAnim(anim, speed, cycle)
 end
 
-function SWEP:_playAnim(anim, speed, cycle, ent)	
-	//if PHUNBASE.DEV.ENABLED() then return end
-	
+function SWEP:_playAnim(anim, speed, cycle, ent)
 	ent = ent or self.VM
 	cycle = cycle or 0
 	speed = speed or 1

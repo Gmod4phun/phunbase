@@ -1,5 +1,6 @@
 // networked stuff is here
 
+/*
 function SWEP:SetIron(b)
 	self:SetNW2Bool("Iron",b)
 end
@@ -158,4 +159,38 @@ end
 
 function SWEP:GetIsInUse()
 	return self:GetNW2Bool("IsInUse")
+end
+*/
+
+// DATATABLES
+
+function SWEP:SetupDataTables()
+	self:NetworkVar( "Bool", 0, "Iron" )
+	self:NetworkVar( "Bool", 1, "IsDual" )
+	self:NetworkVar( "String", 0, "DualSide" )
+	self:NetworkVar( "Bool", 2, "IsReloading" )
+	self:NetworkVar( "Bool", 3, "IsSprinting" )
+	self:NetworkVar( "Bool", 4, "IsDeploying" )
+	self:NetworkVar( "Bool", 5, "IsHolstering" )
+	self:NetworkVar( "Bool", 6, "IsNearWall" )
+	self:NetworkVar( "Bool", 7, "IsUnderwater" )
+	self:NetworkVar( "Bool", 8, "IsOnLadder" )
+	self:NetworkVar( "Float", 0, "HolsterDelay" )
+	self:NetworkVar( "String", 1, "ActiveSequence" )
+	self:NetworkVar( "String", 2, "MuzzleAttachmentName" )
+	self:NetworkVar( "String", 3, "ShellAttachmentName" )
+	self:NetworkVar( "Bool", 9, "FlashlightState" )
+	self:NetworkVar( "Bool", 10, "FlashlightStateOld" )
+	self:NetworkVar( "Float", 1, "NextFlashlightUse" )
+	self:NetworkVar( "Bool", 11, "IsWaiting" )
+	self:NetworkVar( "Bool", 12, "IsInUse" )
+	self:NetworkVar( "Float", 2, "NextMeleeAction" )
+end
+
+function SWEP:IsBusy()
+	return self:GetIsReloading() or self:GetIsDeploying() or self:GetIsHolstering() or self:GetIsUnderwater() or self:GetIsOnLadder()
+end
+
+function SWEP:IsFlashlightBusy()
+	return self:GetNextFlashlightUse() > CurTime()
 end

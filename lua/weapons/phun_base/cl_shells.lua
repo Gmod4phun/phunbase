@@ -44,6 +44,15 @@ end
 local vm, att, pos, ang, velocity, align, shellEnt
 local shellTable = {}
 
+function SWEP:_makeParticle(particlename, attname)
+	local realVM = self.RealViewModel
+	local att = realVM:LookupAttachment(attname)
+	
+	if att then
+		ParticleEffectAttach(particlename, PATTACH_POINT_FOLLOW, realVM, att)
+	end
+end
+
 function SWEP:_makeShell()
 	if self.Owner:ShouldDrawLocalPlayer() then
 		return

@@ -66,12 +66,7 @@ function PHUNBASE.shells:make(pos, ang, velocity, shellTable)
 	velocity = velocity or Vector()
 	
 	local wep = shellTable.wep
-	local vm, realVM = wep.vm, wep.RealViewModel
-	local att = realVM:LookupAttachment(wep:GetShellAttachmentName() )
-	
-	if att then
-		ParticleEffectAttach("shelleject_spark", PATTACH_POINT_FOLLOW, realVM, att)
-	end
+	wep:_makeParticle("shelleject_spark", wep:GetShellAttachmentName())
 	
 	local ent = ClientsideModel(shellTable.model, RENDERGROUP_BOTH) 
 	ent:SetPos(pos)
@@ -93,13 +88,6 @@ function PHUNBASE.shells:make(pos, ang, velocity, shellTable)
 		ent:GetForward() * math.random(shellTable.velmin_Y,shellTable.velmax_Y) +
 		ent:GetRight() * math.random(shellTable.velmin_R,shellTable.velmax_R)
 	))
-	
-	/*timer.Simple(0.5, function() // shell effects and shit
-		if ent then
-			ParticleEffectAttach("wispy_smoke", PATTACH_ABSORIGIN_FOLLOW, ent, 0)
-			ParticleEffectAttach("wispy_smoke", PATTACH_ABSORIGIN_FOLLOW, ent, 0)
-		end
-	end)*/
 
 	ent._sound = shellTable.sound
 	ent._soundPlayed = false

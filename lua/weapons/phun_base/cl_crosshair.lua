@@ -10,7 +10,7 @@ surface.CreateFont( "PHUNBASE_HL2_CROSSHAIR", { // hl2 crosshair
 } )
 
 local hl2_cross_font = "PHUNBASE_HL2_CROSSHAIR"
-local ammo, hp, alpha, crossalpha = 0, 0, 0, 0
+local ammo, hp, alpha, crossalpha, cross_bwalpha = 0, 0, 0, 0, 0
 
 local gap = 30
 local col_yel = Color(255, 208, 64)
@@ -33,6 +33,12 @@ function SWEP:DrawHUD()
 	local perc_ammo = ammo
 	local col_cur = ColorAlpha(col_yel, alpha)
 	local col_cross = ColorAlpha(Color(255,255,255), crossalpha)
+	
+	cross_bwalpha = Lerp(FT*10, cross_bwalpha, self.ShouldDrawBWCross and 255 or 0)
+	local cross_gap = 0 + (cross_bwalpha/5)
+	
+	local cross_bwin = Color(255,255,255, cross_bwalpha)
+	local cross_bwout = Color(0,0,0, math.Clamp(cross_bwalpha-50, 0, 255))
 	
 	if (self.HL2IconLetters[self:GetClass()] and GetConVar("phunbase_hl2_crosshair"):GetInt() == 1) or GetConVar("phunbase_hl2_crosshair"):GetInt() == 2 then
 	
@@ -83,6 +89,29 @@ function SWEP:DrawHUD()
 			yalign = TEXT_ALIGN_CENTER,
 			color = col_cur
 		})
-		
+
 	end
+	
+	if (!self.HL2IconLetters[self:GetClass()] and GetConVar("phunbase_hl2_crosshair"):GetInt() == 1) then
+		draw.OutlinedRect(cross_bwin, cross_bwout, x - cross_gap, y, 18, 3, 1)
+		draw.OutlinedRect(cross_bwin, cross_bwout, x + cross_gap, y, 18, 3, 1)
+		draw.OutlinedRect(cross_bwin, cross_bwout, x, y - cross_gap, 3, 18, 1)
+		draw.OutlinedRect(cross_bwin, cross_bwout, x, y + cross_gap, 3, 18, 1)
+	end
+	
+	if self:GetIron() or self:GetIsReloading() or self:GetIsSprinting() or self:GetIsNearWall() or self:GetIsUnderwater() or self:GetIsOnLadder() or (self:GetIsDeploying() and self:GetIsSprinting())or self:GetIsHolstering() then
+		self.ShouldDrawBWCross = false
+	else
+		self.ShouldDrawBWCross = true
+	end
+end
+
+function draw.OutlinedRect(clrIn, clrOut, x, y, w, h, thick)
+	local win, hin = w - thick, h - thick
+
+	surface.SetDrawColor( clrOut )
+	surface.DrawRect( x - w/2, y - h/2, w, h )
+	
+	surface.SetDrawColor( clrIn )
+	surface.DrawRect( x - win/2 + 0.5, y - hin/2 + 0.5, win - 0.5, hin - 0.5 )
 end

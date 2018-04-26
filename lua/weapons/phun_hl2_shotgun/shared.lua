@@ -117,7 +117,7 @@ SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
 SWEP.ShellAttachmentName = "1"
 SWEP.ShellDelay = 0.45
 SWEP.ShellScale = 1
-SWEP.ShellModel = "models/phunbase/shells/12g_slug_open.mdl"
+SWEP.ShellModel = "models/phunbase/shells/12g_bird_open.mdl"
 SWEP.ShellSound = "PB_SHELLIMPACT_SHOTGUN"
 SWEP.ShellEjectVelocity = 10
 
