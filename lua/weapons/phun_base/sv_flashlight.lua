@@ -3,7 +3,7 @@ if !SERVER then return end
 	
 function SWEP:ToggleFlashlight(dontUseAnim)
 	if self:IsBusy() then return end
-	if wep:GetIsSprinting() and !dontUseAnim then return end
+	if self:GetIsSprinting() and !dontUseAnim then return end
 	if self:GetNextFlashlightUse() <= CurTime() then
 		self:SetFlashlightStateOld(self:GetFlashlightState())
 		self:SetFlashlightState(!self:GetFlashlightState())

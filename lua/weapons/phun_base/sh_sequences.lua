@@ -59,6 +59,7 @@ function SWEP:_playAnim(anim, speed, cycle, ent)
 	if cycle > 0 then ent:SetCycle(cycle) else ent:SetCycle(0) end
 	ent:SetPlaybackRate(speed)
 	self.RealViewModel:SendViewModelMatchingSequence(self.RealViewModel:LookupSequence(foundAnim))
+	self.RealSequence = anim
 end
 
 function SWEP:PlayMuzzleFlashEffect()

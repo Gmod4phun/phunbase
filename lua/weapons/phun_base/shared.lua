@@ -158,7 +158,13 @@ SWEP.Sounds = {
 
 SWEP.DeployTime = 0.5 // time taken to finish deploying the weapon
 SWEP.HolsterTime = 0.5 // time taken to finish holstering the weapon
-SWEP.ReloadTime = 0.5 // time taken to reload, use ReloadTime_Empty for empty reloads
+SWEP.ReloadTime = 0.5 // time taken to reload
+//SWEP.ReloadTime_Empty = SWEP.ReloadTime // time taken to reload, when empty, if not specified, is the same as ReloadTime
+
+SWEP.IdleAfterReload = true // should the weapon play idle sequence after a non-empty reload
+//SWEP.IdleAfterReloadTime = SWEP.ReloadTime // time to play the idle sequence, if enabled
+
+SWEP.IdleAfterFire = true // should the weapon play idle sequence after the fire sequence ends
 
 SWEP.Chamberable = true // enables room for an extra round in the chamber, should be disabled for revolvers/projectile type weapons
 

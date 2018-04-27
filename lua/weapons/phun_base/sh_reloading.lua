@@ -18,6 +18,7 @@ function SWEP:_realReloadStart()
 	if IsFirstTimePredicted() then
 		if !self.ShotgunReload then
 			self.FinishReloadTime = CurTime() + ((self.WasEmpty and self.ReloadTime_Empty) and self.ReloadTime_Empty or self.ReloadTime)
+			self.ReloadIdleSnapTime = CurTime() + (self.IdleAfterReloadTime and self.IdleAfterReloadTime or self.ReloadTime)
 			self:_reloadBegin()
 		else
 			self:_shotgunReloadBegin()

@@ -1,6 +1,6 @@
 
 function SWEP:PlayIdleAnim()
-	local empty = self:Clip1() == 0
+	local empty = (self:Clip1() == 0) and !self:GetIsReloading()
 	local anim = self:GetIron() and "idle_iron" or "idle"
 	if empty then
 		anim = anim.."_empty"
@@ -26,6 +26,9 @@ function SWEP:_ReloadThink()
 		if !self.ShotgunReload then // normal magazine reload think logic
 			if CurTime() >= self.FinishReloadTime and self:GetIsReloading() then
 				self:_reloadFinish()
+				self:PlayIdleAnim()
+			end
+			if CurTime() >= self.ReloadIdleSnapTime and self:GetIsReloading() and self.IdleAfterReload and !self.WasEmpty then
 				self:PlayIdleAnim()
 			end
 		else // shotgun reload think logic
@@ -78,11 +81,15 @@ function SWEP:_IronThink()
 	if CLIENT then // idle anim stuff
 		if self:GetIron() then
 			if self:CanFire() and self.Cycle > 0.99 and !self:GetIsWaiting() then
-				self:PlayIdleAnim()
+				if !(self.RealSequence:find("fire") and !self.IdleAfterFire) then
+					self:PlayIdleAnim()
+				end
 			end
 		else
 			if self:CanFire() and self.Cycle > 0.99 and !self:GetIsWaiting() and !self:IsBusy() and !self:GetIsSprinting() and (self.Sequences.sprint_end and (self.Sequence:lower() != self.Sequences.sprint_end:lower()) or true) then
-				self:PlayIdleAnim()
+				if !(self.RealSequence:find("fire") and !self.IdleAfterFire) then
+					self:PlayIdleAnim()
+				end
 			end
 		end
 	end
