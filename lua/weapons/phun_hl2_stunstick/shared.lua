@@ -86,6 +86,9 @@ SWEP.MeleeSoundHitFlesh = "Weapon_Stunstick.Melee_HitWorld"
 SWEP.MeleeSoundHitWorld = "physics/concrete/concrete_impact_bullet1.wav"
 SWEP.MeleeSoundSwing = "Weapon_StunStick.Swing"
 
+SWEP.CanUseUnderwater = true
+SWEP.CanUseOnLadder = true
+
 function SWEP:StunstickSparks()
 	if CLIENT then
 		local att = self.VM:GetAttachment(self.VM:LookupAttachment("Sparkrear"))

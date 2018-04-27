@@ -839,7 +839,7 @@ end
 function SWEP:MakeRecoil(mod)
 	local mod = 1 //self:GetRecoilModifier(mod)
 	
-	if !self.Owner:IsPlayer() then return end
+	if !self.Owner:IsPlayer() or self.Owner:InVehicle() then return end
 	
 	if (game.SinglePlayer() and SERVER) or (not game.SinglePlayer() and CLIENT) then
 		ang = self.Owner:EyeAngles()

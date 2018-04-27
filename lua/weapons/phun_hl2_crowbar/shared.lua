@@ -77,6 +77,9 @@ SWEP.MeleeSoundHitFlesh = "Weapon_Crowbar.Melee_Hit"
 SWEP.MeleeSoundHitWorld = "physics/concrete/concrete_impact_bullet1.wav"
 SWEP.MeleeSoundSwing = "Weapon_Crowbar.Single"
 
+SWEP.CanUseUnderwater = true
+SWEP.CanUseOnLadder = true
+
 function SWEP:OnMeleeHit()
 	self:EmitSound("Flesh.BulletImpact")
 end

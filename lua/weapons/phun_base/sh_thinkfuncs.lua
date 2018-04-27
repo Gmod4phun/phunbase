@@ -254,8 +254,8 @@ end
 function SWEP:_WaterLadderThink()
 	local ply = self.Owner
 	if SERVER then
-		self:SetIsUnderwater(ply:WaterLevel() >= 3)
-		self:SetIsOnLadder(ply:GetMoveType() == MOVETYPE_LADDER)
+		self:SetIsUnderwater(ply:WaterLevel() >= 3 and !self.CanUseUnderwater)
+		self:SetIsOnLadder(ply:GetMoveType() == MOVETYPE_LADDER and !self.CanUseOnLadder)
 	end
 end
 

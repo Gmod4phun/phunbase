@@ -76,6 +76,9 @@ SWEP.NadeRedeployWaitTime = 0.25
 
 SWEP.SwitchAfterThrow = false
 
+SWEP.CanUseUnderwater = true
+SWEP.CanUseOnLadder = true
+
 function SWEP:InitiateThrow()
 	local ply = self.Owner
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or self:GetIsWaiting() then return end
