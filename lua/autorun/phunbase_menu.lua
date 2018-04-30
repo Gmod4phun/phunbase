@@ -469,6 +469,27 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetText("Use HL2 crosshair?")
 	slider:SetTooltip("0 = disable, 1 = HL2 weapons only, 2 = all weapons")
 	panel:AddItem(slider)
+	
+	panel:AddControl("Label", {Text = "PHUNBASE Settings"})
+	
+	local cb = vgui.Create("DCheckBoxLabel", panel)
+	cb:SetText("Enable RELOAD Blur?")
+	cb:SetConVar("phunbase_blur_reload")
+	panel:AddItem(cb)
+	
+	cb = vgui.Create("DCheckBoxLabel", panel)
+	cb:SetText("Enable IRON Blur?")
+	cb:SetConVar("phunbase_blur_iron")
+	panel:AddItem(cb)
+
+	local slider = vgui.Create("DNumSlider", panel)
+	slider:SetDecimals(2)
+	slider:SetMin(0)
+	slider:SetMax(20)
+	slider:SetConVar("phunbase_blur_iron_mod")
+	slider:SetValue(GetConVarNumber("phunbase_blur_iron_mod"))
+	slider:SetText("IRON Blur Modifier")
+	panel:AddItem(slider)
 end
 
 local function PHUNBASE_PopulateToolMenu()

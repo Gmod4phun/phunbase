@@ -30,7 +30,7 @@ function SWEP:performViewmodelMovement()
 	AngleTable.p = EA.P
 	AngleTable.y = EA.Y
 	delta = AngleTable - self.OldDelta
-		
+	
 	self.OldDelta.p = EA.p
 	self.OldDelta.y = EA.y
 	
@@ -64,6 +64,10 @@ function SWEP:performViewmodelMovement()
 		
 		move = math.Clamp(len / self.Owner:GetWalkSpeed(), 0, 1)
 		
+		if self:GetIsSprinting() and !self:GetIsReloading() and self.NoSprintVMMovement then
+			move = 0
+		end
+		
 		if self:GetIron() then		
 			TargetPos = self.IronsightPos * 1
 			TargetAng = self.IronsightAng * 1
@@ -80,7 +84,7 @@ function SWEP:performViewmodelMovement()
 				TargetAng[1] = TargetAng[1] + tan * 0.5 * move 
 				TargetAng[2] = TargetAng[2] + cos1 * 0.25 * move 
 				TargetAng[3] = TargetAng[3] + sin1 * 0.25 * move 
-						
+				
 				TargetPos[1] = TargetPos[1] + sin1 * 0.05 * move 
 				TargetPos[2] = TargetPos[2] + tan * 0.1 * move 
 				TargetPos[3] = TargetPos[3] + tan * 0.05 * move 

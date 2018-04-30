@@ -69,6 +69,7 @@ SWEP.Primary.Delay = 0.1 // fire delay, use 60 divided by RPM when using RoundsP
 SWEP.Primary.Force = 10 // bullet force, more force = better penetration
 SWEP.Primary.Bullets = 1 // number of bullets per shot
 SWEP.Primary.Tracer = 0
+SWEP.Primary.TakePerShot = 1 // ammo to take after each shot
 
 SWEP.Secondary.Ammo = "none"
 SWEP.Secondary.ClipSize = -1
@@ -158,6 +159,9 @@ SWEP.Sounds = {
 
 SWEP.DeployTime = 0.5 // time taken to finish deploying the weapon
 SWEP.HolsterTime = 0.5 // time taken to finish holstering the weapon
+SWEP.HolsterAnimSpeed = 1 // the speed of holster sequence, use -1 to play backwards
+SWEP.HolsterAnimStartCyc = 0 // the starting cycle of holster sequence, use 1 to start at the end
+
 SWEP.ReloadTime = 0.5 // time taken to reload
 //SWEP.ReloadTime_Empty = SWEP.ReloadTime // time taken to reload, when empty, if not specified, is the same as ReloadTime
 
@@ -198,6 +202,7 @@ SWEP.MuzzleAttachmentName_L = "muzzle_left" // used by dual weapons, vm attachme
 SWEP.MuzzleAttachmentName_R = "muzzle_right" // used by dual weapons, vm attachment name for muzzleflash, right gun
 SWEP.MuzzleEffect = {"smoke_trail"} // table of Particle Effect names to use as muzzleflash
 
+SWEP.NoShells = false
 SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0} // the directional velocity applied to the shell
 SWEP.ShellAngularVelocity = {Pitch_Min = 0, Pitch_Max = 0, Yaw_Min = 0, Yaw_Max = 0, Roll_Min = 0, Roll_Max = 0} // angular velocity of the shell
 SWEP.ShellViewAngleAlign = {Forward = 0, Right = 0, Up = 0} // adjustment of the shell angles
@@ -224,8 +229,16 @@ SWEP.OnlyIronFire = false // only allow firing when in ironsights
 SWEP.UnIronAfterShot = false // force back to hip after shooting
 SWEP.UnIronAfterShotTime = 0 // delay to wait between firing and hip
 
+SWEP.CockAfterShot = false // does the weapon need to be cocked after each shot
+SWEP.CockAfterShotTime = 0.5 // the time it takes to cock the weapon
+SWEP.MakeShellOnCock = true // should the shell be ejected on the cock rather than on the attack
+
+SWEP.AutoCockStart = false // should the weapon automatically cock itself after each shot, needs CockAfterShot enabled
+SWEP.AutoCockStartTime = 0.5 // the time after the weapon starts automatically cocking
+
 SWEP.EmptySoundPrimary = "PB_WeaponEmpty_Primary"
 SWEP.EmptySoundSecondary = "PB_WeaponEmpty_Secondary"
+SWEP.DryFireSound = "PB_WeaponDryFire"
 
 SWEP.MouseSensitivityHip = 1 // mouse sensitivity when not aiming
 SWEP.MouseSensitivityIron = 1 // mouse sensitivity when aiming
@@ -241,6 +254,7 @@ SWEP.SpreadAdd_Iron	= 0.2 // additional spread multiplier when aiming
 
 SWEP.MoveType = 1
 SWEP.SprintShakeMod = 0.5 // how much the viewmodel shakes when sprinting
+SWEP.NoSprintVMMovement = false // disables vm movement when sprinting, useful for custom sprinting animations
 
 function SWEP:DoDrawCrosshair()
 	if self.Owner:GetInfoNum("phunbase_dev_iron_toggle", 0) == 1 or self.ShouldDrawDefaultCrosshair then
@@ -369,7 +383,7 @@ PB_HL2_Weapon_Counterparts = {
 	["weapon_smg1"] = "phun_hl2_smg",
 	["weapon_357"] = "phun_hl2_357",
 	["weapon_shotgun"] = "phun_hl2_shotgun",
-	//["weapon_rpg"] = "phun_hl2_rpg",
+	["weapon_rpg"] = "phun_hl2_rpg",
 	["weapon_frag"] = "phun_hl2_grenade",
 	["weapon_bugbait"] = "phun_hl2_bugbait",
 	["weapon_crowbar"] = "phun_hl2_crowbar",
@@ -451,6 +465,8 @@ function SWEP:Initialize()
 	
 	self.IronRollOffset = 0
 	self.RealIronRoll = 0
+	
+	self.RealSequence = ""
 end
 
 function SWEP:Deploy()
@@ -647,9 +663,15 @@ function SWEP:HasEnoughAmmo()
 	end
 end
 
-function SWEP:PrimaryAttack()
+function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I dont want to copy shitton of code just for sequences
 	local ply = self.Owner
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or (self.OnlyIronFire and !self:GetIron()) or self.IronTransitionWaiting then return end
+	
+	if self.ShouldBeCocking then
+		self:SetNextPrimaryFire(CurTime() + 0.25)
+		self:EmitSound(self.DryFireSound)
+		return
+	end
 	
 	if !self:HasEnoughAmmo() then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
@@ -663,11 +685,11 @@ function SWEP:PrimaryAttack()
 		if type(self.FireSound) == "table" then
 			for _, snd in pairs(self.FireSound) do
 				if type(snd) == "string" then
-					self:EmitSound(snd)
+					self.Weapon:EmitSound(snd)
 				end
 			end			
 		elseif type(self.FireSound) == "string" then
-			self:EmitSound(self.FireSound)
+			self.Weapon:EmitSound(self.FireSound)
 		end
 		
 		if self.PrimaryAttackOverride then
@@ -677,9 +699,9 @@ function SWEP:PrimaryAttack()
 			self:StopViewModelParticles()
 		end
 		
-		self:FireAnimLogic()
+		self:FireAnimLogic(isSecondary)
 		self:PlayMuzzleFlashEffect()
-		if !self.NoShells then
+		if !((self.CockAfterShot and self.MakeShellOnCock) or self.NoShells) then
 			self:MakeShell()
 		end
 		self:MakeRecoil()
@@ -704,21 +726,35 @@ function SWEP:PrimaryAttack()
 			self:DelayedEvent(self.UnIronAfterShotTime, function() self:SetIron(false) end)
 		end
 		
+		if self.CockAfterShot then
+			self.ShouldBeCocking = true
+		end
+		
+		if self.CockAfterShot and self.AutoCockStart then
+			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
+		end
+		
 		self:Cheap_WM_ShootEffects()
 	end
 	
-	self:TakePrimaryAmmo(1)
-	
+	self:TakePrimaryAmmo(self.Primary.TakePerShot)
 end
 
-function SWEP:FireAnimLogic()
+function SWEP:PrimaryAttack()
+	self:_primaryAttack()
+end
+
+function SWEP:FireAnimLogic(isSecondary)
 	local clip = self:Clip1() // clip before firing anim played
 	local last = clip == 1
+	
+	local suffix = isSecondary and "_secondary" or ""
+	
 	if !self:GetIsDual() then
 		if self:GetIron() then
-			self:PlayVMSequence(last and "fire_iron_last" or "fire_iron")
+			self:PlayVMSequence(last and "fire_iron_last"..suffix or "fire_iron"..suffix)
 		else
-			self:PlayVMSequence(last and "fire_last" or "fire")
+			self:PlayVMSequence(last and "fire_last"..suffix or "fire"..suffix)
 		end
 	else
 		if self:GetDualSide() == "left" then

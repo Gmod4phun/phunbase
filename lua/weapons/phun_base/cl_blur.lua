@@ -1,5 +1,9 @@
 if !CLIENT then return end
 
+CreateClientConVar("phunbase_blur_reload", "1", true, false)
+CreateClientConVar("phunbase_blur_iron", "1", true, false)
+CreateClientConVar("phunbase_blur_iron_mod", "1", true, false)
+
 SWEP.BlurAmount = 0
 
 local blurMaterial = Material("pp/toytown-top")
@@ -7,17 +11,17 @@ blurMaterial:SetTexture("$fbtexture", render.GetScreenEffectTexture())
 
 function SWEP:drawBlur()
 	local x, y = ScrW(), ScrH()
-
-	cam.Start2D()
-		surface.SetMaterial(blurMaterial)
-		surface.SetDrawColor(255, 255, 255, 255)
-		
-		for i = 1, self.BlurAmount do
-			render.UpdateScreenEffectTexture()
-			surface.DrawTexturedRect(0, 0, x, y * 2)
-		end
-
-	cam.End2D()
+	
+	if GetConVar("phunbase_blur_reload"):GetInt() > 0 then
+		cam.Start2D()
+			surface.SetMaterial(blurMaterial)
+			surface.SetDrawColor(255, 255, 255, 255)
+			for i = 1, self.BlurAmount do
+				render.UpdateScreenEffectTexture()
+				surface.DrawTexturedRect(0, 0, x, y * 2)
+			end
+		cam.End2D()
+	end
 end
 
 function SWEP:processBlur()
@@ -76,9 +80,11 @@ hook.Add("RenderScreenspaceEffects", "PHUNBASE_ToyTown_Blur", PHUNBASE_ToyTown_B
 local function GetNewMotionBlurValues( h, v, f, r )
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
-	if wep.TT_Blur then 
+	if wep.TT_Blur and GetConVar("phunbase_blur_iron"):GetInt() > 0 then
+		local blurMod = GetConVar("phunbase_blur_iron_mod"):GetFloat()
 		if wep.TT_Blur > 0 then
 			f = f + wep.TT_Blur * 0.01
+			f = f * blurMod
 			return h, v, f, r
 		end
 	end

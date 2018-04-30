@@ -125,6 +125,7 @@ end
 
 PHUNBASE:addRegularSound("PB_WeaponEmpty_Primary", "weapons/pistol/pistol_empty.wav")
 PHUNBASE:addRegularSound("PB_WeaponEmpty_Secondary", "weapons/pistol/pistol_empty.wav")
+PHUNBASE:addRegularSound("PB_WeaponDryFire", "phunbase/weapon_dryfire.wav")
 
 PHUNBASE:addRegularSound("PB_IronIn", "phunbase/ironsight_on.wav", 50)
 PHUNBASE:addRegularSound("PB_IronOut", "phunbase/ironsight_off.wav", 50)

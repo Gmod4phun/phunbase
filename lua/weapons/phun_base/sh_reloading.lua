@@ -1,10 +1,39 @@
 function SWEP:Reload()
-	self:_realReloadStart()
+	if IsFirstTimePredicted() then
+		if self.CockAfterShot and self.ShouldBeCocking then
+			if !self:IsFiring() and !self:IsBusy() and !self.IsCocking then
+				self:Cock()
+			end
+		else
+			self:_realReloadStart()
+		end
+	end
+end
+
+function SWEP:Cock()
+	if CLIENT then return end
+	
+	if !self.ShouldBeCocking then return end
+	
+	self:SetIsWaiting(true)
+	self.ShouldBeCocking = false
+	self.IsCocking = true
+	self:DelayedEvent(self.CockAfterShotTime, function() self.IsCocking = false end)
+	self:DelayedEvent(self.CockAfterShotTime + 0.1, function() self:SetIsWaiting(false) end)
+	
+	local CT = CurTime()
+	self:SetNextPrimaryFire(CT + self.CockAfterShotTime + 0.05)
+	self:SetNextSecondaryFire(CT + self.CockAfterShotTime + 0.05)
+	
+	self:PlayVMSequence("cock")
+	if !self.NoShells and self.MakeShellOnCock then
+		self:MakeShell()
+	end
 end
 
 function SWEP:_realReloadStart()
 	local ply = self.Owner
-	if self:IsBusy() or self:IsFlashlightBusy() then return end
+	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or ply:KeyDown(IN_ATTACK) or self.IsCocking or self.ShouldBeCocking then return end
 	
 	self.HadInClip = self:Clip1()
 	self.WasEmpty = self.HadInClip == 0
@@ -24,15 +53,16 @@ function SWEP:_realReloadStart()
 			self:_shotgunReloadBegin()
 		end
 	end
-	if !self.NoReloadAnimation then
+	
+	if !(self.NoReloadAnimation or (self:GetHoldType() == "shotgun" and self.ShotgunReload)) then // shotgun holdtype on shotgun reloads can glitch sounds, gmod bug
 		ply:SetAnimation(PLAYER_RELOAD)
 	end
 end
 
 function SWEP:_reloadBegin()
+	local ply = self.Owner
 	if IsFirstTimePredicted() then
 		self:PlayVMSequence(((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload"))
-		local ply = self.Owner
 		local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
 		ply:SetAmmo(TotalAmmo + self.HadInClip, self:GetPrimaryAmmoType())
 		self:SetClip1(0)

@@ -26,10 +26,15 @@ SWEP.Primary.ClipSize = 6
 SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
 SWEP.Primary.Automatic = false
 SWEP.Primary.Damage = 22
-SWEP.Primary.Delay = 0.75
+SWEP.Primary.Delay = 0.33
 SWEP.Primary.Force = 5
 SWEP.Primary.Bullets = 7
 SWEP.Primary.Tracer = 0
+SWEP.Primary.TakePerShot = 1
+
+SWEP.Secondary.Delay = 0.5
+SWEP.Secondary.Bullets = 12
+SWEP.Secondary.TakePerShot = 2
 
 // Recoil variables
 SWEP.Recoil	= 0.45
@@ -39,9 +44,6 @@ SWEP.SpreadVel = 1.2
 SWEP.SpreadVel_Iron = 0.9
 SWEP.SpreadAdd = 0.3
 SWEP.SpreadAdd_Iron	= 0.2
-
-SWEP.Secondary.Delay = 0.9
-SWEP.Secondary.Bullets = 12
 
 SWEP.BasePos = Vector(0,0,0)
 SWEP.BaseAng = Vector(0,0,0)
@@ -68,10 +70,10 @@ SWEP.Sequences = {
 	idle_iron = "idle01",
 	idle_iron_empty = "idle01empty",
 	fire = "fire01",
-	fire_secondary = "altfire",
-	fire_secondary_iron = "altfire",
-	fire_last = "fire01",
 	fire_iron = "fire01",
+	fire_secondary = "altfire",
+	fire_iron_secondary = "altfire",
+	fire_last = "fire01",
 	fire_iron_last = "fire01",
 	fire_left = "fire",
 	fire_left_iron = "fire",
@@ -89,19 +91,22 @@ SWEP.Sequences = {
 	reload_shell_insert = "reload2",
 	reload_shell_end = "reload3",
 	reload_shell_end_empty = "reload3",
-	reload_shell_pump = "pump"
+	cock = "pump"
 }
 
 SWEP.Sounds = {
 	reload2 = {
 		{time = 0, sound = "Weapon_Shotgun.Reload"},
 	},
-	fire01 = {
-		{time = 0.3, sound = "Weapon_Shotgun.Special1", callback = function(wep) wep:PlayVMSequence("reload_shell_pump") end},
+	pump = {
+		{time = 0, sound = "Weapon_Shotgun.Special1"},
 	},
-	altfire = {
-		{time = 0.4, sound = "Weapon_Shotgun.Special1", callback = function(wep) wep:PlayVMSequence("reload_shell_pump") end},
-	},
+	-- fire01 = {
+		-- {time = 0.3, sound = "Weapon_Shotgun.Special1", callback = function(wep) wep:PlayVMSequence("cock") end},
+	-- },
+	-- altfire = {
+		-- {time = 0.4, sound = "Weapon_Shotgun.Special1", callback = function(wep) wep:PlayVMSequence("cock") end},
+	-- },
 }
 
 SWEP.DeployTime = 0.45
@@ -115,7 +120,7 @@ SWEP.ShellVelocity = {X = 60, Y = 0, Z = -40}
 SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw_Max = 1000, Roll_Min = -200, Roll_Max = 100}
 SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
 SWEP.ShellAttachmentName = "1"
-SWEP.ShellDelay = 0.45
+SWEP.ShellDelay = 0.15
 SWEP.ShellScale = 1
 SWEP.ShellModel = "models/phunbase/shells/12g_bird_open.mdl"
 SWEP.ShellSound = "PB_SHELLIMPACT_SHOTGUN"
@@ -139,105 +144,54 @@ SWEP.ShotgunReloadTime_Insert = 0.4
 SWEP.ShotgunReloadTime_End = 0.4
 SWEP.ShotgunReloadTime_End_Empty = 0.4
 
+SWEP.CockAfterShot = true
+SWEP.CockAfterShotTime = 0.55
+SWEP.MakeShellOnCock = true
+
+SWEP.AutoCockStart = true
+SWEP.AutoCockStartTime = 0.33
+
+SWEP.ReloadAfterShot = false
+
+function SWEP:_setupOrigValues()
+	if !self.Primary.Delay_Orig then self.Primary.Delay_Orig = self.Primary.Delay end
+	if !self.Primary.Bullets_Orig then self.Primary.Bullets_Orig = self.Primary.Bullets end
+	if !self.Primary.TakePerShot_Orig then self.Primary.TakePerShot_Orig = self.Primary.TakePerShot end
+	if !self.FireSound_Orig then self.FireSound_Orig = self.FireSound end
+	if !self.FireSeq_Orig then self.FireSeq_Orig = self.Sequences.fire end
+	if !self.FireSeqIron_Orig then self.FireSeqIron_Orig = self.Sequences.fire_iron end
+end
+
+function SWEP:_setupPrimaryValues()
+	self.Primary.Delay = self.Primary.Delay_Orig
+	self.Primary.Bullets = self.Primary.Bullets_Orig
+	self.Primary.TakePerShot = self.Primary.TakePerShot_Orig
+	self.FireSound = self.FireSound_Orig
+end
+
+function SWEP:_setupSecondaryValues()
+	self.Primary.Delay = self.Secondary.Delay
+	self.Primary.Bullets = self.Secondary.Bullets
+	self.Primary.TakePerShot = self.Secondary.TakePerShot
+	self.FireSound = self.FireSoundSecondary
+end
+
 function SWEP:PrimaryAttack()
-	local ply = self.Owner
-	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
+	self:_setupOrigValues()
+	self:_setupPrimaryValues()
 	
-	if self:Clip1() < 1 then
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		self:SetNextSecondaryFire(CurTime() + 0.25)
-		self:EmitSound(self.EmptySoundPrimary)
-		return
-	end
-	
-	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-	self:SetNextSecondaryFire(CurTime() + self.Primary.Delay)
-	
-	if IsFirstTimePredicted() then
-		self:EmitSound(self.FireSound)
-		
-		self:_FireBullets() 
-		self:StopViewModelParticles()
-		
-		if self:GetIron() then
-			self:PlayVMSequence("fire_iron")
-		else
-			self:PlayVMSequence("fire")
-		end
-		
-		self:PlayMuzzleFlashEffect()
-		self:MakeShell()
-		self:MakeRecoil()
-		
-		if CLIENT then
-			self:simulateRecoil()
-		end
-		
-		if SP and SERVER then
-			if !self.Owner:IsPlayer() then return end
-			SendUserMessage("PHUNBASE_Recoil", ply)
-			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
-		end
-		
-		ply:DoAttackEvent()
-		
-		self:Cheap_WM_ShootEffects()
-	end
-	
-	self:TakePrimaryAmmo(1)
-	
+	self:_primaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	local ply = self.Owner
-	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
-	
-	if self:Clip1() < 1 then
-		self:SetNextPrimaryFire(CurTime() + 0.25)
-		self:SetNextSecondaryFire(CurTime() + 0.25)
-		self:EmitSound(self.EmptySoundPrimary)
-		return
-	end
-	
+	self:_setupOrigValues()
 	if self:Clip1() == 1 then
-		self:PrimaryAttack()
-		return
+		self:_setupPrimaryValues()
+		self._IsSecondary = false
+	else
+		self:_setupSecondaryValues()
+		self._IsSecondary = true
 	end
 	
-	self:SetNextPrimaryFire(CurTime() + self.Secondary.Delay)
-	self:SetNextSecondaryFire(CurTime() + self.Secondary.Delay)
-	
-	if IsFirstTimePredicted() then
-		self:EmitSound(self.FireSoundSecondary)
-		
-		self:_FireBullets(self.Secondary.Bullets) 
-		self:StopViewModelParticles()
-		
-		if self:GetIron() then
-			self:PlayVMSequence("fire_secondary_iron")
-		else
-			self:PlayVMSequence("fire_secondary")
-		end
-		
-		self:PlayMuzzleFlashEffect()
-		self:MakeShell()
-		self:MakeRecoil()
-		
-		if CLIENT then
-			self:simulateRecoil()
-		end
-		
-		if SP and SERVER then
-			if !self.Owner:IsPlayer() then return end
-			SendUserMessage("PHUNBASE_Recoil", ply)
-			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
-		end
-		
-		ply:DoAttackEvent()
-		
-		self:Cheap_WM_ShootEffects()
-	end
-	
-	self:TakePrimaryAmmo(2)
-	
+	self:_primaryAttack(self._IsSecondary)
 end

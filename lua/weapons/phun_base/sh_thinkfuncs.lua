@@ -229,6 +229,13 @@ function SWEP:_SprintThink()
 		if self:GetIsSprinting() and (self:IsBusy()) then
 			self.WasSprinting = false
 		end
+		
+		if self:GetIsSprinting() then
+			if self.RealSequence == "sprint_idle" and self.Cycle > 0.99 then // sprint idle loop
+				self:PlayVMSequence("sprint_idle")
+			end
+		end
+		
 	end
 end
 
@@ -260,7 +267,7 @@ function SWEP:_WaterLadderThink()
 end
 
 function SWEP:_SoundTableThink()
-	if SERVER and game.SinglePlayer() then
+	/*if SERVER and game.SinglePlayer() then
 		if self.CurSoundTable then
 			local t = self.CurSoundTable[self.CurSoundEntry]
 			
@@ -283,4 +290,5 @@ function SWEP:_SoundTableThink()
 			end
 		end
 	end
+	*/
 end
