@@ -112,4 +112,6 @@ SWEP.FireSound = "Weapon_Pistol.Single"
 SWEP.NormalFlashlight = true
 SWEP.CustomFlashlight = false
 
+SWEP.CanUseUnderwater = true
+
 SWEP.HL2_IconParams = {dist = 18, mdlOffset = Vector(0,0,0), camOffset = 1.5}

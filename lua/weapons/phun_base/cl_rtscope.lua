@@ -13,6 +13,21 @@ function PHUNBASE.ApproachVector(v, t, c)
 end
 
 if CLIENT then
+
+	function PHUNBASE.DrawTexturedRectRotatedPoint(x, y, w, h, rot, x0, y0)
+		local c = math.cos(math.rad(rot))
+		local s = math.sin(math.rad(rot))
+
+		local newx = y0 * s - x0 * c
+		local newy = y0 * c + x0 * s
+
+		surface.DrawTexturedRectRotated(x + newx, y + newy, w, h, rot)
+	end
+	
+	function PHUNBASE.DrawCenterRotatedRect(x, y, w, h, rot)
+		PHUNBASE.DrawTexturedRectRotatedPoint(x + w/2, y + h/2, w, h, rot, 0, 0)
+	end
+
 	local RTSize
 	function SWEP:InitRT(size)
 		RTSize = size
@@ -35,6 +50,7 @@ if CLIENT then
 	SWEP.RTScope_DrawIris = true
 	SWEP.RTScope_DrawParallax = true
 	SWEP.RTScope_ShakeMul = 15
+	SWEP.RTScope_Rotate = 0
 
 	local angle = Angle(0,0,0)
 	local viewdata = {
@@ -119,10 +135,10 @@ if CLIENT then
 		local att = self.VM:GetAttachment( self.VM:LookupAttachment(self.MuzzleAttachmentName) or 1)
 		local vm_pos, vm_ang = att.Pos, att.Ang
 		
-		if wep.RTScope_Align then
-			vm_ang:RotateAroundAxis(vm_ang:Right(), wep.RTScope_Align.p )
-			vm_ang:RotateAroundAxis(vm_ang:Up(), wep.RTScope_Align.y )
-			vm_ang:RotateAroundAxis(vm_ang:Forward(), wep.RTScope_Align.r )
+		if self.RTScope_Align then
+			vm_ang:RotateAroundAxis(vm_ang:Right(), self.RTScope_Align.p )
+			vm_ang:RotateAroundAxis(vm_ang:Up(), self.RTScope_Align.y )
+			vm_ang:RotateAroundAxis(vm_ang:Forward(), self.RTScope_Align.r )
 		end
 
 		local angDif = PHUNBASE.NormalizeAngles( (vm_ang - EyeAngles()) - (self.AngleDelta or angle) * 3 ) * self.RTScope_ShakeMul
@@ -163,7 +179,9 @@ if CLIENT then
 
 			surface.SetDrawColor(255, 255, 255, 255 - self.ScopeAlpha)
 			surface.SetMaterial(self.RTScope_Reticle)
-			surface.DrawTexturedRect(0, 0, RTSize, RTSize)
+			//surface.DrawTexturedRect(0, 0, RTSize, RTSize)
+			//PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, 0)
+			PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, self.RTScope_Rotate)
 			
 			if self.RTScope_DrawIris then
 				self:DrawScopeIris()

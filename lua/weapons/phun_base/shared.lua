@@ -256,6 +256,17 @@ SWEP.MoveType = 1
 SWEP.SprintShakeMod = 0.5 // how much the viewmodel shakes when sprinting
 SWEP.NoSprintVMMovement = false // disables vm movement when sprinting, useful for custom sprinting animations
 
+SWEP.RTScope_Material = Material("phunbase/rt_scope/pb_scope_rt") // the default material for RT scope to draw on, used in the Scope RT model
+SWEP.RTScope_Enabled = false // enable or disable the RT scope
+SWEP.RTScope_Zoom = 6 // the zoom of the scope
+SWEP.RTScope_Align = Angle(0,0,0) // Angle to align/rotate the scope properly if needed. THIS AFFECTS RT ONLY. Disable iris/parallax if you see only black, and align the scope, then reenable iris/parallax
+SWEP.RTScope_Lense = Material("phunbase/rt_scope/optic_lense") // the default material for the lense (dirty glass) of the scope
+SWEP.RTScope_Reticle = Material("phunbase/reticles/scope_crosshair_simple") // the default material for the reticle of the scope
+SWEP.RTScope_Rotate = 0 // how much to rotate the reticle/lense if needed. THIS DOES NOT AFFECT THE RT
+SWEP.RTScope_DrawIris = true // should an iris effect be drawn
+SWEP.RTScope_DrawParallax = true // should a parallax effect be drawn
+SWEP.RTScope_ShakeMul = 15 // how strong is the parallax effect
+
 function SWEP:DoDrawCrosshair()
 	if self.Owner:GetInfoNum("phunbase_dev_iron_toggle", 0) == 1 or self.ShouldDrawDefaultCrosshair then
 		return false
@@ -388,20 +399,27 @@ PB_HL2_Weapon_Counterparts = {
 	["weapon_bugbait"] = "phun_hl2_bugbait",
 	["weapon_crowbar"] = "phun_hl2_crowbar",
 	["weapon_stunstick"] = "phun_hl2_stunstick",
-	//["weapon_slam"] = "phun_hl2_slam",
+	["weapon_slam"] = "phun_hl2_slam",
 }
 
 hook.Add("PlayerCanPickupWeapon", "PB_HL2_Weapons_CanPickup", function(ply, wep)
 	if PHUNBASE_HL2_REPLACE_DEFAULT then
 		local new = PB_HL2_Weapon_Counterparts[wep:GetClass()]
 		local tbl = weapons.GetStored(new)
-		if new then
-			if ply:HasWeapon(new) then
-				ply:GiveAmmo(tbl.Primary.ClipSize, tbl.Primary.Ammo)
-			else
-				ply:Give(new)
+		if new and tbl then
+			if IsFirstTimePredicted() then
+				local clipsize = tbl.Primary.ClipSize
+				if !clipsize then clipsize = 1 end // if not defined, probably -1, just give 1 ammo
+				if ply:HasWeapon(new) then
+					if !wep.didgiveammo then
+						ply:GiveAmmo(clipsize, tbl.Primary.Ammo)
+					end
+				else
+					ply:Give(new)
+				end
+				wep.didgiveammo = true
+				wep:Remove()
 			end
-			wep:Remove()
 			return false
 		end
 	end
@@ -469,6 +487,13 @@ function SWEP:Initialize()
 	self.RealSequence = ""
 end
 
+function SWEP:DeployAnimLogic()
+	local clip = self:Clip1()
+	local empty = clip < 1
+	
+	self:PlayVMSequence((empty and self.Sequences.deploy_empty) and "deploy_empty" or "deploy")
+end
+
 function SWEP:Deploy()
 	self:InitRealViewModel() // needed both in Init and Deploy, so that picked up weapons dont error
 	self:_UpdateHands()
@@ -504,7 +529,7 @@ function SWEP:Deploy()
 		self.IdleAfterDeployTime = self.DeployTime - 0.1
 	end
 	
-	self:PlayVMSequence("deploy")
+	self:DeployAnimLogic()
 	
 	if !self.DisableIdleAfterDeploy then
 		self:DelayedEvent(self.IdleAfterDeployTime, function() self:PlayIdleAnim() end)
@@ -512,6 +537,13 @@ function SWEP:Deploy()
 	
 	self.SwitchWep = nil
 	return true
+end
+
+function SWEP:HolsterAnimLogic()
+	local clip = self:Clip1()
+	local empty = clip < 1
+	
+	self:PlayVMSequence((empty and self.Sequences.holster_empty) and "holster_empty" or "holster", self.HolsterAnimSpeed or 1, self.HolsterAnimStartCyc or 0)
 end
 
 function SWEP:Holster(wep)
@@ -549,7 +581,7 @@ function SWEP:Holster(wep)
 
 	if IsFirstTimePredicted() then
 		if self:GetActiveSequence() != "holster" then
-			self:PlayVMSequence("holster", self.HolsterAnimSpeed or 1, self.HolsterAnimStartCyc or 0)
+			self:HolsterAnimLogic()
 		end
 	end
 	

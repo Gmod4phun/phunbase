@@ -119,6 +119,8 @@ SWEP.NoReloadAnimation = true
 
 SWEP.FireMoveMod = 1
 
+SWEP.CanUseUnderwater = true
+
 function SWEP:FireCrossbowBolt()
 	if CLIENT then return end
 	local ply = self.Owner

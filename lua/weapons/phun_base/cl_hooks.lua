@@ -87,6 +87,8 @@ local function PHUNBASE_SoundThink()
 				if CT >= wep.SoundTime + t.time / wep.SoundSpeed then
 					if t.sound and t.sound ~= "" and !t.wasplayed then
 						wep:EmitSound(t.sound, 70, 100)
+						//print(wep.Sequence)
+						//print(t.sound)
 						t.wasplayed = true
 						wep:DelayedEvent(0.1, function() t.wasplayed = false end) // double sound fix
 					end

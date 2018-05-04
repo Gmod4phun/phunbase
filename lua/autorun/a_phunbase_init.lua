@@ -173,6 +173,20 @@ function PHUNBASE.SelectWeapon(ply, class)
 	end
 end
 
+function PHUNBASE.HL2_SLAM_BEAM_Fix()
+	for k, v in pairs(ents.FindByClass("beam")) do // removes SLAM beams that no longer have a parent
+		if !IsValid(v:GetParent()) then
+			v:Remove()
+		end
+	end
+end
+
+hook.Add("EntityRemoved", "PB_HL2_SLAM_BEAM_OnRemove", function(ent)
+	if ent:GetClass() == "npc_tripmine" then
+		PHUNBASE.HL2_SLAM_BEAM_Fix()
+	end	
+end)
+
 if CLIENT then
 	net.Receive("PHUNBASE_SELECTWEAPON", function()
 		input.SelectWeapon(LocalPlayer():GetWeapon(net.ReadString()))
