@@ -245,7 +245,7 @@ function SWEP:PrimaryAttack()
 end
 
 function SWEP:SecondaryAttack()
-	if self:GetSatchels() > 0 and !self:GetIsWaiting() and !self:GetIsDeploying() then
+	if self:GetSatchels() > 0 and !self:GetIsWaiting() and !self:GetIsDeploying() and !self:GetIsHolstering() then
 		self:BlowUpSatchels()
 		self:SetNextPrimaryFire(CurTime() + 0.75)
 		self:SetNextSecondaryFire(CurTime() + 0.75)

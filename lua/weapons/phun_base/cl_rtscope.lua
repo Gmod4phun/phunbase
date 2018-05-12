@@ -46,6 +46,7 @@ if CLIENT then
 	SWEP.RTScope_Zoom = 6
 	SWEP.RTScope_Align = Angle(0,0,0)
 	SWEP.RTScope_Reticle = Material("phunbase/reticles/mk4_crosshair")
+	SWEP.RTScope_ReticleAlways = false
 	SWEP.RTScope_Lense = Material("phunbase/rt_scope/optic_lense")
 	SWEP.RTScope_DrawIris = true
 	SWEP.RTScope_DrawParallax = true
@@ -177,7 +178,7 @@ if CLIENT then
 			surface.SetMaterial(self.LensVignette)
 			surface.DrawTexturedRect(0, 0, RTSize, RTSize)
 
-			surface.SetDrawColor(255, 255, 255, 255 - self.ScopeAlpha)
+			surface.SetDrawColor(255, 255, 255, self.RTScope_ReticleAlways and 255 or (255 - self.ScopeAlpha))
 			surface.SetMaterial(self.RTScope_Reticle)
 			//surface.DrawTexturedRect(0, 0, RTSize, RTSize)
 			//PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, 0)

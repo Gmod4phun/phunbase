@@ -171,6 +171,7 @@ SWEP.IdleAfterReload = true // should the weapon play idle sequence after a non-
 SWEP.IdleAfterFire = true // should the weapon play idle sequence after the fire sequence ends
 
 SWEP.Chamberable = true // enables room for an extra round in the chamber, should be disabled for revolvers/projectile type weapons
+SWEP.UsesAmmoCountLogic = false // uses a different logic that takes away ammo per each shot, no clips/magazines
 
 SWEP.ShotgunReload = false // enables shotgun reload mechanics
 SWEP.ShotgunReload_InsertOnStart = false // should insert a round on reload start
@@ -217,6 +218,7 @@ SWEP.ShellEjectVelocity = 75 // additional velocity in the direction of the shel
 SWEP.FireSound = {} // can be a single sound, or a table of sounds
 
 SWEP.DisableIronsights = false // disable the ironsights
+SWEP.DisableReloading = false // disable reloading for the weapon, useful when using AmmoCount logic
 SWEP.DisableReloadBlur = false // disables blur while reloading
 SWEP.ReloadAfterShot = false // automatically reloads the weapon after shooting
 SWEP.ReloadAfterShotTime = 0.5 // delay between firing and starting the reloading
@@ -260,8 +262,9 @@ SWEP.RTScope_Material = Material("phunbase/rt_scope/pb_scope_rt") // the default
 SWEP.RTScope_Enabled = false // enable or disable the RT scope
 SWEP.RTScope_Zoom = 6 // the zoom of the scope
 SWEP.RTScope_Align = Angle(0,0,0) // Angle to align/rotate the scope properly if needed. THIS AFFECTS RT ONLY. Disable iris/parallax if you see only black, and align the scope, then reenable iris/parallax
-SWEP.RTScope_Lense = Material("phunbase/rt_scope/optic_lense") // the default material for the lense (dirty glass) of the scope
+SWEP.RTScope_Lense = Material("phunbase/rt_scope/optic_lense") // the default material of the scope lense, becomes more transparent on aim
 SWEP.RTScope_Reticle = Material("phunbase/reticles/scope_crosshair_simple") // the default material for the reticle of the scope
+SWEP.RTScope_ReticleAlways = false // should the reticle be drawn even when not aiming
 SWEP.RTScope_Rotate = 0 // how much to rotate the reticle/lense if needed. THIS DOES NOT AFFECT THE RT
 SWEP.RTScope_DrawIris = true // should an iris effect be drawn
 SWEP.RTScope_DrawParallax = true // should a parallax effect be drawn

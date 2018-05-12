@@ -473,6 +473,12 @@ local function PHUNBASE_MENU_PANEL(panel)
 	panel:AddControl("Label", {Text = "PHUNBASE Settings"})
 	
 	local cb = vgui.Create("DCheckBoxLabel", panel)
+	cb:SetText("Enable engine blur?")
+	cb:SetConVar("mat_motion_blur_enabled")
+	cb:SetTooltip("Toggles engine blur. Required for IRON blur")
+	panel:AddItem(cb)
+	
+	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable RELOAD Blur?")
 	cb:SetConVar("phunbase_blur_reload")
 	panel:AddItem(cb)

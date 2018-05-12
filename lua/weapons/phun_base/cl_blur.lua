@@ -69,12 +69,7 @@ local function PHUNBASE_ToyTown_Blur()
 	if wep.TT_Blur > 20 then
 		DrawToyTown(1, ScrH() * 0.55)
 	end
-	
-	if tobool(GetConVarNumber("mat_motion_blur_enabled") == 0) then // enable engine blur if disabled
-		RunConsoleCommand("mat_motion_blur_enabled", 1)
-	end
 end
-
 hook.Add("RenderScreenspaceEffects", "PHUNBASE_ToyTown_Blur", PHUNBASE_ToyTown_Blur)
 
 local function GetNewMotionBlurValues( h, v, f, r )

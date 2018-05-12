@@ -577,6 +577,7 @@ end
 
 function SWEP:offsetBones()
 	local vm = self.VM
+	local realVM = self.RealViewModel
 	
 	-- if the animation cycle is past reload/draw no offset time of bones, then it falls within the bone offset timeline
 	local FT = FrameTime()
@@ -597,13 +598,13 @@ function SWEP:offsetBones()
 	end
 	
 	if not targetTbl then
-		can = false
+		canModifyBones = false
 	end
 	
 	if canModifyBones then
 		if !self.vmBones then return end
 		for k, v in pairs(self.vmBones) do
-			if can then
+			if can and self.EnableBoneManipulation then
 				local index = targetTbl[v.boneName]
 
 				v.curPos = PHUNBASE_LerpVector(FT * 15, v.curPos, (index and index.pos or Vec0))
@@ -615,10 +616,15 @@ function SWEP:offsetBones()
 				v.curScale = PHUNBASE_LerpVector(FT * 15, v.curScale, Vec1)
 			end
 			
-			if v.bone and self.EnableBoneManipulation then
+			if v.bone then
 				ManipulateBonePosition(vm, v.bone, v.curPos)
 				ManipulateBoneAngles(vm, v.bone, v.curAng)
 				ManipulateBoneScale(vm, v.bone, v.curScale)
+				
+				// we also need to offset the default vm bones, in case of muzzle/shells being fucked
+				ManipulateBonePosition(realVM, v.bone, v.curPos)
+				ManipulateBoneAngles(realVM, v.bone, v.curAng)
+				ManipulateBoneScale(realVM, v.bone, v.curScale)
 			end
 		end
 	end

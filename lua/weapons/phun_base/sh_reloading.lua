@@ -33,7 +33,7 @@ end
 
 function SWEP:_realReloadStart()
 	local ply = self.Owner
-	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self.ShouldBeCocking then return end
+	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self.ShouldBeCocking or self.DisableReloading then return end
 	
 	self.HadInClip = self:Clip1()
 	self.WasEmpty = self.HadInClip == 0

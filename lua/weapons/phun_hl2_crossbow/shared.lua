@@ -53,7 +53,8 @@ SWEP.PistolSprintSway = true
 SWEP.Chamberable = false
 
 SWEP.VElements = {
-	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },
+//	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },
+	["pb_scope_rt__bulged_model"] = { model = "models/phunbase/pb_scope_rt_bulged.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },
 	["xbow_model_fix"] = { model = "models/phunbase/attachments/hl2_crossbow_modelfix.mdl", size = Vector(1, 1, 1), bonemerge = true, active = true }
 }
 

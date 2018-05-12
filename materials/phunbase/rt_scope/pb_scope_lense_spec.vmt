@@ -1,0 +1,19 @@
+"VertexlitGeneric"
+{
+	"$basetexture" "phunbase/rt_scope/pb_scope_lense_spec_new"
+	"$bumpmap" "phunbase/rt_scope/pb_scope_lense_n"
+	
+	"$color2" "[0 0 0]"
+	"$additive" "1"
+	"$ambientocclusion" 1
+	"$ambientoccltexture" "phunbase/rt_scope/pb_scope_lense_a"	
+	
+	"$phong" "1"
+	"$phongexponent"				"10"
+	"$phongboost"					"10"
+
+	"$phongalbedotint" 1
+	"$phongexponenttexture" "phunbase/rt_scope/phong_exponent"
+
+	"$phongfresnelranges"			"[1 1.05 1.25]"
+}
