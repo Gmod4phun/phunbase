@@ -443,6 +443,15 @@ function SWEP:_CreateVM()
 	end
 end
 
+function SWEP:_UpdateVM()
+	if !CLIENT then return end
+	if self.VM and IsValid(self.VM) then
+		local mat = Matrix()
+		mat:Scale(Vector(1, self.ViewModelFlip and -1 or 1, 1))
+		self.VM:EnableMatrix("RenderMultiply", mat)
+	end
+end
+
 function SWEP:_GetPlayerColor()
 	local owner = LocalPlayer()
 	if owner:IsValid() and owner:IsPlayer() and owner.GetPlayerColor then
@@ -529,7 +538,10 @@ function SWEP:_drawViewModel()
 	
 	self.VM:FrameAdvance(FrameTime())
 	self.VM:SetupBones()
-	self.VM:DrawModel()
+	
+	if self.DontDrawViewModel then render.SetBlend(0) end
+		self.VM:DrawModel()
+	if self.DontDrawViewModel then render.SetBlend(1) end
 	
 	self:_drawHands()
 	
@@ -539,6 +551,7 @@ function SWEP:_drawViewModel()
 	
 	self:drawVMShells()
 	self:drawAttachments()
+	self:renderStencilReticles()
 	
 	self.Cycle = self.VM:GetCycle()
 	

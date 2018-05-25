@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture" "phunbase/stencil_sights/debug"
+	"$translucent" "1"
+	"$nodecal" "1"
+}

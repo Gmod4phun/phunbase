@@ -258,6 +258,10 @@ function SWEP:performViewmodelMovement()
 			TargetPos[2] = TargetPos[2] - 0.5
 		end
 		
+		if self.ViewModelFlip then
+			TargetPos.x = -TargetPos.x
+		end
+		
 		veldepend.roll = math.Clamp((vel:DotProduct(EA:Right()) * 0.04) * len / self.Owner:GetWalkSpeed(), -5, 5)
 		
 		self.BlendPos[1] = Lerp(FT * BlendSpeed, self.BlendPos[1], TargetPos[1] + self.AngleDelta.y * (0.15 * mod))

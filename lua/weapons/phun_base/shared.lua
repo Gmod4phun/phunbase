@@ -13,6 +13,7 @@ PHUNBASE.LoadLua("cl_model.lua")
 PHUNBASE.LoadLua("cl_model_movement.lua")
 PHUNBASE.LoadLua("cl_rtscope.lua")
 PHUNBASE.LoadLua("cl_shells.lua")
+PHUNBASE.LoadLua("cl_stencilsights.lua")
 PHUNBASE.LoadLua("cl_velements.lua")
 PHUNBASE.LoadLua("sh_ammo.lua")
 PHUNBASE.LoadLua("sh_firebullets.lua")
@@ -175,6 +176,7 @@ SWEP.UsesAmmoCountLogic = false // uses a different logic that takes away ammo p
 
 SWEP.ShotgunReload = false // enables shotgun reload mechanics
 SWEP.ShotgunReload_InsertOnStart = false // should insert a round on reload start
+SWEP.ShotgunReload_InsertOnStartEmpty = false // should insert a round on reload start, when starting empty
 SWEP.ShotgunReload_InsertOnEnd = false // should insert a round on reload end
 SWEP.ShotgunReload_InsertOnEndEmpty = false // should insert a round on reload end, started by empty reload
 
@@ -187,7 +189,9 @@ SWEP.ShotgunReloadTime_End_Empty = 1.5 // time for the weapon to stop reloading,
 
 SWEP.ShotgunReloadTime_InsertAmmoWait = 0 // time until ammo changes on insert
 SWEP.ShotgunReloadTime_InsertOnStartAmmoWait = 0.25 // time until ammo changes on reload start, if start insert is enabled
+SWEP.ShotgunReloadTime_InsertOnStartEmptyAmmoWait = 0.5 // time until ammo changes on empty reload start, if empty start insert is enabled
 SWEP.ShotgunReloadTime_InsertOnEndAmmoWait = 0.25 // time until ammo changes on reload end, if end or empty end insert is enabled
+SWEP.ShotgunReloadTime_InsertOnEndEmptyAmmoWait = 0.3 // time until ammo changes on empty reload end, if empty end insert is enabled
 
 SWEP.UseHands = true // use gmod hands or not
 
@@ -471,6 +475,7 @@ function SWEP:Initialize()
 	self:SetFlashlightStateOld(false)
 	self:SetIsWaiting(false)
 	
+	self._currentCModels = {}
 	self._deployedShells = {}
 	self.Events = {}
 	
@@ -490,15 +495,42 @@ function SWEP:Initialize()
 	self.RealSequence = ""
 end
 
+function SWEP:OnReloaded()
+	self:SetIsDual(self.IsDual)
+	self:SetIsReloading(false)
+	self:SetIsSprinting(false)
+	self:SetIsDeploying(false)
+	self:SetIsHolstering(false)
+	self:SetIsNearWall(false)
+	self:SetIsUnderwater(false)
+	self:SetIsOnLadder(false)
+	self:SetHolsterDelay(0)
+	self:SetMuzzleAttachmentName(self.MuzzleAttachmentName)
+	self:SetShellAttachmentName(self.ShellAttachmentName)
+	
+	if CLIENT then
+		self:setupAttachmentModels()
+	end
+	
+	if self:Clip1() > 0 then
+		self._wasFirstTimeDeployed = false
+	else
+		self._wasFirstTimeDeployed = true
+	end
+	
+	timer.Simple(0.01, function() if IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self then self:Deploy() end end)
+end
+
 function SWEP:DeployAnimLogic()
 	local clip = self:Clip1()
 	local empty = clip < 1
 	
-	self:PlayVMSequence((empty and self.Sequences.deploy_empty) and "deploy_empty" or "deploy")
+	self:PlayVMSequence((empty and self.Sequences.deploy_empty) and "deploy_empty" or ((self.Sequences.deploy_first and !self._wasFirstTimeDeployed) and "deploy_first" or "deploy"))
 end
 
 function SWEP:Deploy()
 	self:InitRealViewModel() // needed both in Init and Deploy, so that picked up weapons dont error
+	self:_UpdateVM()
 	self:_UpdateHands()
 	
 	if SERVER then
@@ -520,19 +552,23 @@ function SWEP:Deploy()
 			self.SoundSpeed = 1
 		end
 	end
-	
+		
 	self:SetIsInUse(true)
-	self:SetHolsterDelay(0)
-	self.FinishDeployTime = CurTime() + self.DeployTime
+	self:SetHolsterDelay(0)	
+	self.FinishDeployTime = CurTime() + ((self.DeployTime_First and !self._wasFirstTimeDeployed) and self.DeployTime_First or self.DeployTime)
 	
 	self:SetIsDeploying(true)
-	self:DelayedEvent(self.DeployTime, function() self:SetIsDeploying(false) end)
+	self:DelayedEvent(self.FinishDeployTime - CurTime(), function() self:SetIsDeploying(false) end)
 	
 	if !self.IdleAfterDeployTime then
-		self.IdleAfterDeployTime = self.DeployTime - 0.1
+		self.IdleAfterDeployTime = self.FinishDeployTime - CurTime() - 0.1
 	end
 	
 	self:DeployAnimLogic()
+	
+	if !self._wasFirstTimeDeployed then
+		self._wasFirstTimeDeployed = true
+	end
 	
 	if !self.DisableIdleAfterDeploy then
 		self:DelayedEvent(self.IdleAfterDeployTime, function() self:PlayIdleAnim() end)
@@ -671,8 +707,28 @@ function SWEP:RemoveDelayedEvent(i)
 	table.remove(self.Events, i)
 end
 
+function SWEP:ThirdPersonParticleMuzzle()
+	self:StopParticles()
+	
+	local muz = self:GetAttachment( 1 )
+	
+	if muz then
+		if type(self.MuzzleEffect) == "table" then
+			for _, particle in pairs(self.MuzzleEffect) do
+				if type(particle) == "string" then
+					ParticleEffectAttach(particle, PATTACH_POINT_FOLLOW, self, 1)
+				end
+			end
+		elseif type(self.MuzzleEffect) == "string" then
+			ParticleEffectAttach(self.MuzzleEffect, PATTACH_POINT_FOLLOW, self, 1)
+		end
+	end
+end
+
 function SWEP:Cheap_WM_ShootEffects()
 	self.Owner:MuzzleFlash()
+	
+	-- self:ThirdPersonParticleMuzzle() // faggot drawing issues
 end
 
 function SWEP:IsFiring()
@@ -698,6 +754,12 @@ function SWEP:HasEnoughAmmo()
 	end
 end
 
+function SWEP:DryFireAnimLogic()
+	if self.Sequences.fire_dry then
+		self:PlayVMSequence("fire_dry")
+	end
+end
+
 function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I dont want to copy shitton of code just for sequences
 	local ply = self.Owner
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or (self.OnlyIronFire and !self:GetIron()) or self.IronTransitionWaiting then return end
@@ -705,12 +767,14 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 	if self.ShouldBeCocking then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.DryFireSound)
+		self:DryFireAnimLogic()
 		return
 	end
 	
 	if !self:HasEnoughAmmo() then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.EmptySoundPrimary)
+		self:DryFireAnimLogic()
 		return
 	end
 	
@@ -768,10 +832,9 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 		if self.CockAfterShot and self.AutoCockStart then
 			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
 		end
-		
-		self:Cheap_WM_ShootEffects()
 	end
 	
+	self:Cheap_WM_ShootEffects()
 	self:TakePrimaryAmmo(self.Primary.TakePerShot)
 end
 

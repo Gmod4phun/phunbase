@@ -1,0 +1,12 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phunbase\attachments\optic_deltapoint"
+	"$bumpmap" "phunbase\attachments\optic_deltapoint_n"
+
+	"$phong" 1
+	"$phongexponent" 22
+	"$phongboost" 4.5
+	"$phongfresnelranges" "[0.1 0.5 1.1]"
+	"$phongalbedotint" "1"
+	"$phongalbedoboost" "25"
+}

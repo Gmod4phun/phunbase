@@ -1,0 +1,13 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phunbase/rt_scope/optic_lense"
+	"$bumpmap" "phunbase/rt_scope/optic_lense_nm"
+	"normalmapalphaenvmapmask"	"1"
+	"$model" 		"1"
+	"$translucent" 	"1"
+	"$phong"		"1"
+	"$envmap" 	"env_cubemap"
+	"$envmapcontrast" 	".8"
+	"$envmapsaturation" "1"
+	"$envmaptint" 	"[0.5 1 0.5]"
+}

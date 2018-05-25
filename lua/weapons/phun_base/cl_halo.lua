@@ -24,6 +24,15 @@ hook.Add("PreDrawHalos", "PHUNBASE_VM_Halo_Test", function() // uses modified ha
 		if IsValid(wep.Hands) then
 			table.insert(haloents, wep.Hands)
 		end
+		local atts = wep.VElements
+		if atts then
+			for k, v in pairs(atts) do
+				local att = atts[k]
+				if att.ent and IsValid(att.ent) and att.active then
+					table.insert(haloents, att.ent)
+				end
+			end
+		end
 		for _, shellent in pairs(PHUNBASE.shells._cache) do
 			if !shellent._soundPlayed then
 				table.insert(haloents, shellent)

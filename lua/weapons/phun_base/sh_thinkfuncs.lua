@@ -50,8 +50,8 @@ function SWEP:_ReloadThink()
 						self:_shotgunReloadFinish()
 						return
 					end
-					if self.ShotgunInsertedShells < (cSize - self.HadInClip - (self.ShotgunReload_InsertOnEnd and 1 or 0)) then
-						if ( (self.ShotgunReload_InsertOnEnd or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty)) and ((clip == cSize - 1) or (ammo == 1)) ) then
+					if self.ShotgunInsertedShells < (cSize - self.HadInClip - ( ((self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty)) and 1 or 0)) then
+						if ( ((self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty)) and ((clip == cSize - 1) or (ammo == 1)) ) then
 							self:_shotgunReloadFinish()
 						else
 							self:_shotgunReloadInsert()
@@ -185,12 +185,25 @@ function SWEP:_IronThink()
 	end
 end
 
+function SWEP:SprintStartAnimLogic()
+	self:PlayVMSequence("sprint_start")
+end
+
+function SWEP:SprintLoopAnimLogic()
+	self:PlayVMSequence("sprint_idle")
+end
+
+function SWEP:SprintEndAnimLogic()
+	self:PlayVMSequence("sprint_end")
+end
+
 function SWEP:_SprintThink()
 	local ply = self.Owner
 	local curspeed = ply:GetVelocity():Length()
 	if curspeed > ply:GetWalkSpeed() and ply:KeyDown(IN_SPEED) and ply:OnGround() then
 		if !self:GetIsSprinting() then
 			self:SetIsSprinting(true)
+			self:SetIsNearWall(false)
 		end
 	else
 		if self:GetIsSprinting() then
@@ -204,12 +217,12 @@ function SWEP:_SprintThink()
 				self.WasSprinting = true
 				// sprint start code here
 				if self.Sequences.sprint_start then
-					self:PlayVMSequence("sprint_start")
+					self:SprintStartAnimLogic()
 				end
 				if self.Sequences.sprint_idle then
 					self.CurSprintIdleIndex = self:DelayedEvent(self.VM:SequenceDuration(self.VM:LookupSequence(self.Sequences.sprint_start)), function()
 						if self.Sequence:lower() == self.Sequences.sprint_start:lower() then // if we still in sprint start
-							self:PlayVMSequence("sprint_idle")
+							self:SprintLoopAnimLogic()
 						end
 						self.CurSprintIdleIndex = nil
 					end)
@@ -221,7 +234,7 @@ function SWEP:_SprintThink()
 					self:RemoveDelayedEvent(self.CurSprintIdleIndex)
 				end
 				if self.Sequences.sprint_end then
-					self:PlayVMSequence("sprint_end")
+					self:SprintEndAnimLogic()
 				end
 			end
 		end
@@ -232,15 +245,20 @@ function SWEP:_SprintThink()
 		
 		if self:GetIsSprinting() then
 			if self.RealSequence == "sprint_idle" and self.Cycle > 0.99 then // sprint idle loop
-				self:PlayVMSequence("sprint_idle")
+				self:SprintLoopAnimLogic()
 			end
 		end
 		
 	end
 end
 
+function SWEP:NearWallAnimLogic()
+end
+
 local td = {}
 function SWEP:_NearWallThink()
+	if self:GetIsSprinting() or self:IsBusy() then return end
+
 	local ply = self.Owner
 	if SERVER then
 		if self.DisableNearwall then return end
@@ -254,6 +272,22 @@ function SWEP:_NearWallThink()
 			self:SetIsNearWall(true)
 		else
 			self:SetIsNearWall(false)
+		end
+	end
+	
+	if CLIENT then
+		if !self:IsBusy() and !self:IsFiring() then
+			if self:GetIsNearWall() and !self.WasNearWall then
+				self.WasNearWall = true
+				self:NearWallAnimLogic()
+			elseif !self:GetIsNearWall() and self.WasNearWall then
+				self.WasNearWall = false
+				self:NearWallAnimLogic()
+			end
+		end
+		
+		if self:GetIsNearWall() and (self:IsBusy()) then
+			self.WasNearWall = false
 		end
 	end
 end

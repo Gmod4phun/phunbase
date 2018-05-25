@@ -53,7 +53,6 @@ if CLIENT then
 	SWEP.RTScope_ShakeMul = 15
 	SWEP.RTScope_Rotate = 0
 
-	local angle = Angle(0,0,0)
 	local viewdata = {
 		x = 0,
 		y = 0,
@@ -122,6 +121,8 @@ if CLIENT then
 	end
 	
 	function SWEP:DrawRT()
+		if !IsValid(self.VM) then return end
+	
 		if !RTSize or !self._ScopeRT then
 			self:InitRT(ScrH())
 		end
@@ -131,34 +132,58 @@ if CLIENT then
 
 		self.ScopeAlpha = math.Approach(self.ScopeAlpha, (self:GetIsReloading() or !self:GetIron()) and 255 or 0, FrameTime() * 15 * 50 )
 		
-		if !IsValid(self.VM) then return end
+		local att = self.VM:GetAttachment(self.RTScope_AttachmentName and self.VM:LookupAttachment(self.RTScope_AttachmentName) or 1) // regular viewmodel and its attachment
 		
-		local att = self.VM:GetAttachment( self.VM:LookupAttachment(self.MuzzleAttachmentName) or 1)
-		local vm_pos, vm_ang = att.Pos, att.Ang
+		if self.RTScope_Entity and IsValid(self.RTScope_Entity) then // use custom entity (preferably a VElement and its attachment)
+			att = self.RTScope_Entity:GetAttachment(self.RTScope_AttachmentName and self.RTScope_Entity:LookupAttachment(self.RTScope_AttachmentName) or 1)
+		end
+		
+		if !att then return end
+		
+		local attPos, attAng = att.Pos, att.Ang
 		
 		if self.RTScope_Align then
-			vm_ang:RotateAroundAxis(vm_ang:Right(), self.RTScope_Align.p )
-			vm_ang:RotateAroundAxis(vm_ang:Up(), self.RTScope_Align.y )
-			vm_ang:RotateAroundAxis(vm_ang:Forward(), self.RTScope_Align.r )
+			attAng:RotateAroundAxis(attAng:Right(), self.RTScope_Align.p )
+			attAng:RotateAroundAxis(attAng:Up(), self.RTScope_Align.y )
+			attAng:RotateAroundAxis(attAng:Forward(), self.RTScope_Align.r )
 		end
 
-		local angDif = PHUNBASE.NormalizeAngles( (vm_ang - EyeAngles()) - (self.AngleDelta or angle) * 3 ) * self.RTScope_ShakeMul
+		local angDif = PHUNBASE.NormalizeAngles( (attAng - EyeAngles()) - (self.AngleDelta or Angle()) * 3 ) * self.RTScope_ShakeMul
 
-		viewdata.origin = self.Owner:GetShootPos() - Vector(angDif.y, angDif.p, 0) * 0.1
-		viewdata.angles = vm_ang
+		viewdata.origin = attPos// - Vector(angDif.y, angDif.p, 0) * 0.1
+		viewdata.angles = attAng
 		viewdata.fov = self.RTScope_Zoom
 		viewdata.w = RTSize
 		viewdata.h = RTSize
 		
 		render.SetRenderTarget(self._ScopeRT)
 		render.SetViewPort(0, 0, RTSize, RTSize)
-
+		
 		render.RenderView(viewdata)
 		
-		local lens_color = render.ComputeLighting(vm_pos, -vm_ang:Forward())
-
-		cam.Start2D()
+		// drawing viewmodel and attachments inside the rt scope
+		cam.Start3D(viewdata.origin + viewdata.angles:Forward() * -5, viewdata.angles)
+			if self.drawViewModelInRT then
+				self.VM:DrawModel()
+			end
+			
+			local attmdls = self.VElements
+			if attmdls then
+				for k, v in pairs(attmdls) do
+					if v.drawInRT and v.active and v.ent_for_RT then
+						if v.bonemerge then
+							v.ent_for_RT:DrawModel()
+						else
+							self:_drawAttachmentModel_for_RT(v)
+						end
+					end
+				end
+			end
+		cam.End3D()
 		
+		local lens_color = render.ComputeLighting(attPos, -attAng:Forward())
+		
+		cam.Start2D()
 			if self.RTScope_DrawParallax then
 				surface.SetDrawColor(255, 255, 255, 255 - self.ScopeAlpha)
 				surface.SetMaterial(self.LensMask)
@@ -183,11 +208,10 @@ if CLIENT then
 			//surface.DrawTexturedRect(0, 0, RTSize, RTSize)
 			//PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, 0)
 			PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, self.RTScope_Rotate)
-			
+
 			if self.RTScope_DrawIris then
 				self:DrawScopeIris()
 			end
-			
 		cam.End2D()
 
 		if !self._Scope then

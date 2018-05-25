@@ -53,7 +53,11 @@ function SWEP:_makeParticle(particlename, attname)
 	end
 end
 
-function SWEP:_makeShell()
+function SWEP:_makeShellInstant()
+	self:_makeShell(true)
+end
+
+function SWEP:_makeShell(instant)
 	if self.Owner:ShouldDrawLocalPlayer() then
 		return
 	end
@@ -75,11 +79,11 @@ function SWEP:_makeShell()
 	
 	shellTable.wep = self
 	
-	vm = self.VM
+	vm = self.CustomEjectionSourceEnt or self.VM
 	att = vm:GetAttachment(vm:LookupAttachment( self:GetShellAttachmentName() ))
 	
 	if att then
-		self:DelayedEvent(self.ShellDelay or 0.01, function()
+		self:DelayedEvent((self.ShellDelay and !instant) and self.ShellDelay or 0.01, function()
 			att = vm:GetAttachment(vm:LookupAttachment( self:GetShellAttachmentName() ))
 			
 			pos = att.Pos

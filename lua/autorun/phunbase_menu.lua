@@ -22,6 +22,9 @@ CreateClientConVar("phunbase_dev_iron_ang_p", "0", true, false)
 CreateClientConVar("phunbase_dev_iron_ang_y", "0", true, false)
 CreateClientConVar("phunbase_dev_iron_ang_r", "0", true, false)
 
+CreateClientConVar("phunbase_dev_centerhelper", "0", true, false)
+CreateClientConVar("phunbase_dev_centerhelper_pbonly", "0", true, false)
+
 CreateClientConVar("phunbase_hl2_crosshair", "0", true, false)
 
 function PHUNBASE.DEV.ENABLED()
@@ -46,7 +49,7 @@ local function PHUNBASE_DEV_MENU_PANEL_ANIMS(panel, wep)
 	local vm = wep.VM
 	local animlist = vgui.Create("DListView", panel)
 	animlist:SetMultiSelect(false)
-	animlist:AddColumn("Animations (click anim to play)" )
+	local animlistcolumn = animlist:AddColumn("Click anim to play, right click here to print all")
 	animlist:SetHeight(40 + (20 *(vm:GetSequenceCount() - 1)))
 	for i = 0, vm:GetSequenceCount() - 1 do
 		local seq = vm:GetSequenceName(i)
@@ -55,6 +58,16 @@ local function PHUNBASE_DEV_MENU_PANEL_ANIMS(panel, wep)
 	
 	animlist.OnRowSelected = function( lst, index, pnl )
 		PHUNBASE.DEV.PlayViewModelSequence(wep, pnl:GetColumnText(1), 1, 0)
+	end
+	
+	animlistcolumn.DoRightClick = function( lst, index, pnl )
+		local t = {}
+		for i = 0, vm:GetSequenceCount() - 1 do
+			local seq = vm:GetSequenceName(i)
+			t[seq] = "\""..seq.."\""
+		end
+		print("Sequence table:")
+		PrintTable(t)
 	end
 	panel:AddItem(animlist)
 	
@@ -320,6 +333,8 @@ local function PHUNBASE_DEV_MENU_PANEL_UPDATE(panel)
 	else
 		panel:AddControl("CheckBox", {Label = "Enable DEV Mode?", Command = "phunbase_devmode"})
 		panel:AddControl("CheckBox", {Label = "Force toggle Ironsights?", Command = "phunbase_dev_iron_toggle"})
+		panel:AddControl("CheckBox", {Label = "Enable center green sphere helper", Command = "phunbase_dev_centerhelper"})
+		panel:AddControl("CheckBox", {Label = "Center helper only for PHUNABSE weapons?", Command = "phunbase_dev_centerhelper_pbonly"})
 	end
 	
 	local ply = LocalPlayer()
@@ -336,7 +351,7 @@ local function PHUNBASE_DEV_MENU_PANEL_UPDATE(panel)
 	end
 	panel:AddItem(model_text_entry)
 	
-	panel:AddControl("Label", {Text = "Set Hands model: "})
+	panel:AddControl("Label", {Text = "Set GMod Hands model: "})
 	local model_text_entry = vgui.Create("DTextEntry", panel)
 	model_text_entry:SetText("")
 	model_text_entry.OnEnter = function(self)
@@ -548,9 +563,11 @@ end
 hook.Add("HUDPaint", "PHUNBASE_CVMT_HUDPaint", PHUNBASE_CVMT_HUDPaint)
 
 hook.Add( "PostDrawTranslucentRenderables", "test", function()
-	if PHUNBASE.DEV.ENABLED() then
-		render.SetColorMaterial()
-		render.DrawSphere(LocalPlayer():GetEyeTrace().HitPos, 2, 30, 30, Color(0,255,0,255))
+	if PHUNBASE.DEV.ENABLED() and GetConVar("phunbase_dev_centerhelper"):GetBool() then
+		if (GetConVar("phunbase_dev_centerhelper_pbonly"):GetBool() and LocalPlayer():GetActiveWeapon().PHUNBASEWEP) or !GetConVar("phunbase_dev_centerhelper_pbonly"):GetBool() then
+			render.SetColorMaterial()
+			render.DrawSphere(LocalPlayer():GetEyeTrace().HitPos, 2, 30, 30, Color(0,255,0,255))
+		end
 	end
 end)
 

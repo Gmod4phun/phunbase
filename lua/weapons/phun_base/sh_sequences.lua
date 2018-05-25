@@ -79,33 +79,33 @@ function SWEP:_playMuzzleEffect()
 		return
 	end
 	
-	vm = self.RealViewModel //attach particles to real VM instead of cmodel vm, fixes positions 
+	vm = self.CustomEjectionSourceEnt or self.RealViewModel //attach particles to real VM instead of cmodel vm, fixes positions 
 	if !IsValid(vm) then return end
 	
 	local att = vm:LookupAttachment( self:GetMuzzleAttachmentName() )
 	
-	if att then
+	if att or (self.CustomEjectionSourceEnt) then
 	
 		local muz = vm:GetAttachment(att)
 		
-		if muz then
-		
+		if muz or (self.CustomEjectionSourceEnt) then
+
 			if type(self.MuzzleEffect) == "table" then
 				for _, particle in pairs(self.MuzzleEffect) do
 					if type(particle) == "string" then
-						ParticleEffectAttach(particle, PATTACH_POINT_FOLLOW, vm, att)
+						ParticleEffectAttach(particle, self.CustomEjectionSourceEnt and PATTACH_ABSORIGIN_FOLLOW or PATTACH_POINT_FOLLOW, vm, att)
 					end
 				end
 			elseif type(self.MuzzleEffect) == "string" then
-				ParticleEffectAttach(self.MuzzleEffect, PATTACH_POINT_FOLLOW, vm, att)
+				ParticleEffectAttach(self.MuzzleEffect, self.CustomEjectionSourceEnt and PATTACH_ABSORIGIN_FOLLOW or PATTACH_POINT_FOLLOW, vm, att)
 			end
 			
-			dlight = DynamicLight(self:EntIndex())
+			local dlight = DynamicLight(self:EntIndex())
 			dlight.r = 250
 			dlight.g = 250
 			dlight.b = 50
 			dlight.Brightness = 5
-			dlight.Pos = muz.Pos + self.Owner:GetAimVector() * 3
+			dlight.Pos = (self.CustomEjectionSourceEnt) and vm:GetPos() or muz.Pos + self.Owner:GetAimVector() * 3
 			dlight.Size = 128
 			dlight.Decay = 1000
 			dlight.DieTime = CurTime() + 1
@@ -146,7 +146,7 @@ function SWEP:setCurSoundTable(animTable, speed, cycle, origAnim)
 	
 	if cycle ~= 0 then
 		-- get the length of the animation and relative time to animation
-		local animLen = self.CW_VM:SequenceDuration()
+		local animLen = self.VM:SequenceDuration()
 		local timeRel = animLen * cycle
 		local foundInTable = false
 		

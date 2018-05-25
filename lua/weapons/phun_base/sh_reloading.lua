@@ -1,13 +1,22 @@
 function SWEP:Reload()
 	if IsFirstTimePredicted() then
-		if self.CockAfterShot and self.ShouldBeCocking then
+		if self.CockAfterShot and self.ShouldBeCocking and (!self.DontCockWhenEmpty or (self.DontCockWhenEmpty and self:Clip1() > 0)) then
 			if !self:IsFiring() and !self:IsBusy() and !self.IsCocking then
+				if self.DontCockWhenSprinting and self:GetIsSprinting() then return end
 				self:Cock()
 			end
 		else
+			if (self:Clip1() < 1 and self.DontCockWhenEmpty) then
+				self.IsCocking = false
+				self.ShouldBeCocking = false
+			end
 			self:_realReloadStart()
 		end
 	end
+end
+
+function SWEP:CockAnimLogic()
+	if self.Sequences.cock then	self:PlayVMSequence("cock") end
 end
 
 function SWEP:Cock()
@@ -25,7 +34,8 @@ function SWEP:Cock()
 	self:SetNextPrimaryFire(CT + self.CockAfterShotTime + 0.05)
 	self:SetNextSecondaryFire(CT + self.CockAfterShotTime + 0.05)
 	
-	self:PlayVMSequence("cock")
+	self:CockAnimLogic()
+	
 	if !self.NoShells and self.MakeShellOnCock then
 		self:MakeShell()
 	end
@@ -54,15 +64,21 @@ function SWEP:_realReloadStart()
 		end
 	end
 	
+	self:SetIsNearWall(false)
+	
 	if !(self.NoReloadAnimation or (self:GetHoldType() == "shotgun" and self.ShotgunReload)) then // shotgun holdtype on shotgun reloads can glitch sounds, gmod bug
 		ply:SetAnimation(PLAYER_RELOAD)
 	end
 end
 
+function SWEP:ReloadAnimLogic()
+	self:PlayVMSequence(((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload"))
+end
+
 function SWEP:_reloadBegin()
 	local ply = self.Owner
 	if IsFirstTimePredicted() then
-		self:PlayVMSequence(((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload"))
+		self:ReloadAnimLogic()
 		local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
 		ply:SetAmmo(TotalAmmo + self.HadInClip, self:GetPrimaryAmmoType())
 		self:SetClip1(0)
@@ -115,12 +131,17 @@ function SWEP:_shotgunReloadAddAmmo(delay)
 	end)
 end
 
+function SWEP:ShotgunReloadStartLogic()
+	self:PlayVMSequence(self.WasEmpty and "reload_shell_start_empty" or "reload_shell_start")
+end
+
 function SWEP:_shotgunReloadBegin()
 	local TotalAmmo = self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType())
 	self.ShotgunReloadingState = 0
 	self.ShouldStopReloading = false
 	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_Start_Empty) or (CurTime() + self.ShotgunReloadTime_Start)
-	self:PlayVMSequence(self.WasEmpty and "reload_shell_start_empty" or "reload_shell_start")
+	
+	self:ShotgunReloadStartLogic()
 	
 	// a very special occasion, but it can happen, so it needs to be taken care of
 	if TotalAmmo == 1 and self.ShotgunReload_InsertOnStart and self.WasEmpty and self.ShotgunReload_InsertOnEndEmpty then // only inserts 1 last shell available, starts empty, and should insert shell on both start and end
@@ -129,24 +150,36 @@ function SWEP:_shotgunReloadBegin()
 		return
 	end
 	
-	self.ShotgunInsertedShells = self.ShotgunReload_InsertOnStart and 1 or 0
-	if self.ShotgunReload_InsertOnStart then
-		self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertOnStartAmmoWait)
+	self.ShotgunInsertedShells = ((self.ShotgunReload_InsertOnStart and !self.WasEmpty) or (self.ShotgunReload_InsertOnStartEmpty and self.WasEmpty)) and 1 or 0
+	if (self.ShotgunReload_InsertOnStart and !self.WasEmpty) or (self.ShotgunReload_InsertOnStartEmpty and self.WasEmpty) then
+		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTime_InsertOnStartEmptyAmmoWait or self.ShotgunReloadTime_InsertOnStartAmmoWait)
 	end
+end
+
+function SWEP:ShotgunReloadInsertLogic()
+	self:PlayVMSequence("reload_shell_insert")
 end
 
 function SWEP:_shotgunReloadInsert()
 	self.NextShotgunAction = CurTime() + self.ShotgunReloadTime_Insert
-	self:PlayVMSequence("reload_shell_insert")
+	
+	self:ShotgunReloadInsertLogic()
+	
 	self.ShotgunInsertedShells = self.ShotgunInsertedShells + 1
 	self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertAmmoWait)
+end
+
+function SWEP:ShotgunReloadEndLogic()
+	self:PlayVMSequence(self.WasEmpty and "reload_shell_end_empty" or "reload_shell_end")
 end
 
 function SWEP:_shotgunReloadFinish()
 	self.ShotgunReloadingState = 2
 	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_End_Empty) or (CurTime() + self.ShotgunReloadTime_End)
-	self:PlayVMSequence(self.WasEmpty and "reload_shell_end_empty" or "reload_shell_end")
-	if self.ShotgunReload_InsertOnEnd or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty) then
-		self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertOnEndAmmoWait)
+	
+	self:ShotgunReloadEndLogic()
+	
+	if (self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty) then
+		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTime_InsertOnEndEmptyAmmoWait or self.ShotgunReloadTime_InsertOnEndAmmoWait)
 	end
 end

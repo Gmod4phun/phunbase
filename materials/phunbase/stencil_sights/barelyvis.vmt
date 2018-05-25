@@ -1,0 +1,6 @@
+"VertexLitGeneric"
+{
+	"$basetexture" "phunbase/stencil_sights/barelyvis"
+	"$translucent" "1"
+	"$nodecal" "1"
+}
