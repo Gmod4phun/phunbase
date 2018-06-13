@@ -27,12 +27,8 @@ SWEP.Primary.ClipSize = 1
 SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
 SWEP.Primary.Automatic = false
 SWEP.Primary.Delay = 0.1
-SWEP.Primary.Damage = 20
-SWEP.Primary.Force = 10
-SWEP.Primary.Bullets = 1
-SWEP.Primary.Tracer = 0
-SWEP.Primary.Spread = 0
-SWEP.Primary.Cone = 0.01
+
+SWEP.HUD_NoFiremodes = true
 
 SWEP.BasePos = Vector(0,0,0)
 SWEP.BaseAng = Vector(0,0,0)
@@ -53,9 +49,8 @@ SWEP.PistolSprintSway = true
 SWEP.Chamberable = false
 
 SWEP.VElements = {
-//	["pb_scope_rt_model"] = { model = "models/phunbase/pb_scope_rt.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },
-	["pb_scope_rt__bulged_model"] = { model = "models/phunbase/pb_scope_rt_bulged.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), active = true },
-	["xbow_model_fix"] = { model = "models/phunbase/attachments/hl2_crossbow_modelfix.mdl", size = Vector(1, 1, 1), bonemerge = true, active = true }
+	["pb_scope_rt_bulged_model"] = { model = "models/phunbase/pb_scope_rt_bulged.mdl", bone = "ValveBiped.Crossbow_base", pos = Vector(-0.013, -4.528, -5.45), angle = Angle(90, 0, -90), size = Vector(1.1, 1.1, 1.1), default = true },
+	["xbow_model_fix"] = { model = "models/phunbase/attachments/hl2_crossbow_modelfix.mdl", size = Vector(1, 1, 1), bonemerge = true, default = true }
 }
 
 SWEP.Sequences = {
@@ -93,14 +88,7 @@ SWEP.ReloadTime = 1.9
 SWEP.ViewModelMovementScale = 0.8
 
 // shell-related stuff
-SWEP.ShellVelocity = {X = 60, Y = 0, Z = -40}
-SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw_Max = 1000, Roll_Min = -200, Roll_Max = 100}
-SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
-SWEP.ShellAttachmentName = "1"
-SWEP.ShellDelay = 0.001
-SWEP.ShellScale = 0.5
-SWEP.ShellModel = "models/weapons/shell.mdl"
-SWEP.ShellEjectVelocity = 0
+SWEP.NoShells = true
 
 SWEP.MuzzleAttachmentName = "spark"
 SWEP.MuzzleEffect = {}
@@ -121,6 +109,16 @@ SWEP.NoReloadAnimation = true
 SWEP.FireMoveMod = 1
 
 SWEP.CanUseUnderwater = true
+
+SWEP.RTScope_Enabled = true
+SWEP.RTScope_Zoom = 7.25
+SWEP.RTScope_Align = Angle(0,0,-90)
+SWEP.RTScope_Reticle = Material("phunbase/reticles/scope_crosshair_simple")
+SWEP.RTScope_DrawIris = true
+SWEP.RTScope_DrawParallax = true
+
+SWEP.MouseSensitivityHip = 1
+SWEP.MouseSensitivityIron = 0.25
 
 function SWEP:FireCrossbowBolt()
 	if CLIENT then return end
@@ -173,16 +171,6 @@ function SWEP:ThinkOverrideClient()
 		end
 	end
 end
-
-SWEP.RTScope_Enabled = true
-SWEP.RTScope_Zoom = 7.25
-SWEP.RTScope_Align = Angle(0,0,-90)
-SWEP.RTScope_Reticle = Material("phunbase/reticles/scope_crosshair_simple")
-SWEP.RTScope_DrawIris = true
-SWEP.RTScope_DrawParallax = true
-
-SWEP.MouseSensitivityHip = 1
-SWEP.MouseSensitivityIron = 0.25
 
 if SERVER then
 	hook.Add("EntityTakeDamage", "PHUNBASE_Crossbow_Bolt_TakeDamage", function( target, dmginfo )

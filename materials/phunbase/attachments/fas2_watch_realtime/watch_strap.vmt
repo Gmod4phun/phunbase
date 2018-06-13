@@ -1,0 +1,16 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"phunbase\attachments\fas2_watch_realtime\watch_strap"
+	"$bumpmap" "phunbase\attachments\fas2_watch_realtime\watch_strap_normal"
+	//"$phongexponenttexture" "phunbase\attachments\fas2_watch_realtime\albedotint"
+	"$phong" 			"1"
+	"$phongexponent"		"10"
+	"$phongboost" 			"0.75"
+	"$phongfresnelranges"		"[0.5 1.5 3.0]"//"[0.1 0.4 .8]"
+	$phongdisablehalflambert 1
+	$halflambert 0
+	$PhongAlbedoTint 1
+	
+	"$rimlight" 0
+	"$rimlightexponent" 15
+}

@@ -9,6 +9,7 @@ PHUNBASE.LoadLua("cl_crosshair.lua")
 PHUNBASE.LoadLua("cl_flashlight.lua")
 PHUNBASE.LoadLua("cl_halo.lua")
 PHUNBASE.LoadLua("cl_hooks.lua")
+PHUNBASE.LoadLua("cl_hud.lua")
 PHUNBASE.LoadLua("cl_model.lua")
 PHUNBASE.LoadLua("cl_model_movement.lua")
 PHUNBASE.LoadLua("cl_rtscope.lua")
@@ -16,8 +17,13 @@ PHUNBASE.LoadLua("cl_shells.lua")
 PHUNBASE.LoadLua("cl_stencilsights.lua")
 PHUNBASE.LoadLua("cl_velements.lua")
 PHUNBASE.LoadLua("sh_ammo.lua")
+PHUNBASE.LoadLua("sh_basics.lua")
+PHUNBASE.LoadLua("sh_customization.lua")
 PHUNBASE.LoadLua("sh_firebullets.lua")
+PHUNBASE.LoadLua("sh_firemodes.lua")
+PHUNBASE.LoadLua("sh_grenadelauncher.lua")
 PHUNBASE.LoadLua("sh_networkfuncs.lua")
+PHUNBASE.LoadLua("sh_orig_values.lua")
 PHUNBASE.LoadLua("sh_reloading.lua")
 PHUNBASE.LoadLua("sh_sequences.lua")
 PHUNBASE.LoadLua("sh_thinkfuncs.lua")
@@ -69,7 +75,6 @@ SWEP.Primary.Damage = 20 // damage per bullet
 SWEP.Primary.Delay = 0.1 // fire delay, use 60 divided by RPM when using RoundsPerMinute information about weapon, example 0.1 = 600RPM
 SWEP.Primary.Force = 10 // bullet force, more force = better penetration
 SWEP.Primary.Bullets = 1 // number of bullets per shot
-SWEP.Primary.Tracer = 0
 SWEP.Primary.TakePerShot = 1 // ammo to take after each shot
 
 SWEP.Secondary.Ammo = "none"
@@ -101,6 +106,12 @@ SWEP.InactiveAng = Vector(-45, 45, 0)
 
 SWEP.BipodPos = Vector(0,0,0) // not implemented
 SWEP.BipodAng = Vector(0,0,0)
+
+SWEP.CustomizePos = Vector(0,0,0) // vm position when customizing
+SWEP.CustomizeAng = Vector(0,0,0)
+
+SWEP.SafePos = Vector(0,0,0) // vm position when weapon safety is on
+SWEP.SafeAng = Vector(0,0,0)
 
 SWEP.Sequences = {} // a table of sequences, can be either single anim or a table of anims, for things like multiple fire animations
 /* // example table with sequence names and what they are used for
@@ -207,21 +218,24 @@ SWEP.MuzzleAttachmentName_L = "muzzle_left" // used by dual weapons, vm attachme
 SWEP.MuzzleAttachmentName_R = "muzzle_right" // used by dual weapons, vm attachment name for muzzleflash, right gun
 SWEP.MuzzleEffect = {"smoke_trail"} // table of Particle Effect names to use as muzzleflash
 
-SWEP.NoShells = false
-SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0} // the directional velocity applied to the shell
+SWEP.NoShells = false // disables shells when firing
+SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0} // the directional velocity applied to the shell based on the axis of the ShellEject Attachment
 SWEP.ShellAngularVelocity = {Pitch_Min = 0, Pitch_Max = 0, Yaw_Min = 0, Yaw_Max = 0, Roll_Min = 0, Roll_Max = 0} // angular velocity of the shell
-SWEP.ShellViewAngleAlign = {Forward = 0, Right = 0, Up = 0} // adjustment of the shell angles
+SWEP.ShellViewAngleAlign = {Forward = 0, Right = 0, Up = 0} // adjustment of the shell angles (eq. rotate the shell if its sideways)
 SWEP.ShellAttachmentName = "shelleject" // vm attachment name for shell ejection
 SWEP.ShellAttachmentName_L = "shelleject_left" // used by dual weapons, vm attachment name for shell ejection, left gun
 SWEP.ShellAttachmentName_R = "shelleject_right" // used by dual weapons, vm attachment name for shell ejection, right gun
 SWEP.ShellDelay = 0.03 // time taken to create the shell after firing the weapon
 SWEP.ShellScale = 0.5 // scale of the shell model
 SWEP.ShellModel = "models/weapons/shell.mdl" // the shell model
-SWEP.ShellEjectVelocity = 75 // additional velocity in the direction of the shell attachment
+SWEP.ShellSound = "PB_SHELLIMPACT_BRASS" // the sound the shell makes on impact
 
 SWEP.FireSound = {} // can be a single sound, or a table of sounds
+SWEP.FireSoundSuppressed = {} // same rules as firesound
 
-SWEP.DisableIronsights = false // disable the ironsights
+SWEP.IsSuppressed = false // whether or not the weapon is suppressed, changes the fire sound
+
+SWEP.DisableIronsights = false // disable the usage of ironsights
 SWEP.DisableReloading = false // disable reloading for the weapon, useful when using AmmoCount logic
 SWEP.DisableReloadBlur = false // disables blur while reloading
 SWEP.ReloadAfterShot = false // automatically reloads the weapon after shooting
@@ -264,7 +278,7 @@ SWEP.NoSprintVMMovement = false // disables vm movement when sprinting, useful f
 
 SWEP.RTScope_Material = Material("phunbase/rt_scope/pb_scope_rt") // the default material for RT scope to draw on, used in the Scope RT model
 SWEP.RTScope_Enabled = false // enable or disable the RT scope
-SWEP.RTScope_Zoom = 6 // the zoom of the scope
+SWEP.RTScope_Zoom = 6 // the zoom of the scope (infact the FOV of the scope, smaller values = bigger zoom)
 SWEP.RTScope_Align = Angle(0,0,0) // Angle to align/rotate the scope properly if needed. THIS AFFECTS RT ONLY. Disable iris/parallax if you see only black, and align the scope, then reenable iris/parallax
 SWEP.RTScope_Lense = Material("phunbase/rt_scope/optic_lense") // the default material of the scope lense, becomes more transparent on aim
 SWEP.RTScope_Reticle = Material("phunbase/reticles/scope_crosshair_simple") // the default material for the reticle of the scope
@@ -274,180 +288,19 @@ SWEP.RTScope_DrawIris = true // should an iris effect be drawn
 SWEP.RTScope_DrawParallax = true // should a parallax effect be drawn
 SWEP.RTScope_ShakeMul = 15 // how strong is the parallax effect
 
-function SWEP:DoDrawCrosshair()
-	if self.Owner:GetInfoNum("phunbase_dev_iron_toggle", 0) == 1 or self.ShouldDrawDefaultCrosshair then
-		return false
-	else
-		return true
-	end
-end
-
-SWEP.HL2KillIcons = {
-	["phun_hl2_ar2"] = "2",
-	["phun_hl2_crossbow"] = "1",
-	["phun_hl2_pistol"] = "-",
-	["phun_hl2_smg"] = "/",
-	["phun_hl2_357"] = ".",
-	["phun_hl2_shotgun"] = "0",
-	["phun_hl2_rpg"] = "3",
-	["phun_hl2_grenade"] = "4",
-	["phun_hl2_bugbait"] = "5",
-	["phun_hl2_crowbar"] = "6",
-	["phun_hl2_stunstick"] = "!",
-	["phun_hl2_slam"] = "*",
-}
-
-function SWEP:InitHL2KillIcons()
-	if CLIENT then
-		local icon = self.HL2KillIcons[self.ClassName]
-		if icon and !killicon.Exists(self.ClassName) then
-			killicon.AddFont(self.ClassName, "HL2MPTypeDeath", icon, Color( 255, 80, 0, 255 ))
-		end
-	end
-end
-
-SWEP.HL2IconLetters = {
-	["phun_hl2_ar2"] = "l",
-	["phun_hl2_crossbow"] = "g",
-	["phun_hl2_pistol"] = "d",
-	["phun_hl2_smg"] = "a",
-	["phun_hl2_357"] = "e",
-	["phun_hl2_shotgun"] = "b",
-	["phun_hl2_rpg"] = "i",
-	["phun_hl2_grenade"] = "k",
-	["phun_hl2_bugbait"] = "j",
-	["phun_hl2_crowbar"] = "c",
-	["phun_hl2_stunstick"] = "n",
-	["phun_hl2_slam"] = "o",
-}
-
 SWEP.UseCustomWepSelectIcon = false // enables using a custom weapon selection icon
 function SWEP:CustomWepSelectIcon(x, y, wide, tall, alpha) -- copy this to your swep and enable custom wepselecticons to draw custom weapon selection icons
 end
 
-function SWEP:FireAnimationEvent(pos,ang,event,name)
-	return true
-end
-
-if CLIENT then
-	function PHUNBASE.SetupFonts()
-		surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_1", { // weapon selecticon ghost font
-			font = "HalfLife2",
-			extended = true,
-			size = ScreenScale(54),
-			weight = 0,
-			blursize = 8,
-			scanlines = 3,
-			antialias = true,
-			additive = true,
-		} )
-
-		surface.CreateFont( "PHUNBASE_HL2_SELECTICONS_2", { // weapon selecticons
-			font = "HalfLife2",
-			extended = true,
-			size = ScreenScale(54),
-			weight = 0,
-			antialias = true,
-			additive = true,
-		} )
-	end
-	PHUNBASE.SetupFonts()
-	
-	local font_scrH = ScrH()
-	hook.Add("Think", "PHUNBASE_FontThink", function()
-		if font_scrH != ScrH() then
-			font_scrH = ScrH()
-			PHUNBASE.SetupFonts()
-		end
-	end)
-end
-
-function SWEP:DrawWeaponSelection(x, y, wide, tall, alpha)
-	local iconcolor = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType()) + self:Clip1() == 0 and Color(255, 0, 0, alpha) or Color(255, 235, 20, alpha)
-	if self.HL2IconLetters[self:GetClass()] then -- HL2 weapons
-		draw.Text({
-			text = self.HL2IconLetters[self:GetClass()],
-			font = "PHUNBASE_HL2_SELECTICONS_1",
-			pos = {x + wide/2, y + tall/10},
-			xalign = TEXT_ALIGN_CENTER,
-			yalign = TEXT_ALIGN_TOP,
-			color = iconcolor
-		})
-		draw.Text({
-			text = self.HL2IconLetters[self:GetClass()],
-			font = "PHUNBASE_HL2_SELECTICONS_2",
-			pos = {x + wide/2, y + tall/10},
-			xalign = TEXT_ALIGN_CENTER,
-			yalign = TEXT_ALIGN_TOP,
-			color = iconcolor
-		})
-	elseif self.UseCustomWepSelectIcon and self.CustomWepSelectIcon then
-		self:CustomWepSelectIcon(x, y, wide, tall, alpha)
-	else -- default GMod swep select icon
-		surface.SetDrawColor( 255, 255, 255, alpha )
-		surface.SetTexture( self.WepSelectIcon or surface.GetTextureID( "weapons/swep" ) )
-		-- Borders
-		y = y + 10
-		x = x + 10
-		wide = wide - 20
-		surface.DrawTexturedRect(x, y, wide, wide / 2)
-	end
-end
-
-PB_HL2_Weapon_Counterparts = {
-	["weapon_ar2"] = "phun_hl2_ar2",
-	["weapon_crossbow"] = "phun_hl2_crossbow",
-	["weapon_pistol"] = "phun_hl2_pistol",
-	["weapon_smg1"] = "phun_hl2_smg",
-	["weapon_357"] = "phun_hl2_357",
-	["weapon_shotgun"] = "phun_hl2_shotgun",
-	["weapon_rpg"] = "phun_hl2_rpg",
-	["weapon_frag"] = "phun_hl2_grenade",
-	["weapon_bugbait"] = "phun_hl2_bugbait",
-	["weapon_crowbar"] = "phun_hl2_crowbar",
-	["weapon_stunstick"] = "phun_hl2_stunstick",
-	["weapon_slam"] = "phun_hl2_slam",
-}
-
-hook.Add("PlayerCanPickupWeapon", "PB_HL2_Weapons_CanPickup", function(ply, wep)
-	if PHUNBASE_HL2_REPLACE_DEFAULT then
-		local new = PB_HL2_Weapon_Counterparts[wep:GetClass()]
-		local tbl = weapons.GetStored(new)
-		if new and tbl then
-			if IsFirstTimePredicted() then
-				local clipsize = tbl.Primary.ClipSize
-				if !clipsize then clipsize = 1 end // if not defined, probably -1, just give 1 ammo
-				if ply:HasWeapon(new) then
-					if !wep.didgiveammo then
-						ply:GiveAmmo(clipsize, tbl.Primary.Ammo)
-					end
-				else
-					ply:Give(new)
-				end
-				wep.didgiveammo = true
-				wep:Remove()
-			end
-			return false
-		end
-	end
-end)
-
-hook.Add("PlayerGiveSWEP", "PB_HL2_Weapons_GiveSWEP", function(ply, wep)
-	if PHUNBASE_HL2_REPLACE_DEFAULT then
-		local new = PB_HL2_Weapon_Counterparts[wep]
-		if new then
-			if !ply:HasWeapon(new) then
-				ply:Give(new)
-			end
-			ply:SelectWeapon(new)
-			return false
-		end
-	end
-end)
-
 function SWEP:Initialize()
+	self._currentCModels = {}
+	self._deployedShells = {}
+	self.Events = {}
+	self.RealSequence = ""
+	
 	self:InitHL2KillIcons()
 	self:InitRealViewModel()
+	self:InitFiremodes()
 	
 	self:SetHoldType(self.HoldType)
 	PHUNBASE.cmodel:LoopCheck()
@@ -474,14 +327,17 @@ function SWEP:Initialize()
 	self:SetFlashlightState(false)
 	self:SetFlashlightStateOld(false)
 	self:SetIsWaiting(false)
-	
-	self._currentCModels = {}
-	self._deployedShells = {}
-	self.Events = {}
+	self:SetIsCustomizing(false)
+	self:SetIsSwitchingFiremode(false)
+	self:SetShouldBeCocking(false)
+	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
+	self:SetGLState(PB_GLSTATE_READY)
+	self:SetGlobalDelay(0)
 	
 	if CLIENT then
 		self:_CreateVM()
 		self:_CreateHands()
+		self:_CreateWM()
 		self:setupAttachmentModels()
 		self:setupBoneTable()
 		if self.AdditionalInit then
@@ -492,7 +348,10 @@ function SWEP:Initialize()
 	self.IronRollOffset = 0
 	self.RealIronRoll = 0
 	
-	self.RealSequence = ""
+	self:SetupOrigValues()
+	self:SetupActiveAttachmentNames()
+	
+	self:SelectFiremode(self.FireModes[1])
 end
 
 function SWEP:OnReloaded()
@@ -505,20 +364,40 @@ function SWEP:OnReloaded()
 	self:SetIsUnderwater(false)
 	self:SetIsOnLadder(false)
 	self:SetHolsterDelay(0)
+	self:SetIsCustomizing(false)
+	self:SetIsSwitchingFiremode(false)
+	self:SetShouldBeCocking(false)
+	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
+	self:SetGLState(PB_GLSTATE_READY)
+	
 	self:SetMuzzleAttachmentName(self.MuzzleAttachmentName)
 	self:SetShellAttachmentName(self.ShellAttachmentName)
+	
+	self:RemoveAllAttachments()
+	
+	self:SelectFiremode(self.FireModes[1])
 	
 	if CLIENT then
 		self:setupAttachmentModels()
 	end
 	
-	if self:Clip1() > 0 then
-		self._wasFirstTimeDeployed = false
-	else
-		self._wasFirstTimeDeployed = true
-	end
+	self:RestoreOriginalIronsights()
 	
-	timer.Simple(0.01, function() if IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self then self:Deploy() end end)
+	self:SetupOrigValues()
+	self:SetupActiveAttachmentNames()
+	
+	if !self.Owner:IsNPC() then
+		timer.Simple(0.01, function()
+			if IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self then
+				if self:Clip1() > 0 then
+					self._wasFirstTimeDeployed = false
+				else
+					self._wasFirstTimeDeployed = true
+				end
+				self:Deploy()
+			end
+		end)
+	end
 end
 
 function SWEP:DeployAnimLogic()
@@ -552,7 +431,7 @@ function SWEP:Deploy()
 			self.SoundSpeed = 1
 		end
 	end
-		
+	
 	self:SetIsInUse(true)
 	self:SetHolsterDelay(0)	
 	self.FinishDeployTime = CurTime() + ((self.DeployTime_First and !self._wasFirstTimeDeployed) and self.DeployTime_First or self.DeployTime)
@@ -564,7 +443,15 @@ function SWEP:Deploy()
 		self.IdleAfterDeployTime = self.FinishDeployTime - CurTime() - 0.1
 	end
 	
-	self:DeployAnimLogic()
+	if self.PreDeployAnimLogic then // you should play a vm sequence so that it appears holstered (invisible), to unfuck deploy anims if they are fucked
+		self:PreDeployAnimLogic()
+	end
+	
+	if !self._wasFirstTimeDeployed then
+		self:DeployAnimLogic()
+	else
+		self:DelayedEvent(0, function() self:DeployAnimLogic() end) // fixes deploy anim because of vm position not being adjusted yet
+	end
 	
 	if !self._wasFirstTimeDeployed then
 		self._wasFirstTimeDeployed = true
@@ -596,7 +483,7 @@ function SWEP:Holster(wep)
 		return false
 	end
 
-	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() or self:IsFiring() then
+	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() or self:IsFiring() or self:IsGlobalDelayActive() then
 		return false
 	end
 	
@@ -612,6 +499,7 @@ function SWEP:Holster(wep)
 		self:SetHolsterDelay(0)
 		self:SetIsSprinting(false)
 		self:SetIsInUse(false)
+		self:CloseCustomizationMenu()
 		if SERVER then
 			self:DestroyFlashlight()
 		end
@@ -629,18 +517,18 @@ end
 
 function SWEP:CalcHoldType()
 	if SERVER then
-		/*if self.dt.Safe then
-			if self.CurHoldType != self.SafeHoldType then
-				self:SetHoldType(self.SafeHoldType)
-				self.CurHoldType = self.SafeHoldType
+		if self:GetIsReloading() then
+			if self.ReloadHoldType != nil then
+				if self.CurHoldType != self.ReloadHoldType then
+					self:SetHoldType(self.ReloadHoldType)
+					self.CurHoldType = self.ReloadHoldType
+				end
 			end
-		else*/
-			if self:GetIsReloading() then
-				if self.ReloadHoldType != nil then
-					if self.CurHoldType != self.ReloadHoldType then
-						self:SetHoldType(self.ReloadHoldType)
-						self.CurHoldType = self.ReloadHoldType
-					end
+		else
+			if self:IsSafe() and !self.Owner:Crouching() then
+				if self.CurHoldType != self.SafeHoldType then
+					self:SetHoldType(self.SafeHoldType)
+					self.CurHoldType = self.SafeHoldType
 				end
 			else
 				if self:GetIsSprinting() then
@@ -664,18 +552,22 @@ function SWEP:CalcHoldType()
 					end
 				end
 			end
-		--end
+		end
 	end
 end
 
 function SWEP:Think()
-	self.lastOwner = self.Owner
+	if IsValid(self.Owner) then
+		self.lastOwner = self.Owner
+	end
+	
 	self:_IronThink()
 	self:_SprintThink()
 	self:_NearWallThink()
 	self:_WaterLadderThink()
 	self:_ReloadThink()
 	self:_SoundTableThink()
+	self:_FiremodeThink()
 	
 	if self.AdditionalThink then
 		self:AdditionalThink()
@@ -688,6 +580,8 @@ function SWEP:Think()
 			self:ThinkOverrideClient()
 		end
 	end
+	
+	self:RunAttachmentsThinkFunc()
 
 	for k, v in pairs(self.Events) do
 		if CurTime() > v.time then
@@ -736,7 +630,7 @@ function SWEP:IsFiring()
 end
 
 function SWEP:CanFire()
-	if self:IsFiring() or self:GetIsReloading() then
+	if self:IsFiring() or self:GetIsReloading() or self:IsGlobalDelayActive() then
 		return false
 	else
 		return true
@@ -744,6 +638,8 @@ function SWEP:CanFire()
 end
 
 function SWEP:HasEnoughAmmo()
+	if self.Owner:IsNPC() then return true end
+	
 	local ammo = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
 	local clip = self:Clip1()
 	
@@ -764,7 +660,24 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 	local ply = self.Owner
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or (self.OnlyIronFire and !self:GetIron()) or self.IronTransitionWaiting then return end
 	
-	if self.ShouldBeCocking then
+	if self:GetIsCustomizing() or self:IsGlobalDelayActive() then return end
+	
+	if ply:KeyDown(IN_USE) and self.UsesGrenadeLauncher then
+		if self:GetWeaponMode() == PB_WEAPONMODE_NORMAL then
+			self:EnterGrenadeLauncherMode()
+			return
+		elseif self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
+			self:ExitGrenadeLauncherMode()
+			return
+		end
+	end
+	
+	if self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
+		self:GrenadeLauncherModeFire()
+		return
+	end
+	
+	if self:GetShouldBeCocking() or self:IsSafe() then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.DryFireSound)
 		self:DryFireAnimLogic()
@@ -778,17 +691,26 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 		return
 	end
 	
+	if self.BurstAmount and self.BurstAmount > 0 then
+		if self.BurstShotsFired >= self.BurstAmount then
+			return
+		end
+		
+		self.BurstShotsFired = self.BurstShotsFired + 1
+	end
+	
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
 	
 	if IsFirstTimePredicted() then
-		if type(self.FireSound) == "table" then
-			for _, snd in pairs(self.FireSound) do
+		local firesnd = self.IsSuppressed and self.FireSoundSuppressed or self.FireSound
+		if type(firesnd) == "table" then
+			for _, snd in pairs(firesnd) do
 				if type(snd) == "string" then
 					self.Weapon:EmitSound(snd)
 				end
 			end			
-		elseif type(self.FireSound) == "string" then
-			self.Weapon:EmitSound(self.FireSound)
+		elseif type(firesnd) == "string" then
+			self.Weapon:EmitSound(firesnd)
 		end
 		
 		if self.PrimaryAttackOverride then
@@ -798,7 +720,10 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 			self:StopViewModelParticles()
 		end
 		
-		self:FireAnimLogic(isSecondary)
+		if (game.SinglePlayer() and SERVER) or CLIENT then
+			self:FireAnimLogic(isSecondary)
+		end
+		
 		self:PlayMuzzleFlashEffect()
 		if !((self.CockAfterShot and self.MakeShellOnCock) or self.NoShells) then
 			self:MakeShell()
@@ -826,7 +751,7 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 		end
 		
 		if self.CockAfterShot then
-			self.ShouldBeCocking = true
+			self:SetShouldBeCocking(true)
 		end
 		
 		if self.CockAfterShot and self.AutoCockStart then
@@ -901,23 +826,9 @@ function SWEP:GetViewModelPosition(pos,ang)
 	return self.PB_VMPOS, self.PB_VMANG
 end
 
-function SWEP:DrawWorldModel()
-	self:DrawModel()
-end
-
 function SWEP:AdjustMouseSensitivity()
 	return self:GetIron() and self.MouseSensitivityIron or self.MouseSensitivityHip
 end
-
-/*
-function SWEP:PreDrawViewModel()
-	render.SetBlend(1) // dont render the default viewmodel, but we use it for particle positions later
-end
-
-function SWEP:PostDrawViewModel()
-	render.SetBlend(1) //back to normal rendering
-end
-*/
 
 // RECOIL
 SWEP.FireMoveMod = 1
@@ -1007,7 +918,6 @@ if CLIENT then
 			//wep:addFireSpread(CT)
 		end
 	end
-	
 	usermessage.Hook("PHUNBASE_Recoil", GetRecoil)
 	
 	local function PHUNBASE_PrimaryAttackOverride_CL()
@@ -1025,9 +935,7 @@ if CLIENT then
 			end
 		end
 	end
-	
 	usermessage.Hook("PHUNBASE_PrimaryAttackOverride_CL", PHUNBASE_PrimaryAttackOverride_CL)
-	
 end
 
 hook.Add("PlayerPostThink", "PHUNBASE_LastWeaponSwitch", function(ply)

@@ -36,6 +36,7 @@ local Right = reg.Angle.Right
 local Up = reg.Angle.Up
 local Forward = reg.Angle.Forward
 local RotateAroundAxis = reg.Angle.RotateAroundAxis
+local GetBonePosition = reg.Entity.GetBonePosition
 
 SWEP.ApproachSpeed = 10
 SWEP.RunTime = 0
@@ -443,6 +444,17 @@ function SWEP:_CreateVM()
 	end
 end
 
+function SWEP:_CreateWM()
+	if !CLIENT then return end
+	
+	if self.CustomWorldModel then
+		self.WM = self:CreateClientModel(self.CustomWorldModel)
+		self.WM:SetNoDraw(true)
+		self.WM:SetupBones()
+		self.WM.IsPHUNBASEWM = true
+	end
+end
+
 function SWEP:_UpdateVM()
 	if !CLIENT then return end
 	if self.VM and IsValid(self.VM) then
@@ -528,6 +540,12 @@ function SWEP:drawViewModel()
 	
 	//self:applyOffsetToVM()
 	self:_drawViewModel()
+	self:_drawCustomizationMenu()
+end
+
+function SWEP:_drawDeployFix()
+	local dont = self:GetIsDeploying() and self.Cycle < 0.02
+	return dont
 end
 
 function SWEP:_drawViewModel()
@@ -539,9 +557,15 @@ function SWEP:_drawViewModel()
 	self.VM:FrameAdvance(FrameTime())
 	self.VM:SetupBones()
 	
-	if self.DontDrawViewModel then render.SetBlend(0) end
+	self.Cycle = self.VM:GetCycle()
+	
+	if self.DontDrawViewModel then
+		render.SetBlend(0)
+		self.VM:DrawModel() // still draw, but invisible, so that attachments/bones are available
+		render.SetBlend(1)
+	else
 		self.VM:DrawModel()
-	if self.DontDrawViewModel then render.SetBlend(1) end
+	end
 	
 	self:_drawHands()
 	
@@ -552,9 +576,6 @@ function SWEP:_drawViewModel()
 	self:drawVMShells()
 	self:drawAttachments()
 	self:renderStencilReticles()
-	
-	self.Cycle = self.VM:GetCycle()
-	
 end
 
 function SWEP:_drawHands()
@@ -642,6 +663,50 @@ function SWEP:offsetBones()
 		end
 	end
 	
+end
+
+function SWEP:DrawWorldModel()
+	if !self.CustomWorldModel then
+		self:DrawModel()
+	else
+		local wm = self.WM
+		
+		if IsValid(wm) then
+			if IsValid(self.Owner) then
+				local pos, ang = GetBonePosition(self.Owner, self.Owner:LookupBone("ValveBiped.Bip01_R_Hand"))
+				
+				if pos and ang then
+				
+					if !self.CustomWorldModelPos then
+						self.CustomWorldModelPos = Angle()
+					end
+					
+					if !self.CustomWorldModelAng then
+						self.CustomWorldModelAng = Angle()
+					end
+					
+					RotateAroundAxis(ang, Right(ang), self.CustomWorldModelAng[1])
+					RotateAroundAxis(ang, Up(ang), self.CustomWorldModelAng[2])
+					RotateAroundAxis(ang, Forward(ang), self.CustomWorldModelAng[3])
+
+					pos = pos + self.CustomWorldModelPos[1] * Right(ang) 
+					pos = pos + self.CustomWorldModelPos[2] * Forward(ang)
+					pos = pos + self.CustomWorldModelPos[3] * Up(ang)
+					
+					wm:SetRenderOrigin(pos)
+					wm:SetRenderAngles(ang)
+					wm:DrawModel()
+				end
+			else
+				wm:SetRenderOrigin(self:GetPos())
+				wm:SetRenderAngles(self:GetAngles())
+				wm:DrawModel()
+				wm:DrawShadow()
+			end
+		else
+			self:DrawModel()
+		end
+	end
 end
 
 //viewmodel fixes

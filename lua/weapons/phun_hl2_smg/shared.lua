@@ -24,12 +24,12 @@ SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
 SWEP.Primary.Ammo = "smg1"
 SWEP.Primary.ClipSize = 45
 SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
-SWEP.Primary.Automatic = true
 SWEP.Primary.Damage = 23
 SWEP.Primary.Delay = 0.075
 SWEP.Primary.Force = 5
 SWEP.Primary.Bullets = 1
-SWEP.Primary.Tracer = 0
+
+SWEP.FireModes = {"auto"}
 
 // Recoil variables
 SWEP.Recoil	= 0.2
@@ -96,14 +96,13 @@ SWEP.HolsterAnimStartCyc = 1
 SWEP.ViewModelMovementScale = 0.8
 
 // shell-related stuff
-SWEP.ShellVelocity = {X = 60, Y = 0, Z = -40}
+SWEP.ShellVelocity = {X = 60, Y = -20, Z = 0}
 SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw_Max = 1000, Roll_Min = -200, Roll_Max = 100}
 SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
 SWEP.ShellAttachmentName = "1"
 SWEP.ShellDelay = 0.01
 SWEP.ShellScale = 1
 SWEP.ShellModel = "models/phunbase/shells/4_6x30mm.mdl"
-SWEP.ShellEjectVelocity = 0
 
 SWEP.MuzzleAttachmentName = "muzzle"
 SWEP.MuzzleEffect = {"weapon_muzzle_flash_smoke_small2", "PistolGlow", "muzzle_lee_simple_pistol", "muzzle_fire_pistol", "muzzle_sparks_pistol", "smoke_trail"}

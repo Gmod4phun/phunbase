@@ -3,6 +3,7 @@ if !CLIENT then return end
 CreateClientConVar("phunbase_blur_reload", "1", true, false)
 CreateClientConVar("phunbase_blur_iron", "1", true, false)
 CreateClientConVar("phunbase_blur_iron_mod", "1", true, false)
+CreateClientConVar("phunbase_blur_custmenu", "1", true, false)
 
 SWEP.BlurAmount = 0
 
@@ -12,16 +13,14 @@ blurMaterial:SetTexture("$fbtexture", render.GetScreenEffectTexture())
 function SWEP:drawBlur()
 	local x, y = ScrW(), ScrH()
 	
-	if GetConVar("phunbase_blur_reload"):GetInt() > 0 then
-		cam.Start2D()
-			surface.SetMaterial(blurMaterial)
-			surface.SetDrawColor(255, 255, 255, 255)
-			for i = 1, self.BlurAmount do
-				render.UpdateScreenEffectTexture()
-				surface.DrawTexturedRect(0, 0, x, y * 2)
-			end
-		cam.End2D()
-	end
+	cam.Start2D()
+		surface.SetMaterial(blurMaterial)
+		surface.SetDrawColor(255, 255, 255, 255)
+		for i = 1, self.BlurAmount do
+			render.UpdateScreenEffectTexture()
+			surface.DrawTexturedRect(0, 0, x, y * 2)
+		end
+	cam.End2D()
 end
 
 function SWEP:processBlur()
@@ -30,13 +29,13 @@ function SWEP:processBlur()
 	
 	local can = false
 	
-	if (!self.ShotgunReload and self:GetIsReloading() and self.Cycle < 0.95) or (self.ShotgunReload and self:GetIsReloading() ) then
+	if (!self.ShotgunReload and self:GetIsReloading() and self.Cycle < 0.95) or (self.ShotgunReload and self:GetIsReloading() ) or self:GetIsCustomizing() then
 		can = true
 	end
 	
-	if self.DisableReloadBlur then
-		can = false
-	end
+	if self:GetIsReloading() and (self.DisableReloadBlur or GetConVar("phunbase_blur_reload"):GetInt() < 1) then can = false end
+	
+	if self:GetIsCustomizing() and GetConVar("phunbase_blur_custmenu"):GetInt() < 1 then can = false end
 	
 	if can then
 		self.BlurAmount = math.Approach(self.BlurAmount, 10, FT * 30)

@@ -119,13 +119,17 @@ function SWEP:PutAwayAndRemove()
 		self.HolsterTime = 0.01
 		PHUNBASE.SelectWeapon(self:GetOwner(), wep:GetClass())
 	end
-	SafeRemoveEntity(self)
+	if SERVER then
+		SafeRemoveEntity(self)
+	end
 end
 
 function SWEP:BlowUpSatchel(satchel)
-	if IsValid(satchel) then
-		satchel:Input("Explode", self:GetOwner(), self:GetOwner(), 0)
-		self:RemoveSatchel(satchel)
+	if SERVER then
+		if IsValid(satchel) then
+			satchel:Input("Explode", self:GetOwner(), self:GetOwner(), 0)
+			self:RemoveSatchel(satchel)
+		end
 	end
 end
 
@@ -356,19 +360,21 @@ function SWEP:TossNade(ent)
 end
 
 function SWEP:OnNadeTossed()
-	local nade = self.NadeEnt
-	local ply = self.Owner
-	nade:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
-	nade:SetSaveValue("m_hThrower", ply)
-	nade:SetSaveValue("m_hOwner", ply)
-	nade:SetSaveValue("m_bIsLive", true)
-	nade:SetSaveValue("m_flDamage", 150)
-	nade:SetSaveValue("m_takedamage", 2) // gets blown up by stuff
-	nade:CallOnRemove( "OnRemoveSatchel", function(nade)
-		if IsValid(nade.Weapon) then
-			nade.Weapon:RemoveSatchel(nade)
-		end
-	end)
+	if SERVER then
+		local nade = self.NadeEnt
+		local ply = self.Owner
+		nade:SetCollisionGroup(COLLISION_GROUP_PROJECTILE)
+		nade:SetSaveValue("m_hThrower", ply)
+		nade:SetSaveValue("m_hOwner", ply)
+		nade:SetSaveValue("m_bIsLive", true)
+		nade:SetSaveValue("m_flDamage", 150)
+		nade:SetSaveValue("m_takedamage", 2) // gets blown up by stuff
+		nade:CallOnRemove( "OnRemoveSatchel", function(nade)
+			if IsValid(nade.Weapon) then
+				nade.Weapon:RemoveSatchel(nade)
+			end
+		end)
+	end
 end
 
 // NadeThrowState - 0 = getting ready to throw, 1 = throwing, 2 = redeploying

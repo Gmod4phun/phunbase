@@ -1,0 +1,13 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"phunbase\attachments\fas2_watch_realtime\digits"
+	"$selfillum" "1"
+	
+	"Proxies"
+	{
+		"FAS2_WATCH_REALTIME_DigitColor"
+		{
+			"resultVar" "$color2"
+		}
+	}
+}

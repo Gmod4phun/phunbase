@@ -1,5 +1,7 @@
 -- FAS 2.0 vm movement, modified
 
+CreateClientConVar("phunbase_vm_crouchoffset", "1", true, false)
+
 local vm, EP, EA, FT, CT, TargetPos, TargetAng, cos1, cos2, sin1, sin2, vel, ong, len, delta, tan, mod, tr, move, rs, pos, ang, wm, VM
 local AngDif, AngleTable = Angle(0,0,0), Angle(0,0,0)
 local BlendSpeed = 8
@@ -71,6 +73,10 @@ function SWEP:performViewmodelMovement()
 		if self:GetIron() then		
 			TargetPos = self.IronsightPos * 1
 			TargetAng = self.IronsightAng * 1
+			
+			if self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
+				TargetPos, TargetAng = self.GrenadeLauncherIronPos * 1, self.GrenadeLauncherIronAng * 1
+			end
 			
 			BlendSpeed = math.Approach(BlendSpeed, 10, FT * 300)
 			CurPosMod, CurAngMod = Vec0 * 1, Vec0 * 1
@@ -154,7 +160,7 @@ function SWEP:performViewmodelMovement()
 			end
 		else
 			
-			if self.IsCustomizing then // not yet
+			if self:GetIsCustomizing() then
 				TargetPos = self.CustomizePos * 1
 				TargetAng = self.CustomizeAng * 1
 			else
@@ -252,10 +258,12 @@ function SWEP:performViewmodelMovement()
 			mod = 0.05
 		end
 		
-		if ong and (self.Owner:Crouching() or self.Owner:KeyDown(IN_DUCK)) and !self:GetIron() then
-			TargetPos[3] = TargetPos[3] - 0.5
-			TargetPos[1] = TargetPos[1] - 0.5
-			TargetPos[2] = TargetPos[2] - 0.5
+		if GetConVar("phunbase_vm_crouchoffset"):GetInt() > 0 then
+			if ong and (self.Owner:Crouching() or self.Owner:KeyDown(IN_DUCK)) and !self:GetIron() then
+				TargetPos[3] = TargetPos[3] - 0.5
+				TargetPos[1] = TargetPos[1] - 0.5
+				TargetPos[2] = TargetPos[2] - 0.5
+			end
 		end
 		
 		if self.ViewModelFlip then

@@ -60,7 +60,7 @@ function shellMeta:Think()
 	PHUNBASE.shells:_rebuildCache()
 end
 
-function PHUNBASE.shells:make(pos, ang, velocity, shellTable)
+function PHUNBASE.shells:make(pos, ang, velocity, shellTable, attPos, attAng)
 	pos = pos or EyePos()
 	ang = ang or EyeAngles()
 	velocity = velocity or Vector()
@@ -82,7 +82,8 @@ function PHUNBASE.shells:make(pos, ang, velocity, shellTable)
 	local phys = ent:GetPhysicsObject()
 	phys:SetMaterial("gmod_silent")
 	phys:SetMass(10)
-	phys:SetVelocity(velocity + ent:GetUp() * mR(shellTable.veladd_X-10, shellTable.veladd_X+10) + ent:GetForward() * mR(shellTable.veladd_Y-10, shellTable.veladd_Y+10) + ent:GetRight() * mR(shellTable.veladd_Z-10, shellTable.veladd_Z+10) )
+	phys:SetVelocity(velocity + attAng:Forward() * mR(shellTable.veladd_X-10, shellTable.veladd_X+10) + attAng:Right() * mR(shellTable.veladd_Y-10, shellTable.veladd_Y+10) + attAng:Up() * mR(shellTable.veladd_Z-10, shellTable.veladd_Z+10) )
+
 	phys:AddAngleVelocity(phys:WorldToLocalVector(
 		ent:GetUp() * math.random(shellTable.velmin_P,shellTable.velmax_P) +
 		ent:GetForward() * math.random(shellTable.velmin_Y,shellTable.velmax_Y) +

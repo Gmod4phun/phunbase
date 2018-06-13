@@ -1,0 +1,13 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"phunbase\attachments\fas2_watch_realtime\watch_glass"
+	"$translucent" "1"
+	"$envmap" "env_cubemap"
+	"$envmaptint" "[.3 .3 .3]"
+	"$phong" "1"
+	"$phongexponent" "200"
+	"$phongboost" "1"	
+	"$phongfresnelranges"	"[0.5 0.8 1.8]"
+	"$halflambert" "1"
+	"$phongalbedotint" "1"
+}

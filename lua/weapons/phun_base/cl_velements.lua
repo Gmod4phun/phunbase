@@ -1,3 +1,15 @@
+function SWEP:getVElementByName(name)
+	if self.VElements and self.VElements[name] then
+		if self.VElements[name].ent then
+			return self.VElements[name].ent
+		else
+			return nil
+		end
+	else
+		return nil
+	end
+end
+
 function SWEP:_setupAttachmentModel(data, updateOnly)
 	updateOnly = updateOnly or false
 	if !data.pos then data.pos = Vector() end
@@ -25,7 +37,13 @@ function SWEP:_setupAttachmentModel(data, updateOnly)
 	end
 	
 	-- make it active if it's supposed to be active, or not, if nothing is defined
-	data.active = data.active or false
+	//data.active = data.active or false
+	
+	if data.default then
+		data.active = true
+	else
+		data.active = false
+	end
 	
 	-- scale the model if there is a scaling vector
 	-- keep in mind that I scale it once upon creation, in order to not call Matrix and EnableMatrix over and over again each frame
@@ -42,6 +60,11 @@ function SWEP:_setupAttachmentModel(data, updateOnly)
 	-- get the bone ID in advance so that we don't have to look it up every frame for every attachment that's active on the weapon
 	if data.bone then
 		data._bone = self.VM:LookupBone(data.bone)
+	end
+	
+	-- set the skin if defined
+	if data.skin then
+		data.ent:SetSkin(data.skin)
 	end
 	
 	-- set bodygroups in case they are defined
@@ -286,6 +309,14 @@ function SWEP:drawAttachments()
 	local FT = FrameTime()
 	
 	for k, v in pairs(self.VElements) do
+		if v.reticleTable then // if an attachment has a stencil entity and is active, also make the stencil element active
+			if v.reticleTable.stencilElementName then
+				if self.VElements[v.reticleTable.stencilElementName] then
+					self.VElements[v.reticleTable.stencilElementName].active = v.active
+				end
+			end
+		end
+	
 		if v.active then
 			self:_drawAttachmentModels(v)
 		end
@@ -294,6 +325,8 @@ function SWEP:drawAttachments()
 			v.thinkFunc(self, v.ent)
 		end
 	end
+	
+	self:RunAttachmentsRenderFunc()
 	
 	return true
 end

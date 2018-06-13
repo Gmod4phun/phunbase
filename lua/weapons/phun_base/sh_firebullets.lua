@@ -7,14 +7,14 @@ end
 function SWEP:CalcSpread()
 	local BaseSpread = (self:GetIron() and self.Spread_Iron or self.Spread)
 	local VelocityMul = (self.Owner:GetVelocity():Length()/10000) * (self:GetIron() and self.SpreadVel_Iron or self.SpreadVel)
-	local SpreadAdd = (math.max(-self.Owner:GetViewPunchAngles().p, 0)/50) * (self:GetIron() and self.SpreadAdd_Iron or self.SpreadAdd)
+	local SpreadAdd = self.Owner:IsNPC() and 0 or (math.max(-self.Owner:GetViewPunchAngles().p, 0)/50) * (self:GetIron() and self.SpreadAdd_Iron or self.SpreadAdd)
 
 	return (BaseSpread) + VelocityMul + SpreadAdd
 end
 
 function SWEP:_FireBullets(num)
 	local src = self:GetMuzzleOrigin()
-	local ang = self.Owner:EyeAngles() + self.Owner:GetViewPunchAngles()
+	local ang = self.Owner:IsNPC() and self.Owner:EyeAngles() or (self.Owner:EyeAngles() + self.Owner:GetViewPunchAngles())
 
 	local spread = self:CalcSpread()
 

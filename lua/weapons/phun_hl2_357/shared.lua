@@ -24,12 +24,12 @@ SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
 SWEP.Primary.Ammo = "357"
 SWEP.Primary.ClipSize = 6
 SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
-SWEP.Primary.Automatic = false
 SWEP.Primary.Damage = 20
 SWEP.Primary.Delay = 0.65
 SWEP.Primary.Force = 5
 SWEP.Primary.Bullets = 1
-SWEP.Primary.Tracer = 0
+
+SWEP.FireModes = {"double"}
 
 // Recoil variables
 SWEP.Recoil	= 4
@@ -87,12 +87,6 @@ SWEP.Sequences = {
 	reload_shell_end_empty = "reload_end"
 }
 
-/*SWEP.Sounds = { // not today
-	reload = {
-		{time = 1.7, sound = "", callback = function(wep) wep.ShellDelay = 0 for i = 1, 6 do wep.ShellDelay = wep.ShellDelay + i*0.04 wep:MakeShell() end end},
-	}
-}*/
-
 SWEP.DeployTime = 0.8
 SWEP.HolsterTime = 0.25
 SWEP.ReloadTime = 3.65
@@ -110,14 +104,6 @@ SWEP.ShotgunReloadTime_InsertOnStartAmmoWait = 1.7
 SWEP.ViewModelMovementScale = 0.8
 
 // shell-related stuff
-SWEP.ShellVelocity = {X = 60, Y = 0, Z = -40}
-SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw_Max = 1000, Roll_Min = -200, Roll_Max = 100}
-SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
-SWEP.ShellAttachmentName = "muzzle"
-SWEP.ShellDelay = 0
-SWEP.ShellScale = 0.8
-SWEP.ShellModel = "models/weapons/shell.mdl"
-SWEP.ShellEjectVelocity = 0
 SWEP.NoShells = true
 
 SWEP.MuzzleAttachmentName = "muzzle"

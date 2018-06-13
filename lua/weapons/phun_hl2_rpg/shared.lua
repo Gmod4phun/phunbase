@@ -30,9 +30,8 @@ SWEP.Primary.Delay = 0.1
 SWEP.Primary.Damage = 200
 SWEP.Primary.Force = 10
 SWEP.Primary.Bullets = 1
-SWEP.Primary.Tracer = 0
-SWEP.Primary.Spread = 0
-SWEP.Primary.Cone = 0.01
+
+SWEP.HUD_NoFiremodes = true
 
 SWEP.BasePos = Vector(0,0,0)
 SWEP.BaseAng = Vector(0,0,0)
@@ -91,14 +90,7 @@ SWEP.ReloadTime = 1.7
 SWEP.ViewModelMovementScale = 0.8
 
 // shell-related stuff
-SWEP.ShellVelocity = {X = 60, Y = 0, Z = -40}
-SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw_Max = 1000, Roll_Min = -200, Roll_Max = 100}
-SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
-SWEP.ShellAttachmentName = "1"
-SWEP.ShellDelay = 0.001
-SWEP.ShellScale = 0.5
-SWEP.ShellModel = "models/weapons/shell.mdl"
-SWEP.ShellEjectVelocity = 0
+SWEP.NoShells = true
 
 SWEP.MuzzleAttachmentName = "spark"
 SWEP.MuzzleEffect = {}
@@ -130,7 +122,6 @@ function SWEP:TumbleMissile(ent)
 end
 
 function SWEP:FireMissile()
-	if CLIENT then return end
 	local ply = self.Owner
 	local dir = ply:EyeAngles():Forward()
 	local ent = ents.Create( "rpg_missile" )
@@ -159,25 +150,31 @@ function SWEP:Reload()
 end
 
 function SWEP:PrimaryAttackOverride()
-	self:FireMissile()
-	
-	if !IsValid(self.LaserDot) then
-		self.LaserDot = ents.Create( "env_laserdot" )
-		self.LaserDot:SetSaveValue("m_hOwner", self.Owner)
-		self.LaserDot:SetOwner(self.Owner)
+	if SERVER then
+		self:FireMissile()
+		
+		if !IsValid(self.LaserDot) then
+			self.LaserDot = ents.Create( "env_laserdot" )
+			self.LaserDot:SetSaveValue("m_hOwner", self.Owner)
+			self.LaserDot:SetOwner(self.Owner)
+		end
 	end
 end
 
 function SWEP:OnRemove()
-	if IsValid(self.LaserDot) then
-		self.LaserDot:Remove()
+	if SERVER then
+		if IsValid(self.LaserDot) then
+			self.LaserDot:Remove()
+		end
 	end
 end
 
 function SWEP:AdditionalThink()
-	local ld = self.LaserDot
-	local pos = self.Owner:GetEyeTrace().HitPos
-	if IsValid(ld) and pos then
-		ld:SetPos(pos)
+	if SERVER then
+		local ld = self.LaserDot
+		local pos = self.Owner:GetEyeTrace().HitPos
+		if IsValid(ld) and pos then
+			ld:SetPos(pos)
+		end
 	end
 end

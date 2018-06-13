@@ -26,12 +26,12 @@ SWEP.ScriptedEntityType = "phunbase_weapon_hl2"
 SWEP.Primary.Ammo = "ar2"
 SWEP.Primary.ClipSize = 30
 SWEP.Primary.DefaultClip = SWEP.Primary.ClipSize
-SWEP.Primary.Automatic = true
 SWEP.Primary.Damage = 20
 SWEP.Primary.Delay = 0.1
 SWEP.Primary.Force = 5
 SWEP.Primary.Bullets = 1
-SWEP.Primary.Tracer = 0
+
+SWEP.FireModes = {"auto"}
 
 // Recoil variables
 SWEP.Recoil	= 0.45
@@ -95,14 +95,6 @@ SWEP.ReloadTime = 1.9
 SWEP.ViewModelMovementScale = 0.8
 
 // shell-related stuff
-SWEP.ShellVelocity = {X = 60, Y = 0, Z = -40}
-SWEP.ShellAngularVelocity = {Pitch_Min = -500, Pitch_Max = 200, Yaw_Min = 0, Yaw_Max = 1000, Roll_Min = -200, Roll_Max = 100}
-SWEP.ShellViewAngleAlign = {Forward = 0, Right = -90, Up = 0}
-SWEP.ShellAttachmentName = "1"
-SWEP.ShellDelay = 0.001
-SWEP.ShellScale = 0.5
-SWEP.ShellModel = "models/weapons/shell.mdl"
-SWEP.ShellEjectVelocity = 0
 SWEP.NoShells = true
 
 SWEP.MuzzleAttachmentName = "muzzle"

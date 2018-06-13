@@ -86,9 +86,11 @@ function SWEP:_makeShell(instant)
 		self:DelayedEvent((self.ShellDelay and !instant) and self.ShellDelay or 0.01, function()
 			att = vm:GetAttachment(vm:LookupAttachment( self:GetShellAttachmentName() ))
 			
-			pos = att.Pos
-			ang = att.Ang
-			velocity = self.Owner:GetVelocity() + ang:Forward() * (self.ShellEjectVelocity or 80)
+			if !att then return end
+			
+			pos = Vector(att.Pos)
+			ang = Angle(att.Ang)
+			velocity = self.Owner:GetVelocity()
 			
 			align = self.ShellViewAngleAlign or Angle(0,-90,0)
 			ang:RotateAroundAxis(ang:Forward(), align.Forward)
@@ -99,7 +101,9 @@ function SWEP:_makeShell(instant)
 				pos,
 				ang,
 				velocity,
-				shellTable
+				shellTable,
+				att.Pos,
+				att.Ang
 			)
 			
 			self:_registerVMShell(shellEnt)

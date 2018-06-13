@@ -1,0 +1,28 @@
+"VertexLitGeneric"
+{
+	"$basetexture"	"phunbase\attachments\fas2_watch_realtime\hand_plane_min"
+	"$translucent" "1"
+	"$color2" "[0.7 0.7 0.7]"
+	"$halflambert" "1"
+	"$rimlight" "1"
+	
+	"$angle" 0.0
+	"$translate" "[0 0]"
+	"$center" "[0.5 0.5]"
+
+	"Proxies"
+	{
+		"FAS2_WATCH_REALTIME_Minutes"
+		{
+			"resultVar" "$angle"
+		}
+
+		"TextureTransform"
+		{
+			"translateVar" "$translate"
+			"rotateVar" "$angle"
+			"centerVar" "$center"
+			"resultVar" "$basetexturetransform"
+		}
+	}
+}

@@ -120,6 +120,10 @@ if CLIENT then
 		self.RTScope_Lense:SetVector("$envmaptint", self.LenseTint)
 	end
 	
+	local texturizeMat = Material("pp/texturize/rainbow.png")
+	local pb_rtscope_texturizeMat = Material( "phunbase/rt_scope/pb_scope_rt_texturize" )
+	local oldE = NULL
+	
 	function SWEP:DrawRT()
 		if !IsValid(self.VM) then return end
 	
@@ -200,27 +204,41 @@ if CLIENT then
 				surface.DrawTexturedRect(0, 0, RTSize, RTSize)
 			end
 			
+			if self.RTScope_IsThermal then
+				surface.SetMaterial(pb_rtscope_texturizeMat)
+				surface.DrawTexturedRect(0, 0, RTSize, RTSize)
+			end
+			
 			surface.SetMaterial(self.LensVignette)
 			surface.DrawTexturedRect(0, 0, RTSize, RTSize)
 
 			surface.SetDrawColor(255, 255, 255, self.RTScope_ReticleAlways and 255 or (255 - self.ScopeAlpha))
 			surface.SetMaterial(self.RTScope_Reticle)
-			//surface.DrawTexturedRect(0, 0, RTSize, RTSize)
-			//PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, 0)
 			PHUNBASE.DrawCenterRotatedRect(0, 0, RTSize, RTSize, self.RTScope_Rotate)
 
 			if self.RTScope_DrawIris then
 				self:DrawScopeIris()
 			end
 		cam.End2D()
-
+		
 		if !self._Scope then
 			self._Scope = self.RTScope_Material
-			self._Scope:SetTexture("$basetexture", self._ScopeRT)
+			self._Scope:SetTexture("$basetexture", self._ScopeRT) 
+			pb_rtscope_texturizeMat:SetTexture( "$fbtexture", self._ScopeRT )
 		end
+		
+		PB_RTScope_Texturize_Draw( pb_rtscope_texturizeMat, 1, texturizeMat )
+		
 		render.SetViewPort(0, 0, oldX, oldY)
 		render.SetRenderTarget(oldRT)
 		
 		self:DrawScopeLense()
 	end
+
+	function PB_RTScope_Texturize_Draw( targetMat, scale, pMaterial )
+		targetMat:SetFloat( "$scalex", ( ScrW() / 64 ) * scale )
+		targetMat:SetFloat( "$scaley", ( ScrH() / 64 / 8 ) * scale )
+		targetMat:SetTexture( "$basetexture", pMaterial:GetTexture( "$basetexture" ) )
+	end
+	
 end

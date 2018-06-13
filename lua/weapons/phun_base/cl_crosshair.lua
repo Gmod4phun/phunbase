@@ -17,6 +17,8 @@ local col_yel = Color(255, 208, 64)
 local col_red = Color(255, 48, 0)
 
 function SWEP:DrawHUD()
+	self:_drawCustomHud()
+	
 	local scrw, scrh = ScrW(), ScrH()
 	surface.SetFont("PHUNBASE_HL2_CROSSHAIR")
 	local t_w, t_h = surface.GetTextSize("[")
@@ -99,7 +101,7 @@ function SWEP:DrawHUD()
 		draw.OutlinedRect(cross_bwin, cross_bwout, x, y + cross_gap, 3, 18, 1)
 	end
 	
-	if self:GetIron() or self:GetIsReloading() or self:GetIsSprinting() or self:GetIsNearWall() or self:GetIsUnderwater() or self:GetIsOnLadder() or (self:GetIsDeploying() and self:GetIsSprinting())or self:GetIsHolstering() then
+	if self:GetIron() or self:GetIsReloading() or self:GetIsSprinting() or self:GetIsNearWall() or self:GetIsUnderwater() or self:GetIsOnLadder() or self:GetIsCustomizing() or (self:GetIsDeploying() and self:GetIsSprinting())or self:GetIsHolstering() then
 		self.ShouldDrawBWCross = false
 	else
 		self.ShouldDrawBWCross = true

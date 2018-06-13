@@ -45,6 +45,9 @@ SWEP.Secondary.ClipSize = -1
 SWEP.Secondary.DefaultClip = -1
 SWEP.Secondary.Automatic = true
 
+SWEP.FireModes = {"auto"}
+SWEP.HUD_NoFiremodes = true
+
 SWEP.PB_VMPOS = Vector(0,0,0) // ViewModel position
 SWEP.PB_VMANG = Angle(0,0,0) // ViewModel angles
 
@@ -250,4 +253,7 @@ function SWEP:AdditionalThink()
 			self:SetIsWaiting(false)
 		end
 	end
+end
+
+function SWEP:Reload()
 end

@@ -1,59 +1,58 @@
 local SP = game.SinglePlayer()
 local vm
 
-function SWEP:PlayVMSequence(anim, speed, cycle)
+function SWEP:PlayVMSequence(anim, speed, cycle, noSound)
 	if not anim then
 		return
 	end
 	
 	speed = speed or 1
 	cycle = cycle or 0
+	noSound = noSound or false
 	
 	if SERVER then
 		self:SetActiveSequence(anim)
 	end
 
-	if SP and SERVER then
+	if SERVER then
 		if !self.Owner:IsPlayer() then return end
 		umsg.Start("PHUNBASE_ANIMATE", self.Owner)
 			umsg.String(anim)
 			umsg.Float(speed)
 			umsg.Float(cycle)
+			umsg.Bool(noSound)
 		umsg.End()
 		return
 	end
 	
-	self:_playAnim(anim, speed, cycle)
+	self:_playAnim(anim, speed, cycle, noSound)
 end
 
-function SWEP:_playAnim(anim, speed, cycle, ent)
-	ent = ent or self.VM
+function SWEP:_playAnim(anim, speed, cycle, noSound)
+	if SERVER then return end
+
+	local ent = self.VM
 	cycle = cycle or 0
 	speed = speed or 1
+	noSound = noSound or false
 	
-	local foundAnim = anim
+	local foundAnim = self.Sequences[anim]
 	
-	if ent == self.VM then
-		foundAnim = self.Sequences[anim]
-		
-		if not foundAnim then
-			return
-		end
-		
-		if type(foundAnim) == "table" then
-			foundAnim = table.Random(foundAnim)
-		end
-		
-		if self.Sounds then
-			if self.Sounds[foundAnim] then
-				self:setCurSoundTable(self.Sounds[foundAnim], speed, cycle, foundAnim)
-			else
-				self:removeCurSoundTable()
-			end
+	if not foundAnim then
+		return
+	end
+	
+	if type(foundAnim) == "table" then
+		foundAnim = table.Random(foundAnim)
+	end
+	
+	if !noSound and self.Sounds then
+		if self.Sounds[foundAnim] then
+			self:setCurSoundTable(self.Sounds[foundAnim], speed, cycle, foundAnim)
+		else
+			self:removeCurSoundTable()
 		end
 	end
-
-	if SERVER then return end
 	
 	ent:ResetSequence(foundAnim)
 	if cycle > 0 then ent:SetCycle(cycle) else ent:SetCycle(0) end
@@ -198,6 +197,7 @@ if CLIENT then
 		local anim = um:ReadString()
 		local speed = um:ReadFloat()
 		local cycle = um:ReadFloat()
+		local noSound = um:ReadBool()
 		
 		local ply = LocalPlayer()
 		local wep = ply:GetActiveWeapon()
@@ -207,7 +207,7 @@ if CLIENT then
 		end
 		
 		if wep.PlayVMSequence then
-			wep:PlayVMSequence(anim, speed, cycle)
+			wep:PlayVMSequence(anim, speed, cycle, noSound)
 		end
 	end
 	usermessage.Hook("PHUNBASE_ANIMATE", PHUNBASE_ANIMATE)

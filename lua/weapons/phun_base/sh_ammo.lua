@@ -33,6 +33,22 @@ if SERVER then
 			net.WriteString(new)
 		net.Broadcast()
 	end
+	
+	SWEP.ExtraSpawnAmmo = {}
+	function SWEP:GiveExtraAmmoOnSpawn()
+		for name, count in pairs(self.ExtraSpawnAmmo) do
+			if isnumber(count) and isstring(name) then
+				self.Owner:GiveAmmo(count, name, false)
+			end
+		end
+	end
+	
+	function SWEP:Equip()
+		if !self._hasGivenExtraSpawnAmmo then
+			self._hasGivenExtraSpawnAmmo = true
+			self:GiveExtraAmmoOnSpawn()
+		end
+	end
 end
 
 if CLIENT then

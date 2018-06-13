@@ -1,25 +1,31 @@
 AddCSLuaFile()
 
 PHUNBASE = PHUNBASE or {}
+
 PHUNBASE.SpawnIcons = PHUNBASE.SpawnIcons or {}
+PHUNBASE.registeredAmmoTypes = PHUNBASE.registeredAmmoTypes or {}
 
 function PHUNBASE.addAmmoType(globalName,prettyName)
 	game.AddAmmoType({name = globalName, dmgtype = DMG_BULLET, tracer = TRACER_NONE})
 	if CLIENT then
 		language.Add(globalName.."_ammo", prettyName)
 	end
+	PHUNBASE.registeredAmmoTypes[globalName] = prettyName
 end
 
 PHUNBASE.addAmmoType("phunbase_9mm","9x19mm Parabellum")
 PHUNBASE.addAmmoType("phunbase_45acp",".45 ACP")
 PHUNBASE.addAmmoType("phunbase_357sig",".357 SIG")
-PHUNBASE.addAmmoType("phunbase_57x28FN","5.7x28mm FN")
+PHUNBASE.addAmmoType("phunbase_57x28FN","5.7x28mm")
 PHUNBASE.addAmmoType("phunbase_50ae",".50 AE")
-PHUNBASE.addAmmoType("phunbase_556","5.56x45mm NATO")
+PHUNBASE.addAmmoType("phunbase_556x45","5.56x45mm NATO")
 PHUNBASE.addAmmoType("phunbase_762x51","7.62x51mm NATO")
 PHUNBASE.addAmmoType("phunbase_338",".338 Lapua Magnum")
 PHUNBASE.addAmmoType("phunbase_50bmg",".50 BMG")
 PHUNBASE.addAmmoType("phunbase_12gauge","12 Gauge")
+PHUNBASE.addAmmoType("phunbase_545x39","5.45x39mm")
+PHUNBASE.addAmmoType("phunbase_762x39","7.62x39mm")
+PHUNBASE.addAmmoType("phunbase_40mm_he","40MM HE Grenade")
 
 function PHUNBASE.LoadLua(file)
 	if file then
@@ -173,6 +179,18 @@ function PHUNBASE.SelectWeapon(ply, class)
 	end
 end
 
+function PHUNBASE.DropWeapon(ply, class)
+	if !IsValid(ply) then return end
+	if !ply:HasWeapon(class) then return end
+	
+	ply:DropWeapon(ply:GetWeapon(class))
+end
+concommand.Add("pb_dropactiveweapon", function(ply)
+	local wep = ply:GetActiveWeapon()
+	if !IsValid(wep) then return end
+	PHUNBASE.DropWeapon(ply, ply:GetActiveWeapon():GetClass())
+end)
+
 function PHUNBASE.HL2_SLAM_BEAM_Fix()
 	for k, v in pairs(ents.FindByClass("beam")) do // removes SLAM beams that no longer have a parent
 		if !IsValid(v:GetParent()) then
@@ -209,31 +227,6 @@ if CLIENT then
 		
 	end
 	usermessage.Hook("PHUNBASE_WEAPONGIVE_PLAYER", PHUNBASE_WEAPONGIVE_PLAYER)
-	
-	local function BuildFixedWeaponList() // addition of ScriptedEntityType into weapons list
-		local WEAPONS_ClassToType = {}
-		for _, v in pairs(weapons.GetList()) do
-			if v.ScriptedEntityType != nil then
-				WEAPONS_ClassToType[v.ClassName] = v.ScriptedEntityType
-			end
-		end
-		
-		for _, v in pairs(list.GetForEdit("Weapon")) do
-			v.ScriptedEntityType = WEAPONS_ClassToType[v.ClassName]
-		end
-	end
-	
-	function PHUNBASE.FixWeaponList()
-		timer.Simple(0.5, function() 
-			BuildFixedWeaponList()
-			RunConsoleCommand("spawnmenu_reload")
-			print("PHUNBASE ScriptedEntityClass fix applied!")
-		end)
-	end
-	
-	hook.Add("InitPostEntity", "PHUNBASE_SCRIPTEDENTITYTYPE_FIX", function()
-		PHUNBASE.FixWeaponList()
-	end)
 	
 	/* // does not work yet, since Subrect shader is not creatable from Lua
 	function PHUNBASE.SubrectMaterial(name, file, x, y, w, h)

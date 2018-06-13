@@ -2,7 +2,7 @@ if !CLIENT then return end
 
 SWEP.UseHaloEffect = false -- disabled by default
 
-function PHUNBASE_CalcHaloFOV( num ) // calculates the camera FOV for the halo rendering depending on viewmodel FOV
+function PHUNBASE.CalcCameraFromVMFOV( num ) // calculates the camera FOV for the halo rendering depending on viewmodel FOV
 	local r = ScrW() / ScrH() // our resolution
 	r =  r / (4/3) // 4/3 is base Source resolution, so we have do divide our resolution by that
 	local tan, atan, deg, rad = math.tan, math.atan, math.deg, math.rad
@@ -38,6 +38,6 @@ hook.Add("PreDrawHalos", "PHUNBASE_VM_Halo_Test", function() // uses modified ha
 				table.insert(haloents, shellent)
 			end
 		end
-		halo_phunbase.Add(haloents, HSVToColor( CurTime() * 500 % 360, 1, 1 ), 2, 2, 2, true, true, PHUNBASE_CalcHaloFOV( wep.ViewModelFOV ))
+		halo_phunbase.Add(haloents, HSVToColor( CurTime() * 500 % 360, 1, 1 ), 2, 2, 2, true, true, PHUNBASE.CalcCameraFromVMFOV( wep.ViewModelFOV ))
 	end
 end)

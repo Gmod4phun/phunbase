@@ -1,18 +1,31 @@
 function SWEP:Reload()
-	if IsFirstTimePredicted() then
-		if self.CockAfterShot and self.ShouldBeCocking and (!self.DontCockWhenEmpty or (self.DontCockWhenEmpty and self:Clip1() > 0)) then
+	if self:GetIsCustomizing() then return end
+	
+	//if IsFirstTimePredicted() then
+		if #self.FireModes > 1 and self.Owner:KeyDown(IN_USE) and !self:GetIsSprinting() and !self:IsBusy() and !self:GetIsWaiting() then
+			self:CycleFiremodes()
+			return
+		end
+	
+		if self.CockAfterShot and self:GetShouldBeCocking() and (!self.DontCockWhenEmpty or (self.DontCockWhenEmpty and self:Clip1() > 0)) then
 			if !self:IsFiring() and !self:IsBusy() and !self.IsCocking then
 				if self.DontCockWhenSprinting and self:GetIsSprinting() then return end
-				self:Cock()
+				if IsFirstTimePredicted() then
+					self:Cock()
+				end
 			end
 		else
 			if (self:Clip1() < 1 and self.DontCockWhenEmpty) then
 				self.IsCocking = false
-				self.ShouldBeCocking = false
+				self:SetShouldBeCocking(false)
 			end
-			self:_realReloadStart()
+			if !self:GetIron() then
+				if IsFirstTimePredicted() then
+					self:_realReloadStart()
+				end
+			end
 		end
-	end
+	//end
 end
 
 function SWEP:CockAnimLogic()
@@ -22,10 +35,10 @@ end
 function SWEP:Cock()
 	if CLIENT then return end
 	
-	if !self.ShouldBeCocking then return end
+	if !self:GetShouldBeCocking() then return end
 	
 	self:SetIsWaiting(true)
-	self.ShouldBeCocking = false
+	self:SetShouldBeCocking(false)
 	self.IsCocking = true
 	self:DelayedEvent(self.CockAfterShotTime, function() self.IsCocking = false end)
 	self:DelayedEvent(self.CockAfterShotTime + 0.1, function() self:SetIsWaiting(false) end)
@@ -43,7 +56,14 @@ end
 
 function SWEP:_realReloadStart()
 	local ply = self.Owner
-	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self.ShouldBeCocking or self.DisableReloading then return end
+	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self:GetShouldBeCocking() or self.DisableReloading or self:IsGlobalDelayActive() then return end
+	
+	if self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
+			if IsFirstTimePredicted() then
+				self:GrenadeLauncherModeReload()
+			end
+		return
+	end
 	
 	self.HadInClip = self:Clip1()
 	self.WasEmpty = self.HadInClip == 0
@@ -131,6 +151,12 @@ function SWEP:_shotgunReloadAddAmmo(delay)
 	end)
 end
 
+function SWEP:_shotgunReloadRemoveAmmo(delay)
+	self:DelayedEvent(delay or 0, function()
+		self:SetClip1(self:Clip1() - 1)
+	end)
+end
+
 function SWEP:ShotgunReloadStartLogic()
 	self:PlayVMSequence(self.WasEmpty and "reload_shell_start_empty" or "reload_shell_start")
 end
@@ -151,6 +177,12 @@ function SWEP:_shotgunReloadBegin()
 	end
 	
 	self.ShotgunInsertedShells = ((self.ShotgunReload_InsertOnStart and !self.WasEmpty) or (self.ShotgunReload_InsertOnStartEmpty and self.WasEmpty)) and 1 or 0
+	
+	if self.ShotgunReload_EjectOnStart and !self.WasEmpty then
+		self.ShotgunInsertedShells = self.ShotgunInsertedShells - 1
+		self:_shotgunReloadRemoveAmmo(self.ShotgunReloadTime_EjectOnStart)
+	end
+	
 	if (self.ShotgunReload_InsertOnStart and !self.WasEmpty) or (self.ShotgunReload_InsertOnStartEmpty and self.WasEmpty) then
 		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTime_InsertOnStartEmptyAmmoWait or self.ShotgunReloadTime_InsertOnStartAmmoWait)
 	end
