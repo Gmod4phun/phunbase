@@ -604,6 +604,7 @@ local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
 			local l = dlist:AddLine((v.name).."  |  "..(v.menuName))
 			l.strToCopy = v.name
 		end
+        dlist:SortByColumn(1)
 	end
 	dlistcolumn:fillWithInfo()
 	
@@ -631,6 +632,7 @@ local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
 			local l = dlist:AddLine(k.."  |  "..v)
 			l.strToCopy = k
 		end
+        dlist:SortByColumn(1)
 	end
 	dlistcolumn:fillWithInfo()
 	
@@ -658,6 +660,7 @@ local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
 			local l = dlist:AddLine(k.."  |  "..v.display)
 			l.strToCopy = k
 		end
+        dlist:SortByColumn(1)
 	end
 	dlistcolumn:fillWithInfo()
 	
