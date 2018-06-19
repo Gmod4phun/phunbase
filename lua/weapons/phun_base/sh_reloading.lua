@@ -54,6 +54,18 @@ function SWEP:Cock()
 	end
 end
 
+if SERVER then
+    util.AddNetworkString("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
+end
+
+if CLIENT then
+    net.Receive("PB_NET_RELOADING_HADINCLIP_WASEMPTY", function()
+        local wep, had, was = net.ReadEntity(), net.ReadFloat(), net.ReadBool()
+        wep.HadInClip = had
+        wep.WasEmpty = was
+    end)
+end
+
 function SWEP:_realReloadStart()
 	local ply = self.Owner
 	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self:GetShouldBeCocking() or self.DisableReloading or self:IsGlobalDelayActive() then return end
@@ -67,6 +79,14 @@ function SWEP:_realReloadStart()
 	
 	self.HadInClip = self:Clip1()
 	self.WasEmpty = self.HadInClip == 0
+    
+    if SERVER then // send this to the client
+        net.Start("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
+            net.WriteEntity(self)
+            net.WriteFloat(self.HadInClip)
+            net.WriteBool(self.WasEmpty)
+        net.Send(ply)
+    end
 	
 	if !(self.HadInClip < self.Primary.ClipSize + ((!self.WasEmpty and self.Chamberable and !self.ShotgunReload) and 1 or 0)) or ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then return end
 	if self:GetNextPrimaryFire() > CurTime() or self:GetNextSecondaryFire() > CurTime() then return end
