@@ -4,9 +4,8 @@ PHUNBASE.registeredAmmoTypes = PHUNBASE.registeredAmmoTypes or {}
 
 function PHUNBASE.addAmmoType(globalName, prettyName)
     if PHUNBASE.registeredAmmoTypes[globalName] then
-        print("The ammotype you are trying to add already exists")
+        print("The ammotype  "..globalName.."  already exists")
         return
-        
     end
     
 	game.AddAmmoType({name = globalName, dmgtype = DMG_BULLET, tracer = TRACER_NONE})

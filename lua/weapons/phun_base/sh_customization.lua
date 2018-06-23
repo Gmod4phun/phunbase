@@ -398,6 +398,9 @@ if CLIENT then
 	local stopBinds = {
 		["invprev"] = true,
 		["invnext"] = true,
+        ["lastinv"] = true,
+        ["+attack"] = true,
+        ["+attack2"] = true,
 	}
 	hook.Add("PlayerBindPress", "PB_CUSTOMIZATION_MENU_BINDPRESS", function(ply, bind, pressed)
 		local wep = ply:GetActiveWeapon()

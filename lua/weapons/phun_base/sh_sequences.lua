@@ -82,6 +82,9 @@ function SWEP:_playMuzzleEffect()
 	if !IsValid(vm) then return end
 	
 	local att = vm:LookupAttachment( self:GetMuzzleAttachmentName() )
+    
+    local isSup = self.IsSuppressed
+    local muzTab = isSup and self.MuzzleEffectSuppressed or self.MuzzleEffect
 	
 	if att or (self.CustomEjectionSourceEnt) then
 	
@@ -89,25 +92,28 @@ function SWEP:_playMuzzleEffect()
 		
 		if muz or (self.CustomEjectionSourceEnt) then
 
-			if type(self.MuzzleEffect) == "table" then
-				for _, particle in pairs(self.MuzzleEffect) do
+			if type(muzTab) == "table" then
+				for _, particle in pairs(muzTab) do
 					if type(particle) == "string" then
 						ParticleEffectAttach(particle, self.CustomEjectionSourceEnt and PATTACH_ABSORIGIN_FOLLOW or PATTACH_POINT_FOLLOW, vm, att)
 					end
 				end
-			elseif type(self.MuzzleEffect) == "string" then
-				ParticleEffectAttach(self.MuzzleEffect, self.CustomEjectionSourceEnt and PATTACH_ABSORIGIN_FOLLOW or PATTACH_POINT_FOLLOW, vm, att)
+			elseif type(muzTab) == "string" then
+				ParticleEffectAttach(muzTab, self.CustomEjectionSourceEnt and PATTACH_ABSORIGIN_FOLLOW or PATTACH_POINT_FOLLOW, vm, att)
 			end
 			
-			local dlight = DynamicLight(self:EntIndex())
-			dlight.r = 250
-			dlight.g = 250
-			dlight.b = 50
-			dlight.Brightness = 5
-			dlight.Pos = (self.CustomEjectionSourceEnt) and vm:GetPos() or muz.Pos + self.Owner:GetAimVector() * 3
-			dlight.Size = 128
-			dlight.Decay = 1000
-			dlight.DieTime = CurTime() + 1
+            
+            if !isSup then
+                local dlight = DynamicLight(self:EntIndex())
+                dlight.r = 250
+                dlight.g = 250
+                dlight.b = 50
+                dlight.Brightness = 5
+                dlight.Pos = (self.CustomEjectionSourceEnt) and vm:GetPos() or muz.Pos + self.Owner:GetAimVector() * 3
+                dlight.Size = 128
+                dlight.Decay = 1000
+                dlight.DieTime = CurTime() + 1
+            end
 			
 		end
 	end

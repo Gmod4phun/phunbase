@@ -217,6 +217,7 @@ SWEP.MuzzleAttachmentName = "muzzle" // vm attachment name for muzzleflash
 SWEP.MuzzleAttachmentName_L = "muzzle_left" // used by dual weapons, vm attachment name for muzzleflash, left gun
 SWEP.MuzzleAttachmentName_R = "muzzle_right" // used by dual weapons, vm attachment name for muzzleflash, right gun
 SWEP.MuzzleEffect = {"smoke_trail"} // table of Particle Effect names to use as muzzleflash
+SWEP.MuzzleEffectSuppressed = {"smoke_trail"} // same as above, when suppressed
 
 SWEP.NoShells = false // disables shells when firing
 SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0} // the directional velocity applied to the shell based on the axis of the ShellEject Attachment
@@ -375,7 +376,10 @@ function SWEP:OnReloaded()
 	
 	self:RemoveAllAttachments()
 	
-	self:SelectFiremode(self.FireModes[1])
+    if self.FireModes and #self.FireModes > 0 then
+        self.FireModes.last = 1
+        self:SelectFiremode(self.FireModes[1])
+    end
 	
 	if CLIENT then
 		self:setupAttachmentModels()
