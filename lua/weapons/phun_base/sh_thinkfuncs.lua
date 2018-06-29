@@ -255,7 +255,9 @@ function SWEP:_SprintThink()
 		end
 	end
 	
-	self:SprintClientLogic()
+    if !self:GetIsWaiting() then
+        self:SprintClientLogic()
+    end
 end
 
 function SWEP:NearWallAnimLogic()

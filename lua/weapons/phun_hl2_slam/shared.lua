@@ -461,7 +461,7 @@ function SWEP:AdditionalThink()
 		end
 		
 		if self.NadeThrowState == 1 and self.NextNadeAction and CurTime() > self.NextNadeAction then
-			self:CreateNade()
+			self:CreateNade(self.NadeFuseTime)
 			ply:SetAnimation(PLAYER_ATTACK1)
 			
 			self.NadeThrowState = 2

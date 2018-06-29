@@ -5,7 +5,7 @@ SWEP.Category = "PHUNBASE | HL2"
 SWEP.Slot = 2
 SWEP.SlotPos = 1
 
-include("sounds.lua")
+PHUNBASE.LoadLua("sounds.lua")
 
 SWEP.ViewModelFOV = 54
 SWEP.AimViewModelFOV = 54

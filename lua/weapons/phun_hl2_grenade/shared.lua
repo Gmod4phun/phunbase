@@ -75,7 +75,13 @@ SWEP.NadeGetReadyTime = 0
 SWEP.NadeThrowWaitTime = 0.17
 SWEP.NadeRedeployWaitTime = 0.25
 
+SWEP.NadeCookable = true
+SWEP.NadeCookableAlt = true
+SWEP.NadeGetReadyTimeCooking = 0
+SWEP.NadeCookStartTime = 0
+
 SWEP.SwitchAfterThrow = false
+SWEP.LockThrowStateOnInit = true // without this we cant cook the nade
 
 function SWEP:TossNade(ent)
 	local ply = self.Owner
@@ -104,7 +110,7 @@ function SWEP:TossNade(ent)
 			phys:SetVelocity(ea:Forward() * force * 0.75)
 			phys:AddAngleVelocity(Vector(0, 0, 0))
 		else
-			phys:SetVelocity(EA:Forward() * force * self.ThrowPower + Vector(0, 0, 100))
+			phys:SetVelocity(EA:Forward() * force * self._ThrowPower + Vector(0, 0, 100))
 			phys:AddAngleVelocity(Vector(450, -550, -420))
 		end
 	end
@@ -119,7 +125,8 @@ function SWEP:OnNadeTossed()
 	nade:SetSaveValue("m_hThrower", ply)
 	nade:SetSaveValue("m_flDamage", 125)
 	nade:SetSaveValue("m_takedamage", 1) // does not get blown up by other nades, bounces away
-	nade:Fire("SetTimer", self.NadeFuseTime)
+    
+	nade:Fire("SetTimer", nade.FuseTime - CurTime())
 end
 
 if SERVER then

@@ -17,7 +17,7 @@ local col_yel = Color(255, 208, 64)
 local col_red = Color(255, 48, 0)
 
 function SWEP:DrawHUD()
-	self:_drawCustomHud()
+	self:_drawPhunbaseHud()
 	
 	local scrw, scrh = ScrW(), ScrH()
 	surface.SetFont("PHUNBASE_HL2_CROSSHAIR")

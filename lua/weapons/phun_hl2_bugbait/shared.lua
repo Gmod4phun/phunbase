@@ -144,7 +144,7 @@ function SWEP:AdditionalThink()
 	if self.ReadyToThrow and self.NextNadeAction and CurTime() > self.NextNadeAction then
 		self.NextNadeAction = nil
 		self.ReadyToThrow = false
-		self:CreateNade()
+		self:CreateNade(0)
 		self.RedeployTime = CurTime() + self.NadeRedeployWaitTime
 		ply:SetAnimation(PLAYER_ATTACK1)
 	end

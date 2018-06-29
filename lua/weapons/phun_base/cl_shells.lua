@@ -19,6 +19,23 @@ function SWEP:_registerVMShell(ent)
 	end
 end
 
+function SWEP:_registerVMShellDrawWorld(ent)
+	ent:SetNoDraw(true)
+	ent._drawAsVM = 0
+	
+	table.insert(self._deployedShells, ent)
+	
+	local i = 1
+
+	for _ = 1, #self._deployedShells do
+		if !IsValid(self._deployedShells[i]) then
+			table.remove(self._deployedShells, i)
+		else
+			i = i + 1
+		end
+	end
+end
+
 //-----------------------------------------------------------------------------
 // drawVMShells iterates SWEPs table of active shells and draws them
 //-----------------------------------------------------------------------------
@@ -137,4 +154,40 @@ if CLIENT then
 		wep:MakeShell()
 	end
 	usermessage.Hook("PHUNBASE_MAKESHELL", PHUNBASE_MAKESHELL)
+end
+
+function SWEP:_createCustomClientPhysEnt(pos, ang, mdl, mdlscale, impactsnd)
+	if self.Owner:ShouldDrawLocalPlayer() then
+		return
+	end
+	
+	shellTable.model = mdl
+	shellTable.scale = mdlscale
+	shellTable.sound = impactsnd
+	
+	shellTable.velmin_P = 0
+	shellTable.velmax_P = 500
+	shellTable.velmin_Y = 0
+	shellTable.velmax_Y = 500
+	shellTable.velmin_R = 0
+	shellTable.velmax_R = 500
+	
+	shellTable.veladd_X = 50
+	shellTable.veladd_Y = 0
+	shellTable.veladd_Z = 0
+	
+	shellTable.wep = self
+    
+    velocity = self.Owner:GetVelocity()
+    
+    shellEnt = PHUNBASE.shells:make(
+        pos,
+        ang,
+        velocity,
+        shellTable,
+        pos,
+        ang
+    )
+    
+    self:_registerVMShellDrawWorld(shellEnt)
 end

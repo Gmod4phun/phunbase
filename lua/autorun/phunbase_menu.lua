@@ -501,7 +501,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 	end
 	panel:AddItem(rebuildiconsbtn)
 
-	panel:AddControl("Label", {Text = "HL2 Weapon Settings"})
+	panel:AddControl("Label", {Text = "\nHL2 Weapon Settings"})
 
 	local hl2_replace_checkbox = vgui.Create("DCheckBoxLabel", panel)
 	hl2_replace_checkbox:SetText("ADMIN: Replace default HL2 Weapons?")
@@ -521,7 +521,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 		end
 	end
 	panel:AddItem(hl2_replace_checkbox)
-
+    
 	local slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(0)
 	slider:SetMin(0)
@@ -531,16 +531,22 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetText("Use HL2 crosshair?")
 	slider:SetTooltip("0 = disable, 1 = HL2 weapons only, 2 = all weapons")
 	panel:AddItem(slider)
-
-	panel:AddControl("Label", {Text = "PHUNBASE Settings"})
-
+    
+	panel:AddControl("Label", {Text = "\nPHUNBASE Settings"})
+    
 	local cb = vgui.Create("DCheckBoxLabel", panel)
+	cb:SetText("Offset VM slightly when crouching?")
+	cb:SetConVar("phunbase_vm_crouchoffset")
+	cb:SetTextColor(clrBlack)
+	panel:AddItem(cb)
+    
+	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable engine blur?")
 	cb:SetConVar("mat_motion_blur_enabled")
 	cb:SetTooltip("Toggles engine blur. Required for IRON blur")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-
+    
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable reload Blur?")
 	cb:SetConVar("phunbase_blur_reload")
@@ -552,13 +558,13 @@ local function PHUNBASE_MENU_PANEL(panel)
 	cb:SetConVar("phunbase_blur_custmenu")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-
+    
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable ironsight Blur?")
 	cb:SetConVar("phunbase_blur_iron")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-
+    
 	local slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(2)
 	slider:SetMin(0)
@@ -567,19 +573,24 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetValue(GetConVarNumber("phunbase_blur_iron_mod"))
 	slider:SetText("Ironsight Blur Modifier")
 	panel:AddItem(slider)
-	
+	panel:AddControl("Label", {Text = "\nPHUNBASE HUD Settings"})
+    
 	cb = vgui.Create("DCheckBoxLabel", panel)
-	cb:SetText("Offset VM slightly when crouching?")
-	cb:SetConVar("phunbase_vm_crouchoffset")
+	cb:SetText("Enable PHUNBASE Hud?")
+	cb:SetConVar("pb_hud_enabled")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-	
-	panel:AddControl("Label", {Text = "Realtime HUD Watch"})
 	
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable a real-time wrist watch on Hud?")
 	cb:SetConVar("pb_fas2_watch_hud_enable")
 	cb:SetTooltip("bind +pb_fas2_watch_hud_zoom to a button to zoom it")
+	cb:SetTextColor(clrBlack)
+	panel:AddItem(cb)
+    
+	cb = vgui.Create("DCheckBoxLabel", panel)
+	cb:SetText("Always show firemodes? (if not disabled on swep)")
+	cb:SetConVar("pb_hud_firemodes_always")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
 end
