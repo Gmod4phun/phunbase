@@ -230,3 +230,21 @@ if CLIENT then
 	end
 	*/
 end
+
+local pbFilesToLoad = {
+    "phunbase_ammotypes.lua",
+    "phunbase_attachments.lua",
+    "phunbase_fas2_watch_realtime.lua",
+    "phunbase_firemodes.lua",
+    "phunbase_halo_experiments.lua",
+    "phunbase_hl2_spawnicons.lua",
+    "phunbase_menu.lua",
+    "phunbase_particles.lua",
+    "phunbase_shells_init.lua",
+    "phunbase_sound.lua",
+    "phunbase_version.lua",
+}
+
+for k, v in pairs(pbFilesToLoad) do
+    PHUNBASE.LoadLua(v)
+end
