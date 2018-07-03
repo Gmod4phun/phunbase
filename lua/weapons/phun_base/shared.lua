@@ -5,6 +5,7 @@ PHUNBASE BASE CODE
 AddCSLuaFile()
 
 PHUNBASE.LoadLua("cl_blur.lua")
+PHUNBASE.LoadLua("cl_calcview.lua")
 PHUNBASE.LoadLua("cl_crosshair.lua")
 PHUNBASE.LoadLua("cl_flashlight.lua")
 PHUNBASE.LoadLua("cl_halo.lua")

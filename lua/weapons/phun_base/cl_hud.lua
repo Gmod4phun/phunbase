@@ -77,10 +77,9 @@ function SWEP:_drawPhunbaseHud()
 	
 	if self.UsesGrenadeLauncher then
 		local glammo = self.Owner:GetAmmoCount(self.GrenadeLauncherAmmoType)
-		
+		glammo = (self:GetGLState() == PB_GLSTATE_RELOADING) and glammo + 1 or glammo
+        
 		local glclip = (self:GetGLState() == PB_GLSTATE_READY) and 1 or 0
-		
-		if glclip == 1 then glammo = glammo - 1 end
 		
 		PHUNBASE.drawShadowText("GL Ammo: "..glclip.."/"..glammo, "PB_HUD_FONT_30", (w * 0.995), (h * 0.85), clr_inactive, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 1, 1)
 	end
