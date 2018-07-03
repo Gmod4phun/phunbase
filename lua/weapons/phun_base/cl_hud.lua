@@ -19,7 +19,8 @@ if CLIENT then
     })
     
     CreateClientConVar("pb_hud_enable", "1", true, false)
-    CreateClientConVar("pb_hud_firemodes_always", "0", true, false)
+    CreateClientConVar("pb_hud_firemodes_enable", "1", true, false)
+    CreateClientConVar("pb_hud_firemodes_displaymode", "0", true, false)
 end
 
 local clr_inactive = Color(255,255,255,255)
@@ -33,6 +34,7 @@ local fireMode
 
 local FT
 local oldWep = NULL
+local fmA
 
 function SWEP:_drawPhunbaseHud()
     if GetConVar("pb_hud_enable"):GetInt() < 1 then return end
@@ -42,35 +44,47 @@ function SWEP:_drawPhunbaseHud()
     
     fireMode = PHUNBASE.firemodes.registeredByID[self.FireMode]
     
-    if GetConVar("pb_hud_firemodes_always"):GetInt() < 1 then
-        if oldFM != fireMode.id or oldWep != self then
-            fAlphaShouldStart = true
-            fAlphaTime = CurTime() + 1.5
-        end
-        
-        oldFM = fireMode.id
-        oldWep = self
-        
-        fAlpha = Lerp(FT * 10, fAlpha, fAlphaShouldStart and 255 or 0)
-        fAlpha = math.Clamp(fAlpha, 0.05, 255)
-        
-        if !fAlphaShouldStart and fAlpha == 0.05 then
-            fAlpha = 0
-        end
-        
-        if fAlphaShouldStart and fAlpha > 254 and fAlphaTime < CurTime() then
-            fAlphaShouldStart = false
-        end
-    else
-        fAlpha = 255
+    if oldFM != fireMode.id or oldWep != self then
+        fAlphaShouldStart = true
+        fAlphaTime = CurTime() + 1.5
     end
+    
+    oldFM = fireMode.id
+    oldWep = self
+    
+    fAlpha = Lerp(FT * 10, fAlpha, fAlphaShouldStart and 255 or 0)
+    fAlpha = math.Clamp(fAlpha, 0.05, 255)
+    
+    if !fAlphaShouldStart and fAlpha == 0.05 then
+        fAlpha = 0
+    end
+    
+    if fAlphaShouldStart and fAlpha > 254 and fAlphaTime < CurTime() then
+        fAlphaShouldStart = false
+    end
+    
+    local fmDisplayMode = GetConVar("pb_hud_firemodes_displaymode"):GetInt()
     
 	if !self.HUD_NoFiremodes then
 		for k, v in pairs(self.FireModes) do
 			local fm = PHUNBASE.firemodes.registeredByID[v]
 			if fm then
 				local isCur = (fm.id == self.FireMode)
-				PHUNBASE.drawShadowText(fm.display, isCur and "PB_HUD_FONT_30" or "PB_HUD_FONT_24", (w * 0.995) - (isCur and 6 or 0), (h * 0.85) - (k * 28), isCur and ColorAlpha(clr_active, fAlpha) or ColorAlpha(clr_inactive,fAlpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, 1)
+                
+                // which firemodes to keep displaying after switching the firemode
+                if fmDisplayMode == 0 then // all firemodes
+                    fmA = 255
+                elseif fmDisplayMode == 1 then // only the active one
+                    if isCur then fmA = 255 else fmA = fAlpha end
+                elseif fmDisplayMode == 2 then // only the active one if it's "safe"
+                    if isCur and fm.id == "safe" then fmA = 255 else fmA = fAlpha end
+                elseif fmDisplayMode == 3 then // none
+                    fmA = fAlpha
+                end
+                
+                if GetConVar("pb_hud_firemodes_enable"):GetInt() < 1 then fmA = 0 end
+                
+				PHUNBASE.drawShadowText(fm.display, isCur and "PB_HUD_FONT_30" or "PB_HUD_FONT_24", (w * 0.995) - (isCur and 6 or 0), (h * 0.85) - (k * 28), isCur and ColorAlpha(clr_active, fmA) or ColorAlpha(clr_inactive, fmA), TEXT_ALIGN_RIGHT, TEXT_ALIGN_BOTTOM, 1, 1)
 			end
 		end
 	end
