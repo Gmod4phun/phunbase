@@ -351,8 +351,8 @@ function SWEP:Initialize()
 	
 	self:SetupOrigValues()
 	self:SetupActiveAttachmentNames()
-	
-	self:SelectFiremode(self.FireModes[1])
+    
+    self:SetupOrigFireMode()
 end
 
 function SWEP:OnReloaded()

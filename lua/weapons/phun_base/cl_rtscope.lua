@@ -167,6 +167,7 @@ if CLIENT then
 		
 		// drawing viewmodel and attachments inside the rt scope
 		cam.Start3D(viewdata.origin + viewdata.angles:Forward() * -5, viewdata.angles)
+            cam.IgnoreZ(true)
 			if self.drawViewModelInRT then
 				self.VM:DrawModel()
 			end
@@ -183,11 +184,13 @@ if CLIENT then
 					end
 				end
 			end
+            cam.IgnoreZ(false)
 		cam.End3D()
 		
 		local lens_color = render.ComputeLighting(attPos, -attAng:Forward())
 		
 		cam.Start2D()
+            cam.IgnoreZ(true)
 			if self.RTScope_DrawParallax then
 				surface.SetDrawColor(255, 255, 255, 255 - self.ScopeAlpha)
 				surface.SetMaterial(self.LensMask)
@@ -219,6 +222,7 @@ if CLIENT then
 			if self.RTScope_DrawIris then
 				self:DrawScopeIris()
 			end
+            cam.IgnoreZ(false)
 		cam.End2D()
 		
 		if !self._Scope then

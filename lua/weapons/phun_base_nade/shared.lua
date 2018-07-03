@@ -304,7 +304,9 @@ function SWEP:AdditionalThink()
                 if !self._IsCooking then
                     if (self.WasAltThrow and self.NadeCookableAlt and ply:KeyDown(IN_ATTACK)) or (!self.WasAltThrow and self.NadeCookable and ply:KeyDown(IN_ATTACK2)) then
                         self:NadeFuseStart()
-                        self:SpoonEject_Network()
+                        if SERVER then
+                            self:SpoonEject_Network()
+                        end
                     end
                 end
             end
