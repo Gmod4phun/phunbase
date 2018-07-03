@@ -298,20 +298,20 @@ function SWEP:Initialize()
 	self._deployedShells = {}
 	self.Events = {}
 	self.RealSequence = ""
-	
+
 	self:InitHL2KillIcons()
 	self:InitRealViewModel()
 	self:InitFiremodes()
-	
+
 	self:SetHoldType(self.HoldType)
 	PHUNBASE.cmodel:LoopCheck()
-	
+
 	self.AimPos = self.IronsightPos
 	self.AimAng = self.IronsightAng
-	
+
 	self.ViewModelFOV_Orig = self.ViewModelFOV
 	self.CurVMFOV = self.ViewModelFOV
-	
+
 	self:SetIron(false)
 	self:SetIsDual(self.IsDual)
 	self:SetDualSide(self.DefaultDualSide)
@@ -334,7 +334,7 @@ function SWEP:Initialize()
 	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
 	self:SetGLState(PB_GLSTATE_READY)
 	self:SetGlobalDelay(0)
-	
+
 	if CLIENT then
 		self:_CreateVM()
 		self:_CreateHands()
@@ -345,13 +345,13 @@ function SWEP:Initialize()
 			self:AdditionalInit()
 		end
 	end
-	
+
 	self.IronRollOffset = 0
 	self.RealIronRoll = 0
-	
+
 	self:SetupOrigValues()
 	self:SetupActiveAttachmentNames()
-	
+
 	self:SelectFiremode(self.FireModes[1])
 end
 
@@ -370,26 +370,26 @@ function SWEP:OnReloaded()
 	self:SetShouldBeCocking(false)
 	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
 	self:SetGLState(PB_GLSTATE_READY)
-	
+
 	self:SetMuzzleAttachmentName(self.MuzzleAttachmentName)
 	self:SetShellAttachmentName(self.ShellAttachmentName)
-	
+
 	self:RemoveAllAttachments()
-	
+
     if self.FireModes and #self.FireModes > 0 then
         self.FireModes.last = 1
         self:SelectFiremode(self.FireModes[1])
     end
-	
+
 	if CLIENT then
 		self:setupAttachmentModels()
 	end
-	
+
 	self:RestoreOriginalIronsights()
-	
+
 	self:SetupOrigValues()
 	self:SetupActiveAttachmentNames()
-	
+
 	if !self.Owner:IsNPC() then
 		timer.Simple(0.01, function()
 			if IsValid(self.Owner) and self.Owner:GetActiveWeapon() == self then
@@ -407,7 +407,7 @@ end
 function SWEP:DeployAnimLogic()
 	local clip = self:Clip1()
 	local empty = clip < 1
-	
+
 	self:PlayVMSequence((empty and self.Sequences.deploy_empty) and "deploy_empty" or ((self.Sequences.deploy_first and !self._wasFirstTimeDeployed) and "deploy_first" or "deploy"))
 end
 
@@ -415,7 +415,7 @@ function SWEP:Deploy()
 	self:InitRealViewModel() // needed both in Init and Deploy, so that picked up weapons dont error
 	self:_UpdateVM()
 	self:_UpdateHands()
-	
+
 	if SERVER then
 		self:CreateFlashlight()
 		self:SetFlashlightState(false)
@@ -426,7 +426,7 @@ function SWEP:Deploy()
 			end
 		end
 	end
-	
+
 	if IsFirstTimePredicted() then
 		if CLIENT then
 			self.CurSoundTable = nil
@@ -435,36 +435,36 @@ function SWEP:Deploy()
 			self.SoundSpeed = 1
 		end
 	end
-	
+
 	self:SetIsInUse(true)
-	self:SetHolsterDelay(0)	
+	self:SetHolsterDelay(0)
 	self.FinishDeployTime = CurTime() + ((self.DeployTime_First and !self._wasFirstTimeDeployed) and self.DeployTime_First or self.DeployTime)
-	
+
 	self:SetIsDeploying(true)
 	self:DelayedEvent(self.FinishDeployTime - CurTime(), function() self:SetIsDeploying(false) end)
-	
+
 	if !self.IdleAfterDeployTime then
 		self.IdleAfterDeployTime = self.FinishDeployTime - CurTime() - 0.1
 	end
-	
+
 	if self.PreDeployAnimLogic then // you should play a vm sequence so that it appears holstered (invisible), to unfuck deploy anims if they are fucked
 		self:PreDeployAnimLogic()
 	end
-	
+
 	if !self._wasFirstTimeDeployed then
 		self:DeployAnimLogic()
 	else
 		self:DelayedEvent(0, function() self:DeployAnimLogic() end) // fixes deploy anim because of vm position not being adjusted yet
 	end
-	
+
 	if !self._wasFirstTimeDeployed then
 		self._wasFirstTimeDeployed = true
 	end
-	
+
 	if !self.DisableIdleAfterDeploy then
 		self:DelayedEvent(self.IdleAfterDeployTime, function() self:PlayIdleAnim() end)
 	end
-	
+
 	self.SwitchWep = nil
 	return true
 end
@@ -472,7 +472,7 @@ end
 function SWEP:HolsterAnimLogic()
 	local clip = self:Clip1()
 	local empty = clip < 1
-	
+
 	self:PlayVMSequence((empty and self.Sequences.holster_empty) and "holster_empty" or "holster", self.HolsterAnimSpeed or 1, self.HolsterAnimStartCyc or 0)
 end
 
@@ -490,11 +490,11 @@ function SWEP:Holster(wep)
 	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() or self:IsFiring() or self:IsGlobalDelayActive() then
 		return false
 	end
-	
+
 	if !self:GetIsHolstering() then
 		self:SetHolsterDelay(CurTime() + self.HolsterTime)
 	end
-	
+
 	self:SetIsHolstering(true)
 	self:SetFlashlightState(false)
 
@@ -515,7 +515,7 @@ function SWEP:Holster(wep)
 			self:HolsterAnimLogic()
 		end
 	end
-	
+
 	self.SwitchWep = wep
 end
 
@@ -564,7 +564,7 @@ function SWEP:Think()
 	if IsValid(self.Owner) then
 		self.lastOwner = self.Owner
 	end
-	
+
 	self:_IronThink()
 	self:_SprintThink()
 	self:_NearWallThink()
@@ -572,19 +572,19 @@ function SWEP:Think()
 	self:_ReloadThink()
 	self:_SoundTableThink()
 	self:_FiremodeThink()
-	
+
 	if self.AdditionalThink then
 		self:AdditionalThink()
 	end
-	
+
 	self:CalcHoldType()
-	
+
 	if CLIENT then
 		if self.ThinkOverrideClient then
 			self:ThinkOverrideClient()
 		end
 	end
-	
+
 	self:RunAttachmentsThinkFunc()
 
 	for k, v in pairs(self.Events) do
@@ -607,9 +607,9 @@ end
 
 function SWEP:ThirdPersonParticleMuzzle()
 	self:StopParticles()
-	
+
 	local muz = self:GetAttachment( 1 )
-	
+
 	if muz then
 		if type(self.MuzzleEffect) == "table" then
 			for _, particle in pairs(self.MuzzleEffect) do
@@ -625,7 +625,7 @@ end
 
 function SWEP:Cheap_WM_ShootEffects()
 	self.Owner:MuzzleFlash()
-	
+
 	-- self:ThirdPersonParticleMuzzle() // faggot drawing issues
 end
 
@@ -643,10 +643,10 @@ end
 
 function SWEP:HasEnoughAmmo()
 	if self.Owner:IsNPC() then return true end
-	
+
 	local ammo = self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
 	local clip = self:Clip1()
-	
+
 	if (self.UsesAmmoCountLogic and ammo > 0) or (!self.UsesAmmoCountLogic and clip > 0) then
 		return true
 	else
@@ -663,9 +663,9 @@ end
 function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I dont want to copy shitton of code just for sequences
 	local ply = self.Owner
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or (self.OnlyIronFire and !self:GetIron()) or self.IronTransitionWaiting then return end
-	
+
 	if self:GetIsCustomizing() or self:IsGlobalDelayActive() then return end
-	
+
 	if ply:KeyDown(IN_USE) and self.UsesGrenadeLauncher then
 		if self:GetWeaponMode() == PB_WEAPONMODE_NORMAL then
 			self:EnterGrenadeLauncherMode()
@@ -675,36 +675,36 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 			return
 		end
 	end
-	
+
 	if self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
 		self:GrenadeLauncherModeFire()
 		return
 	end
-	
+
 	if self:GetShouldBeCocking() or self:IsSafe() then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.DryFireSound)
 		self:DryFireAnimLogic()
 		return
 	end
-	
+
 	if !self:HasEnoughAmmo() then
 		self:SetNextPrimaryFire(CurTime() + 0.25)
 		self:EmitSound(self.EmptySoundPrimary)
 		self:DryFireAnimLogic()
 		return
 	end
-	
+
 	if self.BurstAmount and self.BurstAmount > 0 then
 		if self.BurstShotsFired >= self.BurstAmount then
 			return
 		end
-		
+
 		self.BurstShotsFired = self.BurstShotsFired + 1
 	end
-	
+
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-	
+
 	if IsFirstTimePredicted() then
 		local firesnd = self.IsSuppressed and self.FireSoundSuppressed or self.FireSound
 		if type(firesnd) == "table" then
@@ -712,57 +712,57 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 				if type(snd) == "string" then
 					self.Weapon:EmitSound(snd)
 				end
-			end			
+			end
 		elseif type(firesnd) == "string" then
 			self.Weapon:EmitSound(firesnd)
 		end
-		
+
 		if self.PrimaryAttackOverride then
 			self:PrimaryAttackOverride()
 		else
-			self:_FireBullets() 
+			self:_FireBullets()
 			self:StopViewModelParticles()
 		end
-		
+
 		if (game.SinglePlayer() and SERVER) or CLIENT then
 			self:FireAnimLogic(isSecondary)
 		end
-		
+
 		self:PlayMuzzleFlashEffect()
 		if !((self.CockAfterShot and self.MakeShellOnCock) or self.NoShells) then
 			self:MakeShell()
 		end
 		self:MakeRecoil()
-		
+
 		if CLIENT then
 			self:simulateRecoil()
 		end
-		
+
 		if game.SinglePlayer() and SERVER then
 			if !self.Owner:IsPlayer() then return end
 			SendUserMessage("PHUNBASE_Recoil", ply)
 			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
 		end
-		
+
 		ply:SetAnimation(PLAYER_ATTACK1)
-		
+
 		if self.ReloadAfterShot then
 			self:DelayedEvent(self.ReloadAfterShotTime, function() self:_realReloadStart() end)
 		end
-		
+
 		if self.UnIronAfterShot then
 			self:DelayedEvent(self.UnIronAfterShotTime, function() self:SetIron(false) end)
 		end
-		
+
 		if self.CockAfterShot then
 			self:SetShouldBeCocking(true)
 		end
-		
+
 		if self.CockAfterShot and self.AutoCockStart then
 			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
 		end
 	end
-	
+
 	self:Cheap_WM_ShootEffects()
 	self:TakePrimaryAmmo(self.Primary.TakePerShot)
 end
@@ -774,9 +774,9 @@ end
 function SWEP:FireAnimLogic(isSecondary)
 	local clip = self:Clip1() // clip before firing anim played
 	local last = clip == 1
-	
+
 	local suffix = isSecondary and "_secondary" or ""
-	
+
 	if !self:GetIsDual() then
 		if self:GetIron() then
 			self:PlayVMSequence(last and "fire_iron_last"..suffix or "fire_iron"..suffix)
@@ -808,11 +808,11 @@ end
 
 function SWEP:SecondaryAttack()
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
-	
+
 	if IsFirstTimePredicted() then
 		self:SetNextSecondaryFire(CurTime()+self.Secondary.Delay)
 	end
-	
+
 	if self.SecondaryAttackOverride then
 		self:SecondaryAttackOverride()
 	end
@@ -854,26 +854,26 @@ function SWEP:simulateRecoil()
 			self.FireMove = 0.4
 		end
 	end
-	
+
 	/*if !self:GetIron() then
 		self.FOVHoldTime = UnPredictedCurTime() + self.FireDelay * 2
-		
+
 		if self.HipFireFOVIncrease then
 			self.FOVTarget = math.Clamp(self.FOVTarget + 8 / (self.Primary.ClipSize_Orig * 0.75) * self.FOVPerShot, 0, 7)
 		end
 	end*/
-	
+
 	if self.freeAimOn and not self.dt.BipodDeployed then -- we only want to add the 'roll' view shake when we're not using a bipod in free-aim mode
 		self.lastViewRoll = math.Clamp(self.lastViewRoll + self.Recoil * 0.5, 0, 15)
 		self.lastViewRollTime = UnPredictedCurTime() + FrameTime() * 3
 	end
-	
+
 	//self.lastShotTime = CurTime() + math.Clamp(self.FireDelay * 3, 0, 0.3) -- save the last time we shot
-	
+
 	if self.BoltBone then
 		self:offsetBoltBone()
 	end
-	
+
 	if self.LuaViewmodelRecoil then
 		if (!self:GetIron() and not self.FullAimViewmodelRecoil) or self.FullAimViewmodelRecoil then
 			-- increase intensity of the viewmodel recoil with each shot
@@ -882,19 +882,19 @@ function SWEP:simulateRecoil()
 			self:makeVMRecoil()
 		end
 	end
-	
+
 end
 
 function SWEP:MakeRecoil(mod)
 	local mod = 1 //self:GetRecoilModifier(mod)
-	
+
 	if !self.Owner:IsPlayer() or self.Owner:InVehicle() then return end
-	
+
 	if (game.SinglePlayer() and SERVER) or (not game.SinglePlayer() and CLIENT) then
 		ang = self.Owner:EyeAngles()
 		ang.p = ang.p - self.Recoil * 0.5 * mod
 		ang.y = ang.y + math.Rand(-1, 1) * self.Recoil * 0.5 * mod
-	
+
 		self.Owner:SetEyeAngles(ang)
 	end
 
@@ -903,36 +903,36 @@ end
 
 if CLIENT then
 	local ply, wep, CT
-	
+
 	local function GetRecoil()
 		ply = LocalPlayer()
-		
+
 		if not ply:Alive() then
 			return
 		end
-		
+
 		wep = ply:GetActiveWeapon()
-		
+
 		if IsValid(wep) and wep.PHUNBASEWEP then
 			//CT = CurTime()
 			//wep.SpreadWait = CT + wep.SpreadCooldown
-			
+
 			wep:MakeRecoil()
 			wep:simulateRecoil()
 			//wep:addFireSpread(CT)
 		end
 	end
 	usermessage.Hook("PHUNBASE_Recoil", GetRecoil)
-	
+
 	local function PHUNBASE_PrimaryAttackOverride_CL()
 		ply = LocalPlayer()
-		
+
 		if not ply:Alive() then
 			return
 		end
-		
+
 		wep = ply:GetActiveWeapon()
-		
+
 		if IsValid(wep) and wep.PHUNBASEWEP then
 			if wep.PrimaryAttackOverride_CL then
 				wep:PrimaryAttackOverride_CL()
