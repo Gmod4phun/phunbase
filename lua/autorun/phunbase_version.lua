@@ -4,7 +4,7 @@
 if CLIENT then
 	AddCSLuaFile()
 
-	PHUNBASE.Version = 28
+	PHUNBASE.Version = 29
 
 	local function VerCheckNeedUpdateMsg(your, latest)
 		chat.AddText(Color(0, 180, 200, 255), "[PHUNBASE] ", Color(255,255,255,255), "Hey there, there is a new PHUNBASE version. Your version: "..your..", latest version: "..latest..". Updating is recommended.")

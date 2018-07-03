@@ -206,6 +206,8 @@ if CLIENT then
 		local noSound = um:ReadBool()
 		
 		local ply = LocalPlayer()
+        if !IsValid(ply) then return end // this prevents MP bullshit happening in MP on user loading into the map
+        
 		local wep = ply:GetActiveWeapon()
 		
 		if not IsValid(wep) then
@@ -220,6 +222,8 @@ if CLIENT then
 	
 	local function PHUNBASE_MUZZLE_EFFECTS()
 		local ply = LocalPlayer()
+        if !IsValid(ply) then return end
+        
 		local wep = ply:GetActiveWeapon()
 		
 		if not IsValid(wep) or not wep.PHUNBASEWEP then
@@ -232,6 +236,8 @@ if CLIENT then
 	
 	local function PHUNBASE_STOPVMPARTICLES()
 		local ply = LocalPlayer()
+        if !IsValid(ply) then return end
+        
 		local wep = ply:GetActiveWeapon()
 		
 		if not IsValid(wep) or not wep.PHUNBASEWEP then
