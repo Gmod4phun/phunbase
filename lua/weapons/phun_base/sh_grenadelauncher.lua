@@ -81,11 +81,12 @@ end
 function SWEP:GrenadeLauncherModeFire()
 	if self:IsGlobalDelayActive() or self:IsBusy() then return end
 	
-	if self:GetGLState() == PB_GLSTATE_READY and self:HasEnoughGLAmmo() then
+	if self:GetGLState() == PB_GLSTATE_READY /*and self:HasEnoughGLAmmo()*/ then
 		self:AddGlobalDelay(self.GrenadeLauncherFireDelay)
 		self:EmitSound(self.GrenadeLauncherFireSound)
-		self:GLFireProjectile()
-		self.Owner:RemoveAmmo(1, self.GrenadeLauncherAmmoType)
+        if SERVER then
+            self:GLFireProjectile()
+        end
 		self:GrenadeLauncherFireAnimLogic()
 	else
 		self:AddGlobalDelay(self.GrenadeLauncherDryFireDelay)
@@ -105,6 +106,9 @@ function SWEP:GrenadeLauncherModeReload()
 	local delay = self.GrenadeLauncherReloadTime
 	self:AddGlobalDelay(delay)
 	self:SetIsReloading(true)
+    
+    self.Owner:RemoveAmmo(1, self.GrenadeLauncherAmmoType)
+    
 	self:DelayedEvent(delay, function() self:SetGLState(PB_GLSTATE_READY) self:SetIsReloading(false) end)
 	
 	self:GrenadeLauncherReloadAnimLogic()

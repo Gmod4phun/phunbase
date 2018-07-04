@@ -2,7 +2,7 @@ function SWEP:Reload()
 	if self:GetIsCustomizing() then return end
 	
 	//if IsFirstTimePredicted() then
-		if #self.FireModes > 1 and self.Owner:KeyDown(IN_USE) and !self:GetIsSprinting() and !self:IsBusy() and !self:GetIsWaiting() then
+		if #self.FireModes > 1 and self.Owner:KeyDown(IN_USE) and !self:GetIsSprinting() and !self:IsBusy() and !self:GetIsWaiting() and !self:GetIsNearWall() and !self:GetIsOnLadder() then
 			self:CycleFiremodes()
 			return
 		end
