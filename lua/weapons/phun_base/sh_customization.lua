@@ -12,7 +12,7 @@ if CLIENT then
         size      = 60,
         weight    = 200,
     })
-	
+
 	surface.CreateFont( "PB_CUSTMENU_FONT_80",
     {
         font      = "BF4 Numbers",
@@ -64,18 +64,18 @@ function SWEP:ToggleCustomizationMenu(force)
 	if !force then
 		if self:IsBusyForCustomizing() then return end
 	end
-	
+
 	if !self.EnableCustomization then return end
-	
+
 	self:SetIsCustomizing(!self:GetIsCustomizing())
-	
+
 	self:CustomizeAnimLogic()
 end
 
 function SWEP:SetupActiveAttachmentNames()
 	local atts = self.Attachments
 	if !self.Attachments then return end
-	
+
 	for categoryindex, data in pairs(atts) do
 		self.ActiveCategoriesData[categoryindex] = {attname = "NONE", attindex = 0}
 	end
@@ -84,12 +84,12 @@ end
 function SWEP:RunAttachmentsThinkFunc()
 	local atts = self.Attachments
 	if !self.Attachments then return end
-	
+
 	for k, v in pairs(self.ActiveCategoriesData) do
 		local _1, _2, attindex, _3 = self:GetActiveAttachmentInCategory(k)
-		
+
 		local atttable = PHUNBASE:getAttachmentTableByName(atts[k].attachments[attindex])
-		
+
 		if atttable and atttable.think then
 			atttable.think(self)
 		end
@@ -99,12 +99,12 @@ end
 function SWEP:RunAttachmentsRenderFunc()
 	local atts = self.Attachments
 	if !self.Attachments then return end
-	
+
 	for k, v in pairs(self.ActiveCategoriesData) do
 		local _1, _2, attindex, _3 = self:GetActiveAttachmentInCategory(k)
-		
+
 		local atttable = PHUNBASE:getAttachmentTableByName(atts[k].attachments[attindex])
-		
+
 		if atttable and atttable.render then
 			atttable.render(self)
 		end
@@ -123,24 +123,24 @@ end
 function SWEP:GetActiveAttachmentInCategory(categoryindex)
 	local atts = self.Attachments
 	if !atts then return 0, "NONE", 0, "NONE" end
-	
+
 	local categorydata = atts[categoryindex]
 	local attsInCategory = categorydata.attachments
-	
+
 	local catindex = categoryindex
 	local catname = atts[catindex].name
 	local attindex = self.ActiveCategoriesData[catindex].attindex
 	local attname = self.ActiveCategoriesData[catindex].attname
-	
+
 	return catindex, catname, attindex, attname
 end
 
 function SWEP:GetAttachmentInfo(categoryindex, attachmentindex)
 	local atts = self.Attachments
 	if !atts then return end
-	
+
 	local attinfo = PHUNBASE:getAttachmentTableByName(atts[categoryindex].attachments[attachmentindex])
-	
+
 	if attinfo then
 		return attinfo
 	else
@@ -176,7 +176,7 @@ end
 
 function SWEP:CycleAttachmentInCategory(categoryindex)
 	if !self:IsValidCategoryIndex(categoryindex) then return end
-	
+
 	if SERVER then
 		net.Start("PB_CUSTOMIZATION_CYCLEATTACHMENT")
 			net.WriteEntity(self)
@@ -186,14 +186,14 @@ function SWEP:CycleAttachmentInCategory(categoryindex)
 
 	local curai, curan = self:GetCurrentAttachmentInCategory(categoryindex)
 	self:RemoveAttachmentData(categoryindex, curai)
-	
+
 	local nextai, nextan = self:GetNextAttachmentInCategory(categoryindex)
 	self.ActiveCategoriesData[categoryindex] = {attname = nextan, attindex = nextai}
-	
+
 	self:ApplyAttachmentData(categoryindex, nextai)
-	
+
 	self:CustomizeAnimLogic()
-	
+
 	if CLIENT and self:GetIsCustomizing() then
 		self.Owner:EmitSound("PB_CUSTMENU_Select")
 	end
@@ -214,9 +214,9 @@ end
 function SWEP:RemoveAttachmentData(catindex, attindex)
 	local atts = self.Attachments
 	if !self.Attachments then return end
-	
+
 	local oldAttTbl = PHUNBASE:getAttachmentTableByName(atts[catindex].attachments[attindex])
-	
+
 	if oldAttTbl then // oldAttTbl is the attachment table we are going to unequip, so run shit from it if needed
 		if self.VElements then
 			local velementTable = self.VElements[oldAttTbl.name]
@@ -224,7 +224,7 @@ function SWEP:RemoveAttachmentData(catindex, attindex)
 				velementTable.active = false // deactivate our velement
 			end
 		end
-		
+
 		if self.VElements and self.DisableVElements then // reactivate any velements if they were deactivated by this attachment
 			local toDisable = self.DisableVElements[oldAttTbl.name]
 			if toDisable then
@@ -248,7 +248,7 @@ function SWEP:RemoveAttachmentData(catindex, attindex)
 				end
 			end
 		end
-		
+
 		if self.VElements and self.ReplaceVElements then // restore the replaced velements
 			local toReplace = self.ReplaceVElements[oldAttTbl.name]
 			if toReplace then
@@ -261,11 +261,11 @@ function SWEP:RemoveAttachmentData(catindex, attindex)
 				end
 			end
 		end
-		
+
 		if oldAttTbl.detachCallback then
 			oldAttTbl.detachCallback(self)
 		end
-		
+
 		self:RestoreAttachmentIronsights(oldAttTbl.name)
 	end
 end
@@ -275,19 +275,19 @@ function SWEP:ApplyAttachmentData(catindex, attindex)
 	if !self.Attachments then return end
 
 	local newAttTbl = PHUNBASE:getAttachmentTableByName(atts[catindex].attachments[attindex])
-	
+
 	if newAttTbl then // newAttTbl is the attachment table we have just equipped
 		if self.VElements then
 			local velementTable = self.VElements[newAttTbl.name]
 			if velementTable then
 				velementTable.active = true // activate our velement
-				
+
 				if newAttTbl.reticleTable then // setup the reticle table for the velement if the attachment uses one
 					velementTable.reticleTable = newAttTbl.reticleTable
 				end
 			end
 		end
-		
+
 		if self.VElements and self.DisableVElements then // deactivate velements that are supposed to be deactivated by this attachment
 			local toDisable = self.DisableVElements[newAttTbl.name]
 			if toDisable then
@@ -299,7 +299,7 @@ function SWEP:ApplyAttachmentData(catindex, attindex)
 				end
 			end
 		end
-		
+
 		if self.VElements and self.EnableVElements then // activate velements that are supposed to be activated by this attachment
 			local toEnable = self.EnableVElements[newAttTbl.name]
 			if toEnable then
@@ -311,7 +311,7 @@ function SWEP:ApplyAttachmentData(catindex, attindex)
 				end
 			end
 		end
-		
+
 		if self.VElements and self.ReplaceVElements then // replace velements if defined
 			local toReplace = self.ReplaceVElements[newAttTbl.name]
 			if toReplace then
@@ -324,11 +324,11 @@ function SWEP:ApplyAttachmentData(catindex, attindex)
 				end
 			end
 		end
-		
+
 		if newAttTbl.attachCallback then
 			newAttTbl.attachCallback(self)
 		end
-		
+
 		self:SetAttachmentIronsights(newAttTbl.name)
 	end
 end
@@ -337,7 +337,7 @@ if SERVER then
 	concommand.Add("pb_custmenu_cycleslot", function(ply, cmd, args)
 		local wep = ply:GetActiveWeapon()
 		local slot = tonumber(args[1])
-		
+
 		if wep.PHUNBASEWEP and wep.EnableCustomization then
 			wep:CycleAttachmentInCategory(slot)
 		end
@@ -364,28 +364,28 @@ if CLIENT then
 	local camStartPos
 	function SWEP:_drawCustomizationMenu()
 		if !self.Attachments then return end
-		
+
 		menuAlpha = math.Approach(menuAlpha, self:GetIsCustomizing() and !self:GetIsHolstering() and 1 or 0, FrameTime() * 5)
-		
+
 		if menuAlpha > 0 then
 			local att = self.VM:GetAttachment(self.CustomizationMenuAttachmentName and self.VM:LookupAttachment(self.CustomizationMenuAttachmentName) or 1)
-			
+
 			if att then
 				camStartPos = att.Pos
 			else
 				camStartPos = EyePos() + EyeAngles():Forward() * 16
 			end
-			
+
 			local ang = EyeAngles()
 			ang:RotateAroundAxis(ang:Right(), 90)
 			ang:RotateAroundAxis(ang:Up(), -90)
-			
+
 			local catdata = self.ActiveCategoriesData
-			
+
 			cam.Start3D2D(camStartPos, ang, 0.01 * self.CustomizationMenuSize)
 				cam.IgnoreZ(true)
 					PHUNBASE.drawShadowText("ACCESSORY CUSTOMIZATION", "PB_CUSTMENU_FONT_80", 0, -10, Color(255,255,255,255 * menuAlpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER, 4, 4)
-					
+
 					for categoryindex, attdata in pairs(catdata) do
 						local catindex, catname, attindex, attname = self:GetActiveAttachmentInCategory(categoryindex)
 						PHUNBASE.drawShadowText("["..catindex.."] "..catname..": "..attname, "PB_CUSTMENU_FONT_60", 0, catindex * 70, Color(0,130,250,255 * menuAlpha), TEXT_ALIGN_RIGHT, TEXT_ALIGN_CENTER, 2, 2)
@@ -394,7 +394,7 @@ if CLIENT then
 			cam.End3D2D()
 		end
 	end
-	
+
 	local stopBinds = {
 		["invprev"] = true,
 		["invnext"] = true,
@@ -406,9 +406,9 @@ if CLIENT then
 		local wep = ply:GetActiveWeapon()
 
 		if pressed and wep.PHUNBASEWEP and wep.EnableCustomization and !wep:IsBusyForCustomizing() then
-			
+
 			if wep:GetIsCustomizing() and stopBinds[bind] then return true end
-		
+
 			if bind == "+menu_context" then
 				ply:ConCommand("pb_custmenu_toggle")
 				return true
@@ -421,7 +421,7 @@ if CLIENT then
 			end
 		end
 	end)
-	
+
 	net.Receive("PB_CUSTOMIZATION_CYCLEATTACHMENT", function()
 		local wep = net.ReadEntity()
 		local cat = net.ReadUInt(4)
@@ -429,4 +429,27 @@ if CLIENT then
 			wep:CycleAttachmentInCategory(cat)
 		end
 	end)
+end
+
+local laserClr = Color(250,10,10)
+local laserMat = Material("effects/laser1")
+
+function SWEP:DrawLaser( name )
+	local velement = self:getVElementByName(name)
+	if velement then
+		local att = velement:GetAttachment(1)
+
+		local tr = util.TraceLine( {
+			start = att.Pos,
+			endpos = att.Pos + att.Ang:Forward() * 4096,
+			mask = MASK_SOLID_BRUSHONLY,
+		} )
+
+		if tr.HitPos then
+			render.SetColorModulation(1,0,0)
+			render.SetMaterial(laserMat)
+			render.DrawBeam(att.Pos, tr.HitPos, 1, 0, 1, laserClr)
+			render.SetColorModulation(1,1,1)
+		end
+	end
 end
