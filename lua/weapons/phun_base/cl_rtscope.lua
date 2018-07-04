@@ -166,12 +166,12 @@ if CLIENT then
 		render.RenderView(viewdata)
 
 		// drawing viewmodel and attachments inside the rt scope
+		// Draw things that take up 3d space in here, like lasers, attachments, viewmodels, etc.
 		cam.Start3D(viewdata.origin + viewdata.angles:Forward() * -5, viewdata.angles)
-<<<<<<< HEAD
-			cam.IgnoreZ( true )
-=======
             cam.IgnoreZ(true)
->>>>>>> upstream/master
+
+			self:DrawLaser( self.Laser )
+
 			if self.drawViewModelInRT then
 				self.VM:DrawModel()
 			end
@@ -188,21 +188,14 @@ if CLIENT then
 					end
 				end
 			end
-<<<<<<< HEAD
-			cam.IgnoreZ( false )
-=======
             cam.IgnoreZ(false)
->>>>>>> upstream/master
 		cam.End3D()
 
 		local lens_color = render.ComputeLighting(attPos, -attAng:Forward())
 
+		// This is an overlay over the 3d stuff, draws the iris and stuff like that.
 		cam.Start2D()
-<<<<<<< HEAD
-			cam.IgnoreZ( true )
-=======
             cam.IgnoreZ(true)
->>>>>>> upstream/master
 			if self.RTScope_DrawParallax then
 				surface.SetDrawColor(255, 255, 255, 255 - self.ScopeAlpha)
 				surface.SetMaterial(self.LensMask)
@@ -234,11 +227,7 @@ if CLIENT then
 			if self.RTScope_DrawIris then
 				self:DrawScopeIris()
 			end
-<<<<<<< HEAD
-			cam.IgnoreZ( false )
-=======
             cam.IgnoreZ(false)
->>>>>>> upstream/master
 		cam.End2D()
 
 		if !self._Scope then
