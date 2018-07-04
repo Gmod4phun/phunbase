@@ -108,7 +108,7 @@ function SWEP:_IronThink()
 	
 	local ply = self.Owner
 	local empty = self:Clip1() == 0
-	if ((ply:KeyDown(IN_ATTACK2) and !self:GetIron())) and !self:GetIsSprinting() and !self:IsBusy() and !self:IsFlashlightBusy() and (!self.DisableIronWhileFiring or (self.DisableIronWhileFiring and !self:IsFiring())) then
+	if ((ply:KeyDown(IN_ATTACK2) and !self:GetIron())) and !self:GetIsSprinting() and !self:IsBusy() and !self:IsFlashlightBusy() and !self:GetIsNearWall() and (!self.DisableIronWhileFiring or (self.DisableIronWhileFiring and !self:IsFiring())) then
 		self:SetIron(true)
 		
 		if IsFirstTimePredicted() then
@@ -148,7 +148,7 @@ function SWEP:_IronThink()
 		end
 	end
 
-	if (!ply:KeyDown(IN_ATTACK2) and self:GetIron()) or ((self:GetIsSprinting() or self:IsBusy()) and self:GetIron() and !string.find(self:GetActiveSequence(), "lighton") ) then
+	if (!ply:KeyDown(IN_ATTACK2) and self:GetIron()) or ((self:GetIsSprinting() or self:IsBusy() or self:GetIsNearWall()) and self:GetIron() and !string.find(self:GetActiveSequence(), "lighton") ) then
 		self:SetIron(false)
 		
 		if (self.DisableIronWhileFiring and !self.IronTransitionWaiting and self:IsFiring()) then return end
