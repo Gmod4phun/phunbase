@@ -1,0 +1,7 @@
+"UnlitGeneric"
+{
+	"$basetexture" "phunbase/laser/pb_laser_beam"
+	"$additive" 1
+	"$translucent" 1
+	"$vertexcolor" 1
+}

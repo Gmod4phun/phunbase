@@ -167,10 +167,13 @@ if CLIENT then
 
 		// draw things that take up 3d space in here, like lasers, attachments, viewmodels, etc.
 		cam.Start3D(viewdata.origin + viewdata.angles:Forward() * -5, viewdata.angles)
-            cam.IgnoreZ(true)
-
+		
             // handles laser drawing per-attachment, in RT
-            self:_handleAttLasers()
+			self.isDrawingLasersInScope = true
+				self:_handleAttLasers()
+			self.isDrawingLasersInScope = false
+			
+			cam.IgnoreZ(true)
 
 			if self.drawViewModelInRT then
 				self.VM:DrawModel()
