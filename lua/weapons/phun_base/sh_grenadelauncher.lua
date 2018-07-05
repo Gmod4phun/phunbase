@@ -27,12 +27,16 @@ function SWEP:GrenadeLauncherReloadAnimLogic()
 end
 
 function SWEP:EnterGrenadeLauncherMode()
+	if !self.UsesGrenadeLauncher then return end
+	
 	self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay)
 	self:SetWeaponMode(PB_WEAPONMODE_GL_ACTIVE)
 	self:GrenadeLauncherModeAnimLogic()
 end
 
 function SWEP:ExitGrenadeLauncherMode(nodelay)
+	if !self.UsesGrenadeLauncher then return end
+	
 	if !nodelay then
 		self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay)
 	end
@@ -45,10 +49,10 @@ function SWEP:AllowGLMode()
 end
 
 function SWEP:DisallowGLMode()
-	self.UsesGrenadeLauncher = false
 	if self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
 		self:ExitGrenadeLauncherMode(true)
 	end
+	self.UsesGrenadeLauncher = false
 end
 
 function SWEP:GLFireProjectile()

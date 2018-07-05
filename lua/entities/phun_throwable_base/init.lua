@@ -16,6 +16,9 @@ function ENT:Initialize()
 	self.NextImpact = 0
 	self.Bounces = 0
 	self:SetUseType(SIMPLE_USE)
+
+	self:SetOwner(self.Owner) // disable collisions with thrower on creation
+	self.RemoveOwnerTime = CurTime() + 0.75
 	
 	local phys = self:GetPhysicsObject()
 	if IsValid(phys) then
@@ -68,6 +71,10 @@ function ENT:Think()
 	if SERVER then
 		if self.FuseTime and CurTime() > self.FuseTime then
 			self:Detonate()
+		end
+		if self.RemoveOwnerTime and CurTime() > self.RemoveOwnerTime then
+			self.RemoveOwnerTime = nil
+			self:SetOwner(NULL) // enable collisions with thrower again
 		end
 	end
 end

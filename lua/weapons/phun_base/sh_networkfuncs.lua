@@ -44,7 +44,7 @@ function SWEP:IsFlashlightBusy()
 end
 
 function SWEP:IsBusyForCustomizing()
-	return self:IsBusy() or self:GetIron() or self:IsFlashlightBusy() or self:GetIsSprinting() or self:GetIsSwitchingFiremode() or self:IsGlobalDelayActive()
+	return self:IsBusy() or self:GetIron() or self:IsFlashlightBusy() or self:GetIsSprinting() or self:GetIsSwitchingFiremode() or self:IsGlobalDelayActive() or (self:GetWeaponMode() == PB_WEAPONMODE_BIPOD_ACTIVE)
 end
 
 function SWEP:IsSafe()

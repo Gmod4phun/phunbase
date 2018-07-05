@@ -170,7 +170,7 @@ function SWEP:performViewmodelMovement()
 				end
 			end
 			
-			if !self:GetIsReloading() and self:GetIsNearWall() then -- NearWall
+			if !self:GetIsReloading() and self:GetIsNearWall() and !self:GetIsCustomizing() then -- NearWall
 				td.start = self.Owner:GetShootPos()
 				td.endpos = td.start + self.Owner:EyeAngles():Forward() * 30
 				td.filter = self.Owner

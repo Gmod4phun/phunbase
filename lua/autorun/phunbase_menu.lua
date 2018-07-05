@@ -578,7 +578,7 @@ local function PHUNBASE_MENU_PANEL(panel)
     
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable PHUNBASE Hud?")
-	cb:SetConVar("pb_hud_enabled")
+	cb:SetConVar("pb_hud_enable")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
 	

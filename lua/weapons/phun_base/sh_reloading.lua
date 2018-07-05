@@ -37,6 +37,8 @@ function SWEP:Cock()
 	
 	if !self:GetShouldBeCocking() then return end
 	
+	self:AddGlobalDelay(self.CockAfterShotTime)
+	
 	self:SetIsWaiting(true)
 	self:SetShouldBeCocking(false)
 	self.IsCocking = true
