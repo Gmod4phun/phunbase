@@ -2,6 +2,12 @@
 
 if CLIENT then
 
+	CreateClientConVar("pb_laser_dot_normal", "0", true, false)
+	CreateClientConVar("pb_laser_option", "0", true, false)
+	CreateClientConVar("pb_laser_color_r", "255", true, false)
+	CreateClientConVar("pb_laser_color_g", "0", true, false)
+	CreateClientConVar("pb_laser_color_b", "0", true, false)
+
     SWEP.UsePlayerColorAsLaserColor = false // either that, or default red laser
 	SWEP.LaserDrawDistance = 128 // how far should the beam be drawn
 
@@ -20,7 +26,6 @@ if CLIENT then
         end
     end
 	
-    local laserClr = Color(250,10,10) // red laser
 	local laserMat = Material("phunbase/laser/pb_laser_beam")
     local laserDotMat = Material("sprites/light_glow02_add")
 
@@ -29,15 +34,27 @@ if CLIENT then
         if velement then
             local att = velement:GetAttachment(1)
             local plyWepColVec = LocalPlayer():GetWeaponColor()
-
-            if self.UsePlayerColorAsLaserColor and !plyWepColVec then return end // I think it has problems with non sandbox-derived gamemodes and shit, but not sure, just a precaution to avoid potential errors
-
-            local realPlyWepCol = Color( math.Round( plyWepColVec.x * 255 ), math.Round( plyWepColVec.y * 255 ), math.Round( plyWepColVec.z * 255 ) )
 			
-			local finalLaserCol = self.UsePlayerColorAsLaserColor and realPlyWepCol or laserClr
+			local laserOption = GetConVar("pb_laser_option"):GetInt()
+			local laserDotNormalOption = GetConVar("pb_laser_dot_normal"):GetInt()
+			
+			local laserClr_r, laserClr_g, laserClr_b = GetConVar("pb_laser_color_r"):GetInt(), GetConVar("pb_laser_color_g"):GetInt(), GetConVar("pb_laser_color_b"):GetInt()
+			local laserClr = Color(laserClr_r, laserClr_g, laserClr_b, 255)
+			
+			
+			local finalLaserCol = laserClr
+			
+			if laserOption == 1 then // player weapon color
+				if !plyWepColVec then // I think it has problems with non sandbox-derived gamemodes and shit, but not sure, just a precaution to avoid potential errors
+					finalLaserCol = laserClr
+				else
+					finalLaserCol = Color( math.Round( plyWepColVec.x * 255 ), math.Round( plyWepColVec.y * 255 ), math.Round( plyWepColVec.z * 255 ), 255 )
+				end
+			elseif laserOption == 2 then // rainbow
+				finalLaserCol = HSVToColor( CurTime() * 500 % 360, 1, 1 )
+			end
 			
 			local angFwd = att.Ang:Forward()
-
             local tr = util.TraceLine( {
                 start = att.Pos,
                 endpos = att.Pos + angFwd * 4096,
@@ -54,9 +71,17 @@ if CLIENT then
 				end
 				
 				local function drawLaserDot()
+					local dotNormal = tr.HitNormal
+					
+					if laserDotNormalOption == 1 then
+						dotNormal = -EyeAngles():Forward()
+					elseif laserDotNormalOption == 2 then
+						dotNormal = -tr.Normal
+					end
+					
 					render.SetColorModulation(1,1,1)
 					render.SetMaterial(laserDotMat)
-					render.DrawQuadEasy( tr.HitPos, tr.HitNormal, 3, 3, finalLaserCol )
+					render.DrawQuadEasy( tr.HitPos, dotNormal, 3, 3, finalLaserCol )
 				end
 				
 				render.SetColorModulation(1,1,1)

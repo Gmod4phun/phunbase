@@ -565,7 +565,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
     
-	local slider = vgui.Create("DNumSlider", panel)
+	slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(2)
 	slider:SetMin(0)
 	slider:SetMax(20)
@@ -595,7 +595,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
     
-	local slider = vgui.Create("DNumSlider", panel)
+	slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(0)
 	slider:SetMin(0)
 	slider:SetMax(3)
@@ -604,6 +604,32 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetText("Firemode Display type")
     slider:SetTooltip("Which Firemodes to show after switching: 0 = all, 1 = active firemode, 2 = active firemode if safe, 3 = none")
 	panel:AddItem(slider)
+	
+	panel:AddControl("Label", {Text = "\nPHUNBASE Laser Settings"})
+	
+	slider = vgui.Create("DNumSlider", panel)
+	slider:SetDecimals(0)
+	slider:SetMin(0)
+	slider:SetMax(2)
+	slider:SetConVar("pb_laser_dot_normal")
+	slider:SetValue(GetConVarNumber("pb_laser_dot_normal"))
+	slider:SetText("Laser Dot direction")
+    slider:SetTooltip("0 = hit surface normal, 1 = eyeangles normal, 2 = beam normal")
+	panel:AddItem(slider)
+	
+	slider = vgui.Create("DNumSlider", panel)
+	slider:SetDecimals(0)
+	slider:SetMin(0)
+	slider:SetMax(2)
+	slider:SetConVar("pb_laser_option")
+	slider:SetValue(GetConVarNumber("pb_laser_option"))
+	slider:SetText("Laser Option")
+    slider:SetTooltip("0 = selected color, 1 = player weapon color, 2 = rainbow")
+	panel:AddItem(slider)
+	
+	panel:AddControl( "Color", { Label = "Laser Color", Red = "pb_laser_color_r", Green = "pb_laser_color_g", Blue = "pb_laser_color_b"} )
+	
+	panel:AddControl("Label", {Text = ""}) // makes menu bottom look better
 end
 
 local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
