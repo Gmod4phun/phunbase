@@ -25,6 +25,7 @@ function ENT:Initialize()
 		phys:SetMaterial(self.IsBouncy and "gmod_bouncy" or "weapon")
 		phys:Wake()
 		phys:SetBuoyancyRatio(0)
+		phys:SetMass(5)
 	end
 
 end

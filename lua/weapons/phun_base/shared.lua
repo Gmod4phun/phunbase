@@ -414,6 +414,10 @@ function SWEP:DeployAnimLogic()
 	self:PlayVMSequence((empty and self.Sequences.deploy_empty) and "deploy_empty" or ((self.Sequences.deploy_first and !self._wasFirstTimeDeployed) and "deploy_first" or "deploy"))
 end
 
+function SWEP:PreDeployAnimLogic() // aka UnFuckDeploy, tries to put the vm in a holstered position before playing the actual deploy anim
+	self:PlayVMSequence("deploy", -1, 0)
+end
+
 function SWEP:Deploy()
 	self:InitRealViewModel() // needed both in Init and Deploy, so that picked up weapons dont error
 	self:_UpdateVM()
@@ -450,7 +454,7 @@ function SWEP:Deploy()
 		self.IdleAfterDeployTime = self.FinishDeployTime - CurTime() - 0.1
 	end
 
-	if self.PreDeployAnimLogic then // you should play a vm sequence so that it appears holstered (invisible), to unfuck deploy anims if they are fucked
+	if self.PreDeployAnimLogic then // you should play a vm sequence so that it appears holstered (invisible), used to unfuck idle pose before deploy anim if it's fucked (pretty much always)
 		self:PreDeployAnimLogic()
 	end
 
