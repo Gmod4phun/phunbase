@@ -13,6 +13,10 @@ function PHUNBASE.CalcCameraFromVMFOV( num ) // calculates the camera FOV for th
 	return hFoV
 end
 
+function SWEP:GetCorrectCameraFOV()
+	return PHUNBASE.CalcCameraFromVMFOV( self.ViewModelFOV - (LocalPlayer():GetFOV() - (self.currentFOV or 0)) )
+end
+
 hook.Add("PreDrawHalos", "PHUNBASE_VM_Halo_Test", function() // uses modified halo_phunbase module
 	local ply = LocalPlayer()
 	local wep = ply:GetActiveWeapon()
@@ -38,6 +42,7 @@ hook.Add("PreDrawHalos", "PHUNBASE_VM_Halo_Test", function() // uses modified ha
 				table.insert(haloents, shellent)
 			end
 		end
-		halo_phunbase.Add(haloents, HSVToColor( CurTime() * 500 % 360, 1, 1 ), 2, 2, 2, true, true, PHUNBASE.CalcCameraFromVMFOV( wep.ViewModelFOV ))
+		
+		halo_phunbase.Add(haloents, HSVToColor( CurTime() * 500 % 360, 1, 1 ), 2, 2, 2, true, true, wep:GetCorrectCameraFOV())
 	end
 end)

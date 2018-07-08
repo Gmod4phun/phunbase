@@ -45,7 +45,7 @@ function PHUNBASE.DEV.PlayViewModelSequence(wep, seq, speed, cycle)
 	wep.RealViewModel:SendViewModelMatchingSequence(wep.RealViewModel:LookupSequence(seq))
 end
 
-function PHUNBASE.DEV.DrawViewmodelAttachments(wep, fov)
+function PHUNBASE.DEV.DrawViewmodelAttachments(wep)
 	if GetConVar("phunbase_dev_vm_attachments_draw"):GetInt() == 0 then return end
 
 	if LocalPlayer():ShouldDrawLocalPlayer() then return end
@@ -61,7 +61,7 @@ function PHUNBASE.DEV.DrawViewmodelAttachments(wep, fov)
 
 			local pos, pos_f, pos_r, pos_u // needs to be in the cam.Start3D for proper fov drawing
 
-			cam.Start3D( EyePos(), EyeAngles(), fov)
+			cam.Start3D( EyePos(), EyeAngles(), wep:GetCorrectCameraFOV())
 				render.DrawLine( angpos.Pos, angpos.Pos + angpos.Ang:Forward() * 2, Color( 255, 0, 0 ), false )
 				render.DrawLine( angpos.Pos, angpos.Pos + angpos.Ang:Right() * 2, Color( 0, 255, 0 ), false )
 				render.DrawLine( angpos.Pos, angpos.Pos + angpos.Ang:Up() * 2, Color( 0, 150, 250 ), false )
@@ -765,7 +765,7 @@ local function PHUNBASE_CVMT_HUDPaint()
 					ShadowText("Duration: " .. math.Round(seqdur, 2) .. " seconds", "CVMT_24", x * 0.5, y * 0.5 - 175, White, Black, 1, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 					ShadowText("Seek: " .. math.Round(seqdur * cyc, 2) .. " seconds", "CVMT_24", x * 0.5, y * 0.5 - 150, White, Black, 1, TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER)
 
-					PHUNBASE.DEV.DrawViewmodelAttachments(wep, PHUNBASE.CalcCameraFromVMFOV( wep.ViewModelFOV ))
+					PHUNBASE.DEV.DrawViewmodelAttachments(wep)
 				end
 			end
 		end

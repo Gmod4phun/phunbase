@@ -143,6 +143,8 @@ if CLIENT then
 		end
 
 		if !att then return end
+		
+		PHUNBASE.drawingRT = true
 
 		local attPos, attAng = att.Pos, att.Ang
 
@@ -167,7 +169,6 @@ if CLIENT then
 
 		// draw things that take up 3d space in here, like lasers, attachments, viewmodels, etc.
 		cam.Start3D(viewdata.origin + viewdata.angles:Forward() * -5, viewdata.angles)
-		
             // handles laser drawing per-attachment, in RT
 			self.isDrawingLasersInScope = true
 				self:_handleAttLasers()
@@ -248,6 +249,7 @@ if CLIENT then
 		render.SetRenderTarget(oldRT)
 
 		self:DrawScopeLense()
+		PHUNBASE.drawingRT = false
 	end
 
 	function PB_RTScope_Texturize_Draw( targetMat, scale, pMaterial )

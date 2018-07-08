@@ -55,7 +55,7 @@ function Render( entry )
 	end
 
 	-- Render colored props to the scene and set their pixels high
-	cam.Start3D(nil, nil, entry.CamFOV)
+	cam.Start3D(nil, nil, entry.CamFOV, 0, 0, ScrW(), ScrH(), 1, 1024)
 		render.SetStencilEnable( true )
 			render.SuppressEngineLighting(true)
 			cam.IgnoreZ( entry.IgnoreZ )
@@ -76,7 +76,7 @@ function Render( entry )
 
 						RenderEnt = v
 						
-						if !LocalPlayer():ShouldDrawLocalPlayer() then
+						if !LocalPlayer():ShouldDrawLocalPlayer() and !PHUNBASE.drawingRT then
 							v:DrawModel()
 						end
 
