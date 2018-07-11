@@ -108,7 +108,7 @@ local function PHUNBASE_DEV_MENU_PANEL_ANIMS(panel, wep)
 		local t = {}
 		for i = 0, vm:GetSequenceCount() - 1 do
 			local seq = vm:GetSequenceName(i)
-			t[seq] = "\""..seq.."\""
+			t[seq] = "\""..seq.."\","
 		end
 		print("Sequence table:")
 		PrintTable(t)

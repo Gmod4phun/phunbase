@@ -32,6 +32,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar( "Bool", 15, "ShouldBeCocking" )
 	self:NetworkVar( "Int", 0, "WeaponMode" )
 	self:NetworkVar( "Int", 1, "GLState" )
+	self:NetworkVar( "Int", 2, "BipodState" )
 	self:NetworkVar( "Float", 3, "GlobalDelay" )
 end
 
@@ -44,7 +45,11 @@ function SWEP:IsFlashlightBusy()
 end
 
 function SWEP:IsBusyForCustomizing()
-	return self:IsBusy() or self:GetIron() or self:IsFlashlightBusy() or self:GetIsSprinting() or self:GetIsSwitchingFiremode() or self:IsGlobalDelayActive() or (self:GetWeaponMode() == PB_WEAPONMODE_BIPOD_ACTIVE)
+	return self:IsBusy() or self:GetIron() or self:IsFlashlightBusy() or self:GetIsSprinting() or self:GetIsSwitchingFiremode() or self:IsGlobalDelayActive() or self:IsBipodDeployed()
+end
+
+function SWEP:IsBusyForBipodDeploying()
+	return self:IsBusy() or self:IsFlashlightBusy() or self:GetIsSprinting() or self:GetIsSwitchingFiremode() or self:IsGlobalDelayActive() or self:GetIsCustomizing()
 end
 
 function SWEP:IsSafe()

@@ -192,6 +192,8 @@ if CLIENT then
 					end
 				end
 			end
+			
+			self:drawVMShells()
             
             cam.IgnoreZ(false)
 		cam.End3D()

@@ -17,6 +17,13 @@ if CLIENT then
         size      = 30,
         weight    = 200,
     })
+	
+	surface.CreateFont( "PB_HUD_FONT_48",
+    {
+        font      = "BF4 Numbers",
+        size      = 48,
+        weight    = 200,
+    })
     
     CreateClientConVar("pb_hud_enable", "1", true, false)
     CreateClientConVar("pb_hud_firemodes_enable", "1", true, false)
@@ -35,6 +42,8 @@ local fireMode
 local FT
 local oldWep = NULL
 local fmA
+
+local bipodAlpha = 0
 
 function SWEP:_drawPhunbaseHud()
     if GetConVar("pb_hud_enable"):GetInt() < 1 then return end
@@ -96,6 +105,21 @@ function SWEP:_drawPhunbaseHud()
 		local glclip = (self:GetGLState() == PB_GLSTATE_READY) and 1 or 0
 		
 		PHUNBASE.drawShadowText("GL Ammo: "..glclip.."/"..glammo, "PB_HUD_FONT_30", (w * 0.995), (h * 0.85), clr_inactive, TEXT_ALIGN_RIGHT, TEXT_ALIGN_TOP, 1, 1)
+	end
+	
+	if self.UsesBipod then
+		local show = self:CanDeployBipod() and !self:IsBipodDeployed() and !self:IsBusyForBipodDeploying()
+		
+		bipodAlpha = Lerp(FT * 10, bipodAlpha, show and 255 or 0)
+		bipodAlpha = math.Clamp(bipodAlpha, 0.05, 255)
+		
+		if !show and bipodAlpha == 0.05 then
+			bipodAlpha = 0
+		end
+		
+		local bipodCol = ColorAlpha(clr_inactive, bipodAlpha)
+		PHUNBASE.drawShadowText("(E)", "PB_HUD_FONT_48", (w * 0.5), (h * 0.7), bipodCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_BOTTOM, 1, 1)
+		PHUNBASE.drawShadowText("DEPLOY BIPOD", "PB_HUD_FONT_30", (w * 0.5), (h * 0.7), bipodCol, TEXT_ALIGN_CENTER, TEXT_ALIGN_TOP, 1, 1)
 	end
 	
 end

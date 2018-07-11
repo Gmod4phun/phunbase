@@ -99,7 +99,7 @@ function SWEP:_IronThink()
 		self.IronTransitionWaiting = false
 	end
 	
-	if self.DisableIronsights or self:GetIsCustomizing() or self:GetGLState() == PB_GLSTATE_RELOADING then
+	if self.DisableIronsights or self:GetIsCustomizing() or self:GetGLState() == PB_GLSTATE_RELOADING or self:IsBipodTransitioning() then
 		if self:GetIron() then
 			self:SetIron(false)
 		end

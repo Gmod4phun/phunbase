@@ -237,7 +237,9 @@ end
 
 function SWEP:OnNadeOvercook() // override this for your own nades
     self:CreateNade(0)
-    self.Owner:Kill()
+	if SERVER then
+		self.Owner:Kill()
+	end
 end
 
 function SWEP:OnNadeCookStart() // override this for your own nades

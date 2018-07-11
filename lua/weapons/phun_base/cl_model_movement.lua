@@ -18,10 +18,10 @@ local Up = reg.Angle.Up
 local Forward = reg.Angle.Forward
 local RotateAroundAxis = reg.Angle.RotateAroundAxis
 
+local dif1, dif2 // bipod diffs
+
 function SWEP:performViewmodelMovement()
-	CT = UnPredictedCurTime()
 	vm = self.VM
-	
 	self.Cycle = vm:GetCycle()
 	self.Sequence = vm:GetSequenceName(vm:GetSequence())
 	
@@ -70,7 +70,7 @@ function SWEP:performViewmodelMovement()
 			move = 0
 		end
 		
-		if self:GetIron() then		
+		if self:GetIron() then
 			TargetPos = self.IronsightPos * 1
 			TargetAng = self.IronsightAng * 1
 			
@@ -112,7 +112,6 @@ function SWEP:performViewmodelMovement()
 				TargetPos, TargetAng = self.SprintPos * 1, self.SprintAng * 1
 				BlendSpeed = math.Approach(BlendSpeed, 5, FT * 200)
 			end
-			
 		
 			rs = self.Owner:GetRunSpeed()
 			mul = math.Clamp(len / rs, 0, 1)
@@ -198,19 +197,19 @@ function SWEP:performViewmodelMovement()
 				TargetAng[1] = TargetAng[1] + self:scaleMovement(tan * 2) * move
 				TargetAng[2] = TargetAng[2] + self:scaleMovement(cos1) * move
 				TargetAng[3] = TargetAng[3] + self:scaleMovement(sin1) * move
-						
+				
 				TargetPos[1] = TargetPos[1] + self:scaleMovement(sin1 * 0.1) * move
 				TargetPos[2] = TargetPos[2] + self:scaleMovement(tan * 0.2) * move
 				TargetPos[3] = TargetPos[3] + self:scaleMovement(tan * 0.1) * move
 			else
-				if !self:GetIron() then
+				if !self:GetIron() and !self:IsBipodDeployed() then
 					cos1, sin1 = math.cos(CT), math.sin(CT)
 					tan = math.atan(cos1 * sin1, cos1 * sin1)
-						
+					
 					TargetAng[1] = TargetAng[1] + tan * 1.15
 					TargetAng[2] = TargetAng[2] + cos1 * 0.4
 					TargetAng[3] = TargetAng[3] + tan
-						
+					
 					TargetPos[2] = TargetPos[2] + tan * 0.2
 				end
 			end
@@ -266,6 +265,49 @@ function SWEP:performViewmodelMovement()
 			end
 		end
 		
+		// bipod
+		-- if LEGACYBIPOD then
+			if self:ShouldBeUsingBipodOffsets() then
+				dif1 = math.AngleDifference(self.BipodDeployAngle.y, EA.y)
+				dif2 = math.AngleDifference(self.BipodDeployAngle.p, EA.p)
+				
+				if !self:GetIron() then
+					TargetPos[1] = TargetPos[1] - 0.5
+					TargetPos[2] = TargetPos[2] + 1.5
+					TargetPos[3] = TargetPos[3] - 1.5
+				end
+				
+				if CT < self.BipodMoveTime then
+					self.BipodPos[1] = math.Approach(self.BipodPos[1], dif1 * 0.3, FT * 5)
+					self.BipodPos[3] = math.Approach(self.BipodPos[3], dif2 * 0.3, FT * 5)
+					
+					self.BipodAng[1] = math.Approach(self.BipodAng[1], dif1 * 0.1, FT * 5)
+					self.BipodAng[3] = math.Approach(self.BipodAng[3], dif2 * 0.1, FT * 5)
+				else
+					if self:GetIron() then			
+						self.BipodPos = LerpVector(FT * 10, self.BipodPos, Vec0)
+						self.BipodAng = LerpVector(FT * 10, self.BipodAng, Vec0)
+					else
+						self.BipodPos[1] = dif1 * 0.3
+						self.BipodPos[3] = dif2 * 0.3
+						
+						self.BipodAng[1] = dif1 * 0.1
+						self.BipodAng[3] = dif2 * 0.1
+					end
+				end
+			else
+				self.BipodPos = LerpVector(FT * 10, self.BipodPos, Vec0)
+				self.BipodAng = LerpVector(FT * 10, self.BipodAng, Vec0)
+				self.BipodMoveTime = CT + 0.2
+			end
+		-- else
+			-- self.BipodPos[1] = 0
+			-- self.BipodPos[3] = 0
+			
+			-- self.BipodAng[1] = 0
+			-- self.BipodAng[3] = 0
+		-- end
+		
 		if self.ViewModelFlip then
 			TargetPos.x = -TargetPos.x
 		end
@@ -275,7 +317,7 @@ function SWEP:performViewmodelMovement()
 		self.BlendPos[1] = Lerp(FT * BlendSpeed, self.BlendPos[1], TargetPos[1] + self.AngleDelta.y * (0.15 * mod))
 		self.BlendPos[2] = Lerp(FT * BlendSpeed * 0.6, self.BlendPos[2], TargetPos[2])
 		self.BlendPos[3] = Lerp(FT * BlendSpeed * 0.75, self.BlendPos[3], TargetPos[3] + self.AngleDelta.p * (0.2 * mod) + math.abs(self.AngleDelta.y) * (0.02 * mod))
-			
+		
 		self.BlendAng[1] = Lerp(FT * BlendSpeed * 0.75, self.BlendAng[1], TargetAng[1] + AngMod[1] - self.AngleDelta.p * (1.5 * mod))
 		self.BlendAng[2] = Lerp(FT * BlendSpeed, self.BlendAng[2], TargetAng[2] + AngMod[2] + self.AngleDelta.y * (0.3 * mod))
 		self.BlendAng[3] = Lerp(FT * BlendSpeed, self.BlendAng[3], TargetAng[3] + AngMod[3] + self.AngleDelta.y * (0.6 * mod) + veldepend.roll)

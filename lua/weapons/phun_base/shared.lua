@@ -1,3 +1,4 @@
+
 /*
 PHUNBASE BASE CODE
 */
@@ -107,9 +108,6 @@ SWEP.NearWallAng = Vector(0,0,0)
 SWEP.InactivePos = Vector(4, 0, 0) // vm position underwater / on ladder
 SWEP.InactiveAng = Vector(-45, 45, 0)
 
-SWEP.BipodPos = Vector(0,0,0) // not implemented
-SWEP.BipodAng = Vector(0,0,0)
-
 SWEP.CustomizePos = Vector(0,0,0) // vm position when customizing
 SWEP.CustomizeAng = Vector(0,0,0)
 
@@ -139,6 +137,8 @@ SWEP.Sequences = {
 	reload = "", // normal/wet reload
 	reload_empty = "", // empty/dry reload, if not defined, uses normal reload sequence
 	deploy = "", // deploy
+	deploy_empty = "", // empty deploy
+	deploy_first = "", // first time deploy
 	holster = "", // holster
 	goto_iron = "", // transition to ironsights, used by dual weapons or nondual when ForceGotoTransitionAnims is enabled
 	goto_hip = "", // transition to hip, used by dual weapons or nondual when ForceGotoTransitionAnims is enabled
@@ -335,7 +335,6 @@ function SWEP:Initialize()
 	self:SetIsSwitchingFiremode(false)
 	self:SetShouldBeCocking(false)
 	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
-	self:SetGLState(PB_GLSTATE_READY)
 	self:SetGlobalDelay(0)
 
 	if CLIENT then
@@ -372,7 +371,6 @@ function SWEP:OnReloaded()
 	self:SetIsSwitchingFiremode(false)
 	self:SetShouldBeCocking(false)
 	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
-	self:SetGLState(PB_GLSTATE_READY)
 
 	self:SetMuzzleAttachmentName(self.MuzzleAttachmentName)
 	self:SetShellAttachmentName(self.ShellAttachmentName)
@@ -392,6 +390,8 @@ function SWEP:OnReloaded()
 
 	self:SetupOrigValues()
 	self:SetupActiveAttachmentNames()
+	
+	self:SetupOrigFireMode()
 
 	if !self.Owner:IsNPC() then
 		timer.Simple(0.01, function()
@@ -458,11 +458,11 @@ function SWEP:Deploy()
 		self:PreDeployAnimLogic()
 	end
 
-	if !self._wasFirstTimeDeployed then
-		self:DeployAnimLogic()
-	else
-		self:DelayedEvent(0, function() self:DeployAnimLogic() end) // fixes deploy anim because of vm position not being adjusted yet
-	end
+	-- if !self._wasFirstTimeDeployed then
+		self:DeployAnimLogic() // this alone probably works just fine
+	-- else
+		-- self:DelayedEvent(0, function() self:DeployAnimLogic() end) // fixes deploy anim because of vm position not being adjusted yet
+	-- end
 
 	if !self._wasFirstTimeDeployed then
 		self._wasFirstTimeDeployed = true
@@ -494,7 +494,7 @@ function SWEP:Holster(wep)
 		return false
 	end
 
-	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() or self:IsFiring() or self:IsGlobalDelayActive() then
+	if self:GetIsDeploying() or self:GetIsReloading() or ( self:GetHolsterDelay() ~= 0 and CurTime() < self:GetHolsterDelay() ) or self:GetIsWaiting() or self:IsFiring() or self:IsGlobalDelayActive() or self:IsBipodDeployed() then
 		return false
 	end
 
@@ -579,6 +579,7 @@ function SWEP:Think()
 	self:_ReloadThink()
 	self:_SoundTableThink()
 	self:_FiremodeThink()
+	self:_BipodThink()
 
 	if self.AdditionalThink then
 		self:AdditionalThink()

@@ -3,8 +3,10 @@ PHUNBASE:addFireSound("PB_GRENADELAUNCHER_FIRE", "weapons/ar2/ar2_altfire.wav")
 
 // grenade launcher status
 PB_GLSTATE_READY = 0
-PB_GLSTATE_EMPTY = 1
-PB_GLSTATE_RELOADING = 2
+PB_GLSTATE_ENTER = 1
+PB_GLSTATE_EXIT = 2
+PB_GLSTATE_EMPTY = 3
+PB_GLSTATE_RELOADING = 4
 
 SWEP.GrenadeLauncherIronPos = Vector()
 SWEP.GrenadeLauncherIronAng = Vector()
@@ -29,19 +31,28 @@ end
 function SWEP:EnterGrenadeLauncherMode()
 	if !self.UsesGrenadeLauncher then return end
 	
-	self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay)
+	if !nodelay then self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay) end
+	
+	self:SetGLState(PB_GLSTATE_ENTER)
+	self:DelayedEvent(self.GrenadeLauncherTransitionDelay, function() self:SetGLState(PB_GLSTATE_READY) end)
 	self:SetWeaponMode(PB_WEAPONMODE_GL_ACTIVE)
+	
 	self:GrenadeLauncherModeAnimLogic()
 end
 
 function SWEP:ExitGrenadeLauncherMode(nodelay)
 	if !self.UsesGrenadeLauncher then return end
 	
-	if !nodelay then
-		self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay)
-	end
-	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
+	if !nodelay then self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay) end
+	
+	self:SetGLState(PB_GLSTATE_EXIT)
 	self:GrenadeLauncherModeAnimLogic()
+	
+	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
+end
+
+function SWEP:IsGLActive()
+	return self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE
 end
 
 function SWEP:AllowGLMode()
