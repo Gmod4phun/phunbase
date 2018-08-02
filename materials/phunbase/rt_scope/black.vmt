@@ -1,4 +1,5 @@
 "VertexLitGeneric"
 {
 	"$basetexture" "phunbase/rt_scope/black"
+	"$nocull" "1"
 }

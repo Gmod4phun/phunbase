@@ -137,6 +137,7 @@ SWEP.LockThrowStateOnInit = false
 
 SWEP._WasCookedThrow = false
 SWEP._IsCooking = false
+SWEP._ThrowPower = 0
 
 function SWEP:OnNadeTossed() // called after creating the nade, use when needed
 end

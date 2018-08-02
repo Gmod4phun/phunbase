@@ -1,6 +1,6 @@
 "UnlitGeneric"
 {
-	"$basetexture"	"phunbase/reticles/aimpoint_reticule"
+	"$basetexture"	"phunbase/reticles/aimpoint_crosshair"
 	"$basetexturetransform ""center .5 .5 scale .25 .25 rotate 0 translate 0 0"
 	"$translucent" 	"1"
 	"$additive" "1"

@@ -88,7 +88,10 @@ SWEP.Sounds = {
 
 SWEP.DeployTime = 0.3
 SWEP.HolsterTime = 0.3
-SWEP.ReloadTime = 1.6
+
+SWEP.ReloadTimes = {
+	Base = 1.6,
+}
 
 SWEP.HolsterAnimSpeed = -2
 SWEP.HolsterAnimStartCyc = 1

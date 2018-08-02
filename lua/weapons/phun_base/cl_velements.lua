@@ -292,13 +292,15 @@ function SWEP:_drawAttachmentModel_for_RT(data)
 end
 
 function SWEP:_drawAttachmentModels(data)
-	if data.models then
-		for key, modelData in ipairs(data.models) do
-			self:_drawAttachmentModels(modelData)
+	-- cam.Start3D(nil, nil, self:GetCorrectCameraFOV())
+		if data.models then
+			for key, modelData in ipairs(data.models) do
+				self:_drawAttachmentModels(modelData)
+			end
+		else
+			self:_drawAttachmentModel(data)
 		end
-	else
-		self:_drawAttachmentModel(data)
-	end
+	-- cam.End3D()
 end
 
 function SWEP:drawAttachments()

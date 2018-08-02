@@ -11,7 +11,10 @@ local function PHUNBASE_PostDrawVM(viewmodel,player,weapon)
 	
 	wep:processBlur()
 	wep:performViewmodelMovement()
-	wep:drawViewModel()
+	
+	-- cam.Start3D(EyePos(), EyeAngles(), wep:GetCorrectCameraFOV(), nil, nil, ScrW(), ScrH(), 0.1, 1024)
+		wep:drawViewModel()
+	-- cam.End3D()
 end
 hook.Add("PostDrawViewModel", "PHUNBASE_PostDrawVM", PHUNBASE_PostDrawVM)
 

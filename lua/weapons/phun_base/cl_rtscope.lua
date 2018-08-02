@@ -239,7 +239,7 @@ if CLIENT then
             cam.IgnoreZ(false)
 		cam.End2D()
 
-		if !self._Scope then
+		if !self._Scope or (self._Scope and self._Scope != self.RTScope_Material) then
 			self._Scope = self.RTScope_Material
 			self._Scope:SetTexture("$basetexture", self._ScopeRT)
 			pb_rtscope_texturizeMat:SetTexture( "$fbtexture", self._ScopeRT )

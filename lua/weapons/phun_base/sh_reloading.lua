@@ -1,3 +1,56 @@
+
+SWEP.ReloadTimes = {
+	Base = 1,
+	Base_Empty = 1,
+	Base_Drum = 1,
+	Base_Empty_Drum = 1,
+	Base_Ext = 1,
+	Base_Empty_Ext = 1,
+	
+	Bipod = 1,
+	Bipod_Empty = 1,
+	Bipod_Drum = 1,
+	Bipod_Empty_Drum = 1,
+	Bipod_Ext = 1,
+	Bipod_Empty_Ext = 1,
+}
+
+SWEP.UsesEmptyReloadTimes = false
+
+SWEP.ReloadClipChangeDelay = 0 // delay for when the clip should be discarded/returned to total ammo (aka when the mag should get out of the gun)
+
+SWEP.DiscardClipOnReload = false // should the ammo in clip get discarded instead of returning to the total ammo
+SWEP.DiscardClipOnReloadKeepChambered = true // if discard ammo is enabled and if the weapon is chamberable and has a round in the chamber, it does not get discarded
+
+function SWEP:discardClip()
+	if self.Chamberable and !self.WasEmpty and self.DiscardClipOnReloadKeepChambered then
+		self:SetClip1(1)
+	else
+		self:SetClip1(0)
+	end
+end
+
+function SWEP:getReloadTime()
+	local empty = self.WasEmpty and self.UsesEmptyReloadTimes
+	local bipod = self:IsBipodDeployed()
+	local drum = self.UsesDrumMag
+	local extmag = self.UsesExtMag
+	
+	local reltype = "Base"
+	
+	if bipod then reltype = "Bipod" end
+	
+	if empty then reltype = reltype.."_Empty" end
+	
+	if drum then
+		reltype = reltype.."_Drum"
+	elseif extmag then
+		reltype = reltype.."_Ext"
+	end
+	
+	return self.ReloadTimes[reltype]
+end
+
 function SWEP:Reload()
 	if self:GetIsCustomizing() then return end
 	
@@ -68,6 +121,19 @@ if CLIENT then
     end)
 end
 
+function SWEP:changeHadInClip()
+	self.HadInClip = self:Clip1()
+	self.WasEmpty = self.HadInClip == 0
+    
+    if SERVER then // send this to the client
+        net.Start("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
+            net.WriteEntity(self)
+            net.WriteFloat(self.HadInClip)
+            net.WriteBool(self.WasEmpty)
+        net.Send(self.Owner)
+    end
+end
+
 function SWEP:_realReloadStart()
 	local ply = self.Owner
 	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self:GetShouldBeCocking() or self.DisableReloading or self:IsGlobalDelayActive() then return end
@@ -79,16 +145,7 @@ function SWEP:_realReloadStart()
 		return
 	end
 	
-	self.HadInClip = self:Clip1()
-	self.WasEmpty = self.HadInClip == 0
-    
-    if SERVER then // send this to the client
-        net.Start("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
-            net.WriteEntity(self)
-            net.WriteFloat(self.HadInClip)
-            net.WriteBool(self.WasEmpty)
-        net.Send(ply)
-    end
+	self:changeHadInClip()
 	
 	if !(self.HadInClip < self.Primary.ClipSize + ((!self.WasEmpty and self.Chamberable and !self.ShotgunReload) and 1 or 0)) or ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then return end
 	if self:GetNextPrimaryFire() > CurTime() or self:GetNextSecondaryFire() > CurTime() then return end
@@ -96,10 +153,17 @@ function SWEP:_realReloadStart()
 	self:SetIsReloading(true)
 	self:CalcHoldType()
 	
+	if self.DiscardClipOnReload then
+		self:DelayedEvent(self.ReloadClipChangeDelay, function()
+			self:discardClip()
+			self:changeHadInClip()
+		end)
+	end
+	
 	if IsFirstTimePredicted() then
 		if !self.ShotgunReload then
-			self.FinishReloadTime = CurTime() + ((self.WasEmpty and self.ReloadTime_Empty) and self.ReloadTime_Empty or self.ReloadTime)
-			self.ReloadIdleSnapTime = CurTime() + (self.IdleAfterReloadTime and self.IdleAfterReloadTime or self.ReloadTime)
+			self.FinishReloadTime = CurTime() + self:getReloadTime()
+			self.ReloadIdleSnapTime = CurTime() + (self.IdleAfterReloadTime and self.IdleAfterReloadTime or self:getReloadTime())
 			self:_reloadBegin()
 		else
 			self:_shotgunReloadBegin()
@@ -117,24 +181,43 @@ function SWEP:ReloadAnimLogic()
 	self:PlayVMSequence(((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload"))
 end
 
+function SWEP:_reloadDiscardbla()
+
+end
+
 function SWEP:_reloadBegin()
 	local ply = self.Owner
 	if IsFirstTimePredicted() then
 		self:ReloadAnimLogic()
-		local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
-		ply:SetAmmo(TotalAmmo + self.HadInClip, self:GetPrimaryAmmoType())
-		self:SetClip1(0)
+		if !self.DiscardClipOnReload and SERVER then
+			self:DelayedEvent(self.ReloadClipChangeDelay, function()
+				if self.HadInClip > 1 then
+					ply:GiveAmmo(self.HadInClip, self:GetPrimaryAmmoType(), true)
+					if self:_wasChamberedDuringReload() then
+						self:SetClip1(1)
+						ply:RemoveAmmo(1, self:GetPrimaryAmmoType())
+					end
+				end
+				self:discardClip()
+			end)
+		end
 	end
 end
 
+function SWEP:_wasChamberedDuringReload()
+	return (self.Chamberable and !self.WasEmpty and (!self.DiscardClipOnReload or self.DiscardClipOnReloadKeepChambered))
+end
+
+function SWEP:getAmmoCount()
+	return self.Owner:GetAmmoCount(self:GetPrimaryAmmoType())
+end
+
 function SWEP:calcAmmoLeft()
-	local ply = self.Owner
-	local TotalAmmo = ply:GetAmmoCount(self:GetPrimaryAmmoType())
-	local MagCapacity = self.Primary.ClipSize + ((!self.WasEmpty and self.Chamberable) and 1 or 0)
-	if TotalAmmo >= MagCapacity then
+	local MagCapacity = self.Primary.ClipSize// + (self:_wasChamberedDuringReload() and 1 or 0)
+	if self:getAmmoCount() >= MagCapacity then
 		return MagCapacity
 	else
-		return TotalAmmo
+		return self:getAmmoCount()
 	end
 end
 
@@ -143,8 +226,8 @@ function SWEP:_reloadFinish()
 		local ply = self.Owner
 		local AmmoToReload = self:calcAmmoLeft()
 		
-		self:SetClip1(AmmoToReload)
 		ply:RemoveAmmo(AmmoToReload, self:GetPrimaryAmmoType())
+		self:SetClip1(self:Clip1() + AmmoToReload)
 		
 		if AmmoToReload % 2 == self.Primary.ClipSize % 2 then
 			self:SetDualSide(self.DefaultDualSide)
@@ -187,26 +270,26 @@ function SWEP:_shotgunReloadBegin()
 	local TotalAmmo = self:GetOwner():GetAmmoCount(self:GetPrimaryAmmoType())
 	self.ShotgunReloadingState = 0
 	self.ShouldStopReloading = false
-	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_Start_Empty) or (CurTime() + self.ShotgunReloadTime_Start)
+	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTimes.Start_Empty) or (CurTime() + self.ShotgunReloadTimes.Start)
 	
 	self:ShotgunReloadStartLogic()
 	
 	// a very special occasion, but it can happen, so it needs to be taken care of
-	if TotalAmmo == 1 and self.ShotgunReload_InsertOnStart and self.WasEmpty and self.ShotgunReload_InsertOnEndEmpty then // only inserts 1 last shell available, starts empty, and should insert shell on both start and end
+	if TotalAmmo == 1 and self.ShotgunReloadActions.InsertOnStart and self.WasEmpty and self.ShotgunReloadActions.InsertOnEndEmpty then // only inserts 1 last shell available, starts empty, and should insert shell on both start and end
 		self.ShotgunReloadingState = 2
-		self:DelayedEvent(self.ShotgunReloadTime_Start_EmptyOneAndOnly or 0.1, function() self:_shotgunReloadFinish() end)
+		self:DelayedEvent(self.ShotgunReloadTimes.Start_EmptyOneAndOnly or 0.1, function() self:_shotgunReloadFinish() end)
 		return
 	end
 	
-	self.ShotgunInsertedShells = ((self.ShotgunReload_InsertOnStart and !self.WasEmpty) or (self.ShotgunReload_InsertOnStartEmpty and self.WasEmpty)) and 1 or 0
+	self.ShotgunInsertedShells = ((self.ShotgunReloadActions.InsertOnStart and !self.WasEmpty) or (self.ShotgunReloadActions.InsertOnStartEmpty and self.WasEmpty)) and 1 or 0
 	
-	if self.ShotgunReload_EjectOnStart and !self.WasEmpty then
+	if self.ShotgunReloadActions.EjectOnStart and !self.WasEmpty then
 		self.ShotgunInsertedShells = self.ShotgunInsertedShells - 1
-		self:_shotgunReloadRemoveAmmo(self.ShotgunReloadTime_EjectOnStart)
+		self:_shotgunReloadRemoveAmmo(self.ShotgunReloadTimes.EjectOnStart)
 	end
 	
-	if (self.ShotgunReload_InsertOnStart and !self.WasEmpty) or (self.ShotgunReload_InsertOnStartEmpty and self.WasEmpty) then
-		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTime_InsertOnStartEmptyAmmoWait or self.ShotgunReloadTime_InsertOnStartAmmoWait)
+	if (self.ShotgunReloadActions.InsertOnStart and !self.WasEmpty) or (self.ShotgunReloadActions.InsertOnStartEmpty and self.WasEmpty) then
+		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTimes.InsertOnStartEmptyAmmoWait or self.ShotgunReloadTimes.InsertOnStartAmmoWait)
 	end
 end
 
@@ -215,12 +298,12 @@ function SWEP:ShotgunReloadInsertLogic()
 end
 
 function SWEP:_shotgunReloadInsert()
-	self.NextShotgunAction = CurTime() + self.ShotgunReloadTime_Insert
+	self.NextShotgunAction = CurTime() + self.ShotgunReloadTimes.Insert
 	
 	self:ShotgunReloadInsertLogic()
 	
 	self.ShotgunInsertedShells = self.ShotgunInsertedShells + 1
-	self:_shotgunReloadAddAmmo(self.ShotgunReloadTime_InsertAmmoWait)
+	self:_shotgunReloadAddAmmo(self.ShotgunReloadTimes.InsertAmmoWait)
 end
 
 function SWEP:ShotgunReloadEndLogic()
@@ -229,11 +312,11 @@ end
 
 function SWEP:_shotgunReloadFinish()
 	self.ShotgunReloadingState = 2
-	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTime_End_Empty) or (CurTime() + self.ShotgunReloadTime_End)
+	self.NextShotgunAction = self.WasEmpty and (CurTime() + self.ShotgunReloadTimes.End_Empty) or (CurTime() + self.ShotgunReloadTimes.End)
 	
 	self:ShotgunReloadEndLogic()
 	
-	if (self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty) then
-		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTime_InsertOnEndEmptyAmmoWait or self.ShotgunReloadTime_InsertOnEndAmmoWait)
+	if (self.ShotgunReloadActions.InsertOnEnd and !self.WasEmpty) or (self.ShotgunReloadActions.InsertOnEndEmpty and self.WasEmpty) then
+		self:_shotgunReloadAddAmmo(self.WasEmpty and self.ShotgunReloadTimes.InsertOnEndEmptyAmmoWait or self.ShotgunReloadTimes.InsertOnEndAmmoWait)
 	end
 end

@@ -33,7 +33,7 @@ function SWEP:_ReloadThink()
 			end
 		else // shotgun reload think logic
 			if self.ShotgunReloadingState == 0 then
-				if self:GetOwner():KeyDown(IN_ATTACK) and ((self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty)) then
+				if self:GetOwner():KeyDown(IN_ATTACK) and ((self.ShotgunReloadActions.InsertOnEnd and !self.WasEmpty) or (self.ShotgunReloadActions.InsertOnEndEmpty and self.WasEmpty)) then
 					self.ShouldStopReloading = true
 				end
 				if CurTime() >= self.NextShotgunAction then
@@ -50,8 +50,8 @@ function SWEP:_ReloadThink()
 						self:_shotgunReloadFinish()
 						return
 					end
-					if self.ShotgunInsertedShells < (cSize - self.HadInClip - ( ((self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty)) and 1 or 0)) then
-						if ( ((self.ShotgunReload_InsertOnEnd and !self.WasEmpty) or (self.ShotgunReload_InsertOnEndEmpty and self.WasEmpty)) and ((clip == cSize - 1) or (ammo == 1)) ) then
+					if self.ShotgunInsertedShells < (cSize - self.HadInClip - ( ((self.ShotgunReloadActions.InsertOnEnd and !self.WasEmpty) or (self.ShotgunReloadActions.InsertOnEndEmpty and self.WasEmpty)) and 1 or 0)) then
+						if ( ((self.ShotgunReloadActions.InsertOnEnd and !self.WasEmpty) or (self.ShotgunReloadActions.InsertOnEndEmpty and self.WasEmpty)) and ((clip == cSize - 1) or (ammo == 1)) ) then
 							self:_shotgunReloadFinish()
 						else
 							self:_shotgunReloadInsert()

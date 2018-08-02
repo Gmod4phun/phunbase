@@ -73,3 +73,51 @@ end
 function SWEP:RestoreOriginalIronsights()
 	self:SetIronsights(self.IronsightPos_ORIG, self.IronsightAng_ORIG)
 end
+
+// testing value saving
+
+local defaultValuesToSave = {
+	["RTScope_Material"] = true,
+	["RTScope_Enabled"] = true,
+	["RTScope_Zoom"] = true,
+	["RTScope_Align"] = true,
+	["RTScope_Reticle"] = true,
+	["RTScope_ReticleAlways"] = true,
+	["RTScope_Lense"] = true,
+	["RTScope_DrawIris"] = true,
+	["RTScope_DrawParallax"] = true,
+	["RTScope_ShakeMul"] = true,
+	["RTScope_Rotate"] = true,
+	["RTScope_Entity"] = true,
+	["RTScope_AttachmentName"] = true,
+	["RTScope_IsThermal"] = true,
+	-- ["__VALUENAME__"] = true,
+}
+
+function SWEP:_saveAllOrigValues()
+	for k, v in pairs(self:GetTable()) do
+		self:_saveOrigValue(k)
+	end
+end
+
+function SWEP:_saveOrigValue(val)
+	if val:find("ORIG") then return end
+	
+	local tab = self:GetTable()
+	if !tab[val] then return end
+	
+	if tab[val] and !tab[val.."_ORIG"] then
+		tab[val.."_ORIG"] = tab[val]
+	end
+end
+
+function SWEP:_restoreOrigValue(val)
+	if val:find("ORIG") then return end
+	
+	local tab = self:GetTable()
+	if !tab[val] then return end
+	
+	if tab[val] and tab[val.."_ORIG"] then
+		tab[val] = tab[val.."_ORIG"]
+	end
+end

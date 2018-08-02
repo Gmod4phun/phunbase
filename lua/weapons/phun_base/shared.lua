@@ -177,8 +177,17 @@ SWEP.HolsterTime = 0.5 // time taken to finish holstering the weapon
 SWEP.HolsterAnimSpeed = 1 // the speed of holster sequence, use -1 to play backwards
 SWEP.HolsterAnimStartCyc = 0 // the starting cycle of holster sequence, use 1 to start at the end
 
-SWEP.ReloadTime = 0.5 // time taken to reload
+/* // this is old, update your weapons to the new system if needed
+//SWEP.ReloadTime = 0.5 // time taken to reload
 //SWEP.ReloadTime_Empty = SWEP.ReloadTime // time taken to reload, when empty, if not specified, is the same as ReloadTime
+*/
+
+SWEP.ReloadTimes = { // reload times, self explanatory
+	Base = 1,
+	Base_Empty = 1,
+	Bipod = 1,
+	Bipod_Empty = 1,
+}
 
 SWEP.IdleAfterReload = true // should the weapon play idle sequence after a non-empty reload
 //SWEP.IdleAfterReloadTime = SWEP.ReloadTime // time to play the idle sequence, if enabled
@@ -189,23 +198,30 @@ SWEP.Chamberable = true // enables room for an extra round in the chamber, shoul
 SWEP.UsesAmmoCountLogic = false // uses a different logic that takes away ammo per each shot, no clips/magazines
 
 SWEP.ShotgunReload = false // enables shotgun reload mechanics
-SWEP.ShotgunReload_InsertOnStart = false // should insert a round on reload start
-SWEP.ShotgunReload_InsertOnStartEmpty = false // should insert a round on reload start, when starting empty
-SWEP.ShotgunReload_InsertOnEnd = false // should insert a round on reload end
-SWEP.ShotgunReload_InsertOnEndEmpty = false // should insert a round on reload end, started by empty reload
 
-SWEP.ShotgunReloadTime_Start = 1 // time until inserting begins
-SWEP.ShotgunReloadTime_Start_Empty = 1 // time until inserting begins, started by empty reload
-SWEP.ShotgunReloadTime_Start_EmptyOneAndOnly = 0.25 // very special case only, happens when start and empty end inserts are enabled and there is 1 round available, time to wait between starting and ending the reload
-SWEP.ShotgunReloadTime_Insert = 0.5 // time between the individual inserts
-SWEP.ShotgunReloadTime_End = 1 // time taken for the weapon to stop reloading
-SWEP.ShotgunReloadTime_End_Empty = 1.5 // time for the weapon to stop reloading, started by empty reload
+SWEP.ShotgunReloadActions = {
+	InsertOnStart = false, // should insert a round on reload start
+	InsertOnStartEmpty = false, // should insert a round on reload start, when starting empty
+	InsertOnEnd = false, // should insert a round on reload end
+	InsertOnEndEmpty = false, // should insert a round on reload end, started by empty reload
+}
 
-SWEP.ShotgunReloadTime_InsertAmmoWait = 0 // time until ammo changes on insert
-SWEP.ShotgunReloadTime_InsertOnStartAmmoWait = 0.25 // time until ammo changes on reload start, if start insert is enabled
-SWEP.ShotgunReloadTime_InsertOnStartEmptyAmmoWait = 0.5 // time until ammo changes on empty reload start, if empty start insert is enabled
-SWEP.ShotgunReloadTime_InsertOnEndAmmoWait = 0.25 // time until ammo changes on reload end, if end or empty end insert is enabled
-SWEP.ShotgunReloadTime_InsertOnEndEmptyAmmoWait = 0.3 // time until ammo changes on empty reload end, if empty end insert is enabled
+SWEP.ShotgunReloadTimes = {
+	Start = 1, // time until inserting begins
+	Start_Empty = 1, // time until inserting begins, started by empty reload
+	Start_EmptyOneAndOnly = 0.25, // very special case only, happens when start and empty end inserts are enabled and there is 1 round available, time to wait between starting and ending the reload
+	Insert = 0.5, // time between the individual inserts
+	End = 1, // time taken for the weapon to stop reloading
+	End_Empty = 1.5, // time for the weapon to stop reloading, started by empty reload
+
+	InsertAmmoWait = 0, // time until ammo changes on insert
+	InsertOnStartAmmoWait = 0.25, // time until ammo changes on reload start, if start insert is enabled
+	InsertOnStartEmptyAmmoWait = 0.5, // time until ammo changes on empty reload start, if empty start insert is enabled
+	InsertOnEndAmmoWait = 0.25, // time until ammo changes on reload end, if end or empty end insert is enabled
+	InsertOnEndEmptyAmmoWait = 0.3, // time until ammo changes on empty reload end, if empty end insert is enabled
+}
+
+SWEP.FireActionDelay = 0 // delay between initiating the attack and firing the bullet, like revolvers
 
 SWEP.UseHands = true // use gmod hands or not
 
@@ -339,10 +355,10 @@ function SWEP:Initialize()
 
 	if CLIENT then
 		self:_CreateVM()
-		self:_CreateHands()
 		self:_CreateWM()
 		self:setupAttachmentModels()
 		self:setupBoneTable()
+		self:_CreateHands()
 		if self.AdditionalInit then
 			self:AdditionalInit()
 		end
@@ -355,6 +371,8 @@ function SWEP:Initialize()
 	self:SetupActiveAttachmentNames()
 
     self:SetupOrigFireMode()
+
+	self:_saveAllOrigValues()
 end
 
 function SWEP:OnReloaded()
@@ -384,6 +402,7 @@ function SWEP:OnReloaded()
 
 	if CLIENT then
 		self:setupAttachmentModels()
+		self:_UpdateHands()
 	end
 
 	self:RestoreOriginalIronsights()
@@ -604,12 +623,18 @@ function SWEP:Think()
 end
 
 function SWEP:DelayedEvent(t, f)
-	local i = #self.Events + 1
-	self.Events[i] = {time = CurTime() + t, func = function() if !IsValid(self) then return end f() end}
-	return i
+	if t <= 0 then // if time is 0 or less, just run the function
+		f()
+		return nil
+	else
+		local i = #self.Events + 1
+		self.Events[i] = {time = CurTime() + t, func = function() if !IsValid(self) then return end f() end}
+		return i
+	end
 end
 
 function SWEP:RemoveDelayedEvent(i)
+	if !i then return end
 	table.remove(self.Events, i)
 end
 
@@ -668,13 +693,89 @@ function SWEP:DryFireAnimLogic()
 	end
 end
 
-function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I dont want to copy shitton of code just for sequences
+function SWEP:PerformFireAction()
 	local ply = self.Owner
+	
+	local firesnd = self.IsSuppressed and self.FireSoundSuppressed or self.FireSound
+	
+	if type(firesnd) == "table" then
+		for _, snd in pairs(firesnd) do
+			if type(snd) == "string" then
+				self:EmitSound(snd)
+			end
+		end
+	elseif type(firesnd) == "string" then
+		self:EmitSound(firesnd)
+	end
+
+	if self.PrimaryAttackOverride then
+		self:PrimaryAttackOverride()
+	else
+		self:_FireBullets()
+		self:StopViewModelParticles()
+	end
+
+	self:PlayMuzzleFlashEffect()
+	self:MakeRecoil()
+
+	if CLIENT then
+		self:simulateRecoil()
+	end
+
+	if game.SinglePlayer() and SERVER then
+		if self.Owner:IsPlayer() then
+			SendUserMessage("PHUNBASE_Recoil", ply)
+			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
+		end
+	end
+
+	ply:SetAnimation(PLAYER_ATTACK1)
+end
+
+function SWEP:InitFireAction()
+	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
+
+	if IsFirstTimePredicted() then
+		if (game.SinglePlayer() and SERVER) or CLIENT then
+			self:FireAnimLogic(isSecondary)
+		end
+		
+		if !((self.CockAfterShot and self.MakeShellOnCock) or self.NoShells) then
+			self:MakeShell()
+		end
+	
+		self:DelayedEvent(self.FireActionDelay, function()
+			self:PerformFireAction()
+		end)
+
+
+		if self.ReloadAfterShot then
+			self:DelayedEvent(self.ReloadAfterShotTime, function() self:_realReloadStart() end)
+		end
+
+		if self.UnIronAfterShot then
+			self:DelayedEvent(self.UnIronAfterShotTime, function() self:SetIron(false) end)
+		end
+
+		if self.CockAfterShot then
+			self:SetShouldBeCocking(true)
+		end
+
+		if self.CockAfterShot and self.AutoCockStart then
+			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
+		end
+	end
+
+	self:Cheap_WM_ShootEffects()
+	self:TakePrimaryAmmo(self.Primary.TakePerShot)
+end
+
+function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I dont want to copy shitton of code just for sequences
 	if self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or (self.OnlyIronFire and !self:GetIron()) or self.IronTransitionWaiting then return end
 
 	if self:GetIsCustomizing() or self:IsGlobalDelayActive() then return end
 
-	if ply:KeyDown(IN_USE) and self.UsesGrenadeLauncher then
+	if self.Owner:KeyDown(IN_USE) and self.UsesGrenadeLauncher then
 		if self:GetWeaponMode() == PB_WEAPONMODE_NORMAL then
 			self:EnterGrenadeLauncherMode()
 			return
@@ -711,68 +812,7 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 		self.BurstShotsFired = self.BurstShotsFired + 1
 	end
 
-	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-
-	if IsFirstTimePredicted() then
-		local firesnd = self.IsSuppressed and self.FireSoundSuppressed or self.FireSound
-		if type(firesnd) == "table" then
-			for _, snd in pairs(firesnd) do
-				if type(snd) == "string" then
-					self.Weapon:EmitSound(snd)
-				end
-			end
-		elseif type(firesnd) == "string" then
-			self.Weapon:EmitSound(firesnd)
-		end
-
-		if self.PrimaryAttackOverride then
-			self:PrimaryAttackOverride()
-		else
-			self:_FireBullets()
-			self:StopViewModelParticles()
-		end
-
-		if (game.SinglePlayer() and SERVER) or CLIENT then
-			self:FireAnimLogic(isSecondary)
-		end
-
-		self:PlayMuzzleFlashEffect()
-		if !((self.CockAfterShot and self.MakeShellOnCock) or self.NoShells) then
-			self:MakeShell()
-		end
-		self:MakeRecoil()
-
-		if CLIENT then
-			self:simulateRecoil()
-		end
-
-		if game.SinglePlayer() and SERVER then
-			if !self.Owner:IsPlayer() then return end
-			SendUserMessage("PHUNBASE_Recoil", ply)
-			SendUserMessage("PHUNBASE_PrimaryAttackOverride_CL", ply)
-		end
-
-		ply:SetAnimation(PLAYER_ATTACK1)
-
-		if self.ReloadAfterShot then
-			self:DelayedEvent(self.ReloadAfterShotTime, function() self:_realReloadStart() end)
-		end
-
-		if self.UnIronAfterShot then
-			self:DelayedEvent(self.UnIronAfterShotTime, function() self:SetIron(false) end)
-		end
-
-		if self.CockAfterShot then
-			self:SetShouldBeCocking(true)
-		end
-
-		if self.CockAfterShot and self.AutoCockStart then
-			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
-		end
-	end
-
-	self:Cheap_WM_ShootEffects()
-	self:TakePrimaryAmmo(self.Primary.TakePerShot)
+	self:InitFireAction()
 end
 
 function SWEP:PrimaryAttack()

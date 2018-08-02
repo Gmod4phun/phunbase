@@ -88,7 +88,10 @@ SWEP.Sounds = {
 
 SWEP.DeployTime = 0.3
 SWEP.HolsterTime = 0.25
-SWEP.ReloadTime = 1.5
+
+SWEP.ReloadTimes = {
+	Base = 1.5,
+}
 
 SWEP.ViewModelMovementScale = 0.8
 

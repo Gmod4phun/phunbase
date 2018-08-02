@@ -112,7 +112,6 @@ SWEP.Sounds = {
 
 SWEP.DeployTime = 0.45
 SWEP.HolsterTime = 0.25
-SWEP.ReloadTime = 1.5
 
 SWEP.ViewModelMovementScale = 0.8
 
@@ -138,11 +137,14 @@ SWEP.CustomFlashlight = false
 SWEP.HL2_IconParams = {dist = 35, mdlOffset = Vector(0,0,0), camOffset = -1}
 
 SWEP.ShotgunReload = true
-SWEP.ShotgunReloadTime_Start = 0.4
-SWEP.ShotgunReloadTime_Start_Empty = 0.4
-SWEP.ShotgunReloadTime_Insert = 0.4
-SWEP.ShotgunReloadTime_End = 0.4
-SWEP.ShotgunReloadTime_End_Empty = 0.4
+
+SWEP.ShotgunReloadTimes = {
+	Start = 0.4,
+	Start_Empty = 0.4,
+	Insert = 0.4,
+	End = 0.4,
+	End_Empty = 0.4,
+}
 
 SWEP.CockAfterShot = true
 SWEP.CockAfterShotTime = 0.55

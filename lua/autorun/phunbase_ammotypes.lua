@@ -18,7 +18,8 @@ function PHUNBASE.addAmmoType(globalName, prettyName, ammoCount)
     PHUNBASE.registeredAmmoCounts[globalName] = ammoCount or 30
 end
 
-PHUNBASE.addAmmoType("phunbase_9mm","9x19mm Parabellum", 30)
+PHUNBASE.addAmmoType("phunbase_9x19mm","9x19mm Parabellum", 30)
+PHUNBASE.addAmmoType("phunbase_9x18mm","9x18mm Makarov", 30)
 PHUNBASE.addAmmoType("phunbase_45acp",".45 ACP", 30)
 PHUNBASE.addAmmoType("phunbase_357sig",".357 SIG", 12)
 PHUNBASE.addAmmoType("phunbase_57x28","5.7x28mm", 30)
@@ -26,6 +27,7 @@ PHUNBASE.addAmmoType("phunbase_50ae",".50 AE", 7)
 PHUNBASE.addAmmoType("phunbase_556x45","5.56x45mm NATO", 30)
 PHUNBASE.addAmmoType("phunbase_762x51","7.62x51mm NATO", 30)
 PHUNBASE.addAmmoType("phunbase_338",".338 Lapua Magnum", 5)
+PHUNBASE.addAmmoType("phunbase_38special",".38 Special", 30)
 PHUNBASE.addAmmoType("phunbase_50bmg",".50 BMG", 5)
 PHUNBASE.addAmmoType("phunbase_12gauge","12 Gauge", 8)
 PHUNBASE.addAmmoType("phunbase_545x39","5.45x39mm", 30)

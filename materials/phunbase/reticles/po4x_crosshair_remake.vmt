@@ -1,0 +1,6 @@
+"UnlitGeneric"
+{
+	"$basetexture"	"phunbase/reticles/po4x_crosshair_remake"
+	"$basetexturetransform ""center .5 .5 scale .9 .9 rotate 0 translate 0 0"
+	"$translucent" "1"
+}
