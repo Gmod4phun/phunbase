@@ -52,6 +52,8 @@ function SWEP:_playAnim(anim, speed, cycle, noSound)
 		else
 			self:removeCurSoundTable()
 		end
+	else
+		self:removeCurSoundTable()
 	end
 	
 	ent:ResetSequence(foundAnim)

@@ -1,4 +1,7 @@
 
+SWEP.IronInSound = "PB_IronIn"
+SWEP.IronOutSound = "PB_IronOut"
+
 function SWEP:PlayIdleAnim()
 	local empty = (self:Clip1() == 0) and !self:GetIsReloading()
 	local anim = self:GetIron() and "idle_iron" or "idle"
@@ -112,7 +115,8 @@ function SWEP:_IronThink()
 		self:SetIron(true)
 		
 		if IsFirstTimePredicted() then
-			self:EmitSound("PB_IronIn")
+			-- self:EmitSound("PB_IronIn")
+			self:EmitSound(self.IronInSound)
 			ply:SetAnimation(PLAYER_START_AIMING)
 			if self:IsFlashlightBusy() then return end
 			if self.UseIronTransitionAnims and !self:IsBusy() and self:CanFire() then
@@ -154,7 +158,8 @@ function SWEP:_IronThink()
 		if (self.DisableIronWhileFiring and !self.IronTransitionWaiting and self:IsFiring()) then return end
 		
 		if IsFirstTimePredicted() then
-			self:EmitSound("PB_IronOut")
+			-- self:EmitSound("PB_IronOut")
+			self:EmitSound(self.IronOutSound)
 			ply:SetAnimation(PLAYER_LEAVE_AIMING)
 			if self:GetIsReloading() or self:GetIsHolstering() or self:IsFlashlightBusy() then return end
 			if self.UseIronTransitionAnims and !self:IsBusy() and self:CanFire() then

@@ -1,13 +1,22 @@
 
 if !CLIENT then return end
 
+local flColor = Color(200,200,255)
+
 function SWEP:_drawFlashlight()	
-	local vm = self.VM
 	local att, att2
-	local att = vm:LookupAttachment(self.FlashlightAttachmentName or "flashlight")
+	local flEnt = self.VM
+	
+	if self.FlashlightVElement and IsValid(self.FlashlightVElement) then // use custom entity (preferably a VElement and its attachment)
+		flEnt = self.FlashlightVElement
+	end
+	
+	if !IsValid(flEnt) then return end
+	
+	local att = flEnt:LookupAttachment(self.FlashlightAttachmentName or "flashlight")
 	
 	if att then
-		att2 = vm:GetAttachment(att)
+		att2 = flEnt:GetAttachment(att)
 	end
 	
 	local ply = self.Owner
@@ -29,7 +38,7 @@ function SWEP:_drawFlashlight()
 	if IsValid(ply.PHUNBASE_Flashlight) then
 		ply.PHUNBASE_Flashlight:SetPos(att2 and att2.Pos or ply:EyePos())
 		ply.PHUNBASE_Flashlight:SetAngles(att2 and att2.Ang or ply:EyeAngles())
-		ply.PHUNBASE_Flashlight:SetColor(Color(200,200,255))
+		ply.PHUNBASE_Flashlight:SetColor(flColor)
 		ply.PHUNBASE_Flashlight:SetBrightness( (ply:ShouldDrawLocalPlayer() or !self:GetFlashlightState() or !self.CustomFlashlight) and 0 or self.FLBrightness)
 		ply.PHUNBASE_Flashlight:SetFOV(45 + self.FLBrightness/2)
 		ply.PHUNBASE_Flashlight:Update()

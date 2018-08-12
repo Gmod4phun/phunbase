@@ -19,11 +19,28 @@ local col_red = Color(255, 48, 0)
 function SWEP:DrawHUD()
 	self:_drawPhunbaseHud()
 	
+	local ply = LocalPlayer()
+	
 	local scrw, scrh = ScrW(), ScrH()
 	surface.SetFont("PHUNBASE_HL2_CROSSHAIR")
 	local t_w, t_h = surface.GetTextSize("[")
+	
 	local x = scrw/2
 	local y = scrh/2
+	
+	if ply:ShouldDrawLocalPlayer() then // thirdperson crosshair
+		local crossHit = ply:GetEyeTrace().HitPos
+		local cross2D = nil
+		
+		if crossHit then
+			cross2D = crossHit:ToScreen()
+		end
+		
+		if cross2D then
+			x = cross2D.x
+			y = cross2D.y
+		end
+	end
 	
 	local FT = FrameTime()
 	hp = Lerp(FT*10, hp, self.Owner:Health() / self.Owner:GetMaxHealth())

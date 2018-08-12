@@ -38,6 +38,8 @@ function SWEP:SetupOrigIronsights()
 end
 
 function SWEP:SetIronsights(pos, ang)
+	if !pos or !ang then return end
+	
 	if SERVER then
 		net.Start("pb_values_setironsights") // you lose precision by networking vectors, so, fuck this
 			net.WriteEntity(self)
