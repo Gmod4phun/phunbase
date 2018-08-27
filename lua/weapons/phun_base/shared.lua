@@ -222,6 +222,7 @@ SWEP.ShotgunReloadTimes = {
 }
 
 SWEP.FireActionDelay = 0 // delay between initiating the attack and firing the bullet, like revolvers
+SWEP.LastShotFireDelay = 0.65 // delay to be able to attack again after firing the last shot, used to reduce snapping of dryfire anims
 
 SWEP.UseHands = true // use gmod hands or not
 
@@ -351,6 +352,7 @@ function SWEP:Initialize()
 	self:SetIsSwitchingFiremode(false)
 	self:SetShouldBeCocking(false)
 	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
+	self:SetIsGLLoaded(true)
 	self:SetGlobalDelay(0)
 
 	if CLIENT then
@@ -370,7 +372,7 @@ function SWEP:Initialize()
 	self:SetupOrigValues()
 	self:SetupActiveAttachmentNames()
 
-    self:SetupOrigFireMode()
+	self:SetupOrigFireMode()
 
 	self:_saveAllOrigValues()
 end
@@ -395,10 +397,10 @@ function SWEP:OnReloaded()
 
 	self:RemoveAllAttachments()
 
-    if self.FireModes and #self.FireModes > 0 then
-        self.FireModes.last = 1
-        self:SelectFiremode(self.FireModes[1])
-    end
+	if self.FireModes and #self.FireModes > 0 then
+		self.FireModes.last = 1
+		self:SelectFiremode(self.FireModes[1])
+	end
 
 	if CLIENT then
 		self:setupAttachmentModels()
@@ -734,7 +736,7 @@ end
 
 function SWEP:InitFireAction()
 	self:SetNextPrimaryFire(CurTime() + self.Primary.Delay)
-
+	
 	if IsFirstTimePredicted() then
 		if (game.SinglePlayer() and SERVER) or CLIENT then
 			self:FireAnimLogic(isSecondary)
@@ -765,7 +767,7 @@ function SWEP:InitFireAction()
 			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
 		end
 	end
-
+	
 	self:Cheap_WM_ShootEffects()
 	self:TakePrimaryAmmo(self.Primary.TakePerShot)
 end
@@ -813,6 +815,10 @@ function SWEP:_primaryAttack(isSecondary) // I hate to do this but whatever, I d
 	end
 
 	self:InitFireAction()
+	
+	if self:Clip1() == 0 then // fire delay after last shot, mostly to prevent snapping dryfire anims
+		self:SetNextPrimaryFire(CurTime() + self.LastShotFireDelay)
+	end
 end
 
 function SWEP:PrimaryAttack()

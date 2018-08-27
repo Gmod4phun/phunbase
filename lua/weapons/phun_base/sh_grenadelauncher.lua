@@ -34,7 +34,7 @@ function SWEP:EnterGrenadeLauncherMode()
 	if !nodelay then self:AddGlobalDelay(self.GrenadeLauncherTransitionDelay) end
 	
 	self:SetGLState(PB_GLSTATE_ENTER)
-	self:DelayedEvent(self.GrenadeLauncherTransitionDelay, function() self:SetGLState(PB_GLSTATE_READY) end)
+	self:DelayedEvent(self.GrenadeLauncherTransitionDelay, function() self:SetGLState(self:GetIsGLLoaded() and PB_GLSTATE_READY or PB_GLSTATE_EMPTY) end)
 	self:SetWeaponMode(PB_WEAPONMODE_GL_ACTIVE)
 	
 	self:GrenadeLauncherModeAnimLogic()
@@ -83,6 +83,10 @@ function SWEP:GLFireProjectile()
 	
 	nade:SetVelocity(forward * 2000)
 	
+	-- PrintTable(nade:GetSaveTable())
+	
+	nade:SetSaveValue("m_flDamage", 150)
+	
 	-- local phys = nade:GetPhysicsObject()
 	-- if IsValid(phys) then
 		-- phys:SetVelocity(forward * 2500)
@@ -99,9 +103,9 @@ function SWEP:GrenadeLauncherModeFire()
 	if self:GetGLState() == PB_GLSTATE_READY /*and self:HasEnoughGLAmmo()*/ then
 		self:AddGlobalDelay(self.GrenadeLauncherFireDelay)
 		self:EmitSound(self.GrenadeLauncherFireSound)
-        if SERVER then
-            self:GLFireProjectile()
-        end
+		if SERVER then
+			self:GLFireProjectile()
+		end
 		self:GrenadeLauncherFireAnimLogic()
 	else
 		self:AddGlobalDelay(self.GrenadeLauncherDryFireDelay)
@@ -109,6 +113,7 @@ function SWEP:GrenadeLauncherModeFire()
 	end
 	
 	self:SetGLState(PB_GLSTATE_EMPTY)
+	self:SetIsGLLoaded(false)
 end
 
 function SWEP:GrenadeLauncherModeReload()	
@@ -121,10 +126,13 @@ function SWEP:GrenadeLauncherModeReload()
 	local delay = self.GrenadeLauncherReloadTime
 	self:AddGlobalDelay(delay)
 	self:SetIsReloading(true)
-    
-    self.Owner:RemoveAmmo(1, self.GrenadeLauncherAmmoType)
-    
-	self:DelayedEvent(delay, function() self:SetGLState(PB_GLSTATE_READY) self:SetIsReloading(false) end)
+	
+	self:DelayedEvent(delay, function()
+		self.Owner:RemoveAmmo(1, self.GrenadeLauncherAmmoType)
+		self:SetGLState(PB_GLSTATE_READY)
+		self:SetIsGLLoaded(true)
+		self:SetIsReloading(false)
+	end)
 	
 	self:GrenadeLauncherReloadAnimLogic()
 end

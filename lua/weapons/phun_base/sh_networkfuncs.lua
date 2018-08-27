@@ -32,6 +32,7 @@ function SWEP:SetupDataTables()
 	self:NetworkVar( "Bool", 15, "ShouldBeCocking" )
 	self:NetworkVar( "Int", 0, "WeaponMode" )
 	self:NetworkVar( "Int", 1, "GLState" )
+	self:NetworkVar( "Bool", 16, "IsGLLoaded" )
 	self:NetworkVar( "Int", 2, "BipodState" )
 	self:NetworkVar( "Float", 3, "GlobalDelay" )
 end

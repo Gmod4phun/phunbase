@@ -7,18 +7,18 @@ end
 
 if CLIENT then
 	surface.CreateFont( "PB_CUSTMENU_FONT_60",
-    {
-        font      = "BF4 Numbers",
-        size      = 60,
-        weight    = 200,
-    })
+	{
+		font	  = "BF4 Numbers",
+		size	  = 60,
+		weight	= 200,
+	})
 
 	surface.CreateFont( "PB_CUSTMENU_FONT_80",
-    {
-        font      = "BF4 Numbers",
-        size      = 80,
-        weight    = 200,
-    })
+	{
+		font	  = "BF4 Numbers",
+		size	  = 80,
+		weight	= 200,
+	})
 end
 
 SWEP.EnableCustomization = false
@@ -109,8 +109,8 @@ function SWEP:RunAttachmentsRenderFunc()
 			atttable.render(self)
 		end
 	end
-    
-    self:_handleAttLasers()
+	
+	self:_handleAttLasers()
 end
 
 function SWEP:GetAttachmentCategoryCount()
@@ -400,9 +400,9 @@ if CLIENT then
 	local stopBinds = {
 		["invprev"] = true,
 		["invnext"] = true,
-        ["lastinv"] = true,
-        ["+attack"] = true,
-        ["+attack2"] = true,
+		["lastinv"] = true,
+		["+attack"] = true,
+		["+attack2"] = true,
 	}
 	hook.Add("PlayerBindPress", "PB_CUSTOMIZATION_MENU_BINDPRESS", function(ply, bind, pressed)
 		local wep = ply:GetActiveWeapon()

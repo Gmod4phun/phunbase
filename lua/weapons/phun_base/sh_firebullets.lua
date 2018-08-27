@@ -30,18 +30,18 @@ function SWEP:_FireBullets(num)
 	bullet.Callback	= function(attacker, tr, dmginfo)
 		return bullet:penetrate(attacker, tr, dmginfo)
 	end
-    
-    if !self.DisableReverb then
-        self:HandleReverb(bullet)
-    end
+	
+	if !self.DisableReverb then
+		self:HandleReverb(bullet)
+	end
 
 	self.Owner:FireBullets(bullet)
 end
 
 function SWEP:HandleReverb(buldata)
-    if BTB_REVERB and BTB_REVERB.HandleReverb then
-        BTB_REVERB.HandleReverb(self, self, buldata.Src, buldata.Dir)
-    end
+	if BTB_REVERB and BTB_REVERB.HandleReverb then
+		BTB_REVERB.HandleReverb(self, self, buldata.Src, buldata.Dir)
+	end
 end
 
 local Density = {

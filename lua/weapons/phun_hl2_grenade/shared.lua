@@ -125,7 +125,7 @@ function SWEP:OnNadeTossed()
 	nade:SetSaveValue("m_hThrower", ply)
 	nade:SetSaveValue("m_flDamage", 125)
 	nade:SetSaveValue("m_takedamage", 1) // does not get blown up by other nades, bounces away
-    
+	
 	nade:Fire("SetTimer", nade.FuseTime - CurTime())
 end
 

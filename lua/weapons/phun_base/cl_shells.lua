@@ -177,17 +177,17 @@ function SWEP:_createCustomClientPhysEnt(pos, ang, mdl, mdlscale, impactsnd)
 	shellTable.veladd_Z = 0
 	
 	shellTable.wep = self
-    
-    velocity = self.Owner:GetVelocity()
-    
-    shellEnt = PHUNBASE.shells:make(
-        pos,
-        ang,
-        velocity,
-        shellTable,
-        pos,
-        ang
-    )
-    
-    self:_registerVMShellDrawWorld(shellEnt)
+	
+	velocity = self.Owner:GetVelocity()
+	
+	shellEnt = PHUNBASE.shells:make(
+		pos,
+		ang,
+		velocity,
+		shellTable,
+		pos,
+		ang
+	)
+	
+	self:_registerVMShellDrawWorld(shellEnt)
 end

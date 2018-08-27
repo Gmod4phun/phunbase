@@ -110,38 +110,38 @@ function SWEP:Cock()
 end
 
 if SERVER then
-    util.AddNetworkString("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
+	util.AddNetworkString("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
 end
 
 if CLIENT then
-    net.Receive("PB_NET_RELOADING_HADINCLIP_WASEMPTY", function()
-        local wep, had, was = net.ReadEntity(), net.ReadFloat(), net.ReadBool()
-        wep.HadInClip = had
-        wep.WasEmpty = was
-    end)
+	net.Receive("PB_NET_RELOADING_HADINCLIP_WASEMPTY", function()
+		local wep, had, was = net.ReadEntity(), net.ReadFloat(), net.ReadBool()
+		wep.HadInClip = had
+		wep.WasEmpty = was
+	end)
 end
 
 function SWEP:changeHadInClip()
 	self.HadInClip = self:Clip1()
 	self.WasEmpty = self.HadInClip == 0
-    
-    if SERVER then // send this to the client
-        net.Start("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
-            net.WriteEntity(self)
-            net.WriteFloat(self.HadInClip)
-            net.WriteBool(self.WasEmpty)
-        net.Send(self.Owner)
-    end
+	
+	if SERVER then // send this to the client
+		net.Start("PB_NET_RELOADING_HADINCLIP_WASEMPTY")
+			net.WriteEntity(self)
+			net.WriteFloat(self.HadInClip)
+			net.WriteBool(self.WasEmpty)
+		net.Send(self.Owner)
+	end
 end
 
 function SWEP:_realReloadStart()
 	local ply = self.Owner
 	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self:GetShouldBeCocking() or self.DisableReloading or self:IsGlobalDelayActive() then return end
 	
-	if self:GetWeaponMode() == PB_WEAPONMODE_GL_ACTIVE then
-			if IsFirstTimePredicted() then
-				self:GrenadeLauncherModeReload()
-			end
+	if self:IsGLActive() then
+		if IsFirstTimePredicted() then
+			self:GrenadeLauncherModeReload()
+		end
 		return
 	end
 	

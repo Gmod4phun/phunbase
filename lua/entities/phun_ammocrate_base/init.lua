@@ -4,7 +4,7 @@ include("shared.lua")
 
 function ENT:Initialize()
 	self:SetModel(self.Model)
-    self:PhysicsInit(SOLID_VPHYSICS)
+	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 	self:SetUseType(SIMPLE_USE)
 
@@ -17,6 +17,6 @@ end
 function ENT:Use(ply)
 	if IsValid(ply) and ply:IsPlayer() then
 		ply:GiveAmmo( self.AmmoCount, self.AmmoType )
-        SafeRemoveEntity( self )
+		SafeRemoveEntity( self )
 	end
 end

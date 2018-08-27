@@ -21,9 +21,9 @@ hook.Add("PostDrawViewModel", "PHUNBASE_PostDrawVM", PHUNBASE_PostDrawVM)
 function PHUNBASE_StartCommand(ply, ucmd)
 	local wep = ply:GetActiveWeapon()
 	if IsValid(wep) and wep.PHUNBASEWEP then
-        if wep == wep.SwitchWep then
-            wep.SwitchWep = nil
-        end
+		if wep == wep.SwitchWep then
+			wep.SwitchWep = nil
+		end
 		local switchTo = wep.SwitchWep
 		if IsValid(switchTo) then
 			ucmd:SelectWeapon(switchTo)

@@ -27,7 +27,7 @@ function SWEP:_ReloadThink()
 	if !self:GetIsReloading() then return end
 	if IsFirstTimePredicted() then
 		if !self.ShotgunReload then // normal magazine reload think logic
-			if self.FinishReloadTime and CurTime() >= self.FinishReloadTime and self:GetIsReloading() then
+			if self.FinishReloadTime and CurTime() >= self.FinishReloadTime and self:GetIsReloading() and !self:IsGLActive() then
 				self:_reloadFinish()
 				self:PlayIdleAnim()
 			end
@@ -260,21 +260,29 @@ function SWEP:_SprintThink()
 		end
 	end
 	
-    if !self:GetIsWaiting() then
-        self:SprintClientLogic()
-    end
+	if !self:GetIsWaiting() then
+		self:SprintClientLogic()
+	end
 end
 
 function SWEP:NearWallAnimLogic()
 end
 
+SWEP.DisableNearwall = false
+
 local td = {}
 function SWEP:_NearWallThink()
 	if self:GetIsSprinting() or self:IsBusy() then return end
+	
+	if self.DisableNearwall then
+		if self:GetIsNearWall() then
+			self:SetIsNearWall(false)
+		end
+		return
+	end
 
 	local ply = self.Owner
 	if SERVER then
-		if self.DisableNearwall then return end
 		td.start = ply:GetShootPos()
 		td.endpos = td.start + ply:EyeAngles():Forward() * 30
 		td.filter = ply

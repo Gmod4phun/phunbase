@@ -521,7 +521,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 		end
 	end
 	panel:AddItem(hl2_replace_checkbox)
-    
+	
 	local slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(0)
 	slider:SetMin(0)
@@ -531,22 +531,22 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetText("Use HL2 crosshair?")
 	slider:SetTooltip("0 = disable, 1 = HL2 weapons only, 2 = all weapons")
 	panel:AddItem(slider)
-    
+	
 	panel:AddControl("Label", {Text = "\nPHUNBASE Settings"})
-    
+	
 	local cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Offset VM slightly when crouching?")
 	cb:SetConVar("phunbase_vm_crouchoffset")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-    
+	
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable engine Blur?")
 	cb:SetConVar("mat_motion_blur_enabled")
 	cb:SetTooltip("Toggles engine blur. Required for IRON blur")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-    
+	
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable reload Blur?")
 	cb:SetConVar("phunbase_blur_reload")
@@ -558,13 +558,13 @@ local function PHUNBASE_MENU_PANEL(panel)
 	cb:SetConVar("phunbase_blur_custmenu")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-    
+	
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable ironsight Blur?")
 	cb:SetConVar("phunbase_blur_iron")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-    
+	
 	slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(2)
 	slider:SetMin(0)
@@ -573,9 +573,9 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetValue(GetConVarNumber("phunbase_blur_iron_mod"))
 	slider:SetText("Ironsight Blur modifier")
 	panel:AddItem(slider)
-    
+	
 	panel:AddControl("Label", {Text = "\nPHUNBASE HUD Settings"})
-    
+	
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable PHUNBASE Hud?")
 	cb:SetConVar("pb_hud_enable")
@@ -588,13 +588,13 @@ local function PHUNBASE_MENU_PANEL(panel)
 	cb:SetTooltip("bind +pb_fas2_watch_hud_zoom to a button to zoom it")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-    
+	
 	cb = vgui.Create("DCheckBoxLabel", panel)
 	cb:SetText("Enable Firemodes Display on HUD?")
 	cb:SetConVar("pb_hud_firemodes_enable")
 	cb:SetTextColor(clrBlack)
 	panel:AddItem(cb)
-    
+	
 	slider = vgui.Create("DNumSlider", panel)
 	slider:SetDecimals(0)
 	slider:SetMin(0)
@@ -602,7 +602,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetConVar("pb_hud_firemodes_displaymode")
 	slider:SetValue(GetConVarNumber("pb_hud_firemodes_displaymode"))
 	slider:SetText("Firemode Display type")
-    slider:SetTooltip("Which Firemodes to show after switching: 0 = all, 1 = active firemode, 2 = active firemode if safe, 3 = none")
+	slider:SetTooltip("Which Firemodes to show after switching: 0 = all, 1 = active firemode, 2 = active firemode if safe, 3 = none")
 	panel:AddItem(slider)
 	
 	panel:AddControl("Label", {Text = "\nPHUNBASE Laser Settings"})
@@ -614,7 +614,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetConVar("pb_laser_dot_normal")
 	slider:SetValue(GetConVarNumber("pb_laser_dot_normal"))
 	slider:SetText("Laser Dot direction")
-    slider:SetTooltip("0 = hit surface normal, 1 = eyeangles normal, 2 = beam normal")
+	slider:SetTooltip("0 = hit surface normal, 1 = eyeangles normal, 2 = beam normal")
 	panel:AddItem(slider)
 	
 	slider = vgui.Create("DNumSlider", panel)
@@ -624,7 +624,7 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetConVar("pb_laser_option")
 	slider:SetValue(GetConVarNumber("pb_laser_option"))
 	slider:SetText("Laser Option")
-    slider:SetTooltip("0 = selected color, 1 = player weapon color, 2 = rainbow")
+	slider:SetTooltip("0 = selected color, 1 = player weapon color, 2 = rainbow")
 	panel:AddItem(slider)
 	
 	panel:AddControl( "Color", { Label = "Laser Color", Red = "pb_laser_color_r", Green = "pb_laser_color_g", Blue = "pb_laser_color_b"} )
@@ -652,7 +652,7 @@ local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
 			local l = dlist:AddLine((v.name).."  |  "..(v.menuName))
 			l.strToCopy = v.name
 		end
-        dlist:SortByColumn(1)
+		dlist:SortByColumn(1)
 	end
 	dlistcolumn:fillWithInfo()
 	
@@ -680,7 +680,7 @@ local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
 			local l = dlist:AddLine(k.."  |  "..v)
 			l.strToCopy = k
 		end
-        dlist:SortByColumn(1)
+		dlist:SortByColumn(1)
 	end
 	dlistcolumn:fillWithInfo()
 	
@@ -708,7 +708,7 @@ local function PHUNBASE_CONTENTINFO_MENU_PANEL(panel)
 			local l = dlist:AddLine(k.."  |  "..v.display)
 			l.strToCopy = k
 		end
-        dlist:SortByColumn(1)
+		dlist:SortByColumn(1)
 	end
 	dlistcolumn:fillWithInfo()
 	

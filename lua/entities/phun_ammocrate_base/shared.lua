@@ -8,7 +8,7 @@ ENT.AdminSpawnable = false
 ENT.Category = "PHUNBASE Ammo"
 
 ENT.Model = "models/items/boxmrounds.mdl"
-ENT.AmmoType = "phunbase_9mm"
+ENT.AmmoType = "phunbase_9x19mm"
 ENT.AmmoCount = 30
 
 function ENT:Think()

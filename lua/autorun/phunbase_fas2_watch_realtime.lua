@@ -78,12 +78,14 @@ if CLIENT then
 			self.color = values.resultvar
 		end,
 		bind = function( self, mat, ent )
-			local col = ent.FAS2_WATCH_DigitColor
-			if !col then col = Color(255,255,255) end
-			
-			col = Vector(col.r, col.g, col.b) / 255
-			
-			mat:SetVector( self.color, col )
+			if IsValid(ent) then
+				local col = ent.FAS2_WATCH_DigitColor
+				if !col then col = Color(255,255,255) end
+				
+				col = Vector(col.r, col.g, col.b) / 255
+				
+				mat:SetVector( self.color, col )
+			end
 		end
 	} )
 end

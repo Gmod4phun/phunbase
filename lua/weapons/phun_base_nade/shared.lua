@@ -3,7 +3,7 @@ AddCSLuaFile()
 local SP = game.SinglePlayer()
 
 if SERVER then
-    util.AddNetworkString("PB_BASE_NADE_SPOONEJECT")
+	util.AddNetworkString("PB_BASE_NADE_SPOONEJECT")
 end
 
 SWEP.PrintName = "PHUNBASE NADE"
@@ -174,8 +174,8 @@ function SWEP:CreateNade(fuseDelay)
 		nade.IsPBGrenade = true
 		nade:Spawn()
 		nade:Activate()
-        
-        nade.FuseTime = CurTime() + fuseDelay
+		
+		nade.FuseTime = CurTime() + fuseDelay
 		
 		self.NadeEnt = nade
 		
@@ -198,15 +198,15 @@ function SWEP:SecondaryAttack()
 end
 
 function SWEP:NadePullpinAnimLogic()
-    self:PlayVMSequence(self.WasAltThrow and "pullpin_alt" or "pullpin")
+	self:PlayVMSequence(self.WasAltThrow and "pullpin_alt" or "pullpin")
 end
 
 function SWEP:NadeThrowNormal()
-    self:PlayVMSequence("throw")
+	self:PlayVMSequence("throw")
 end
 
 function SWEP:NadeThrowLow()
-    self:PlayVMSequence("underhand")
+	self:PlayVMSequence("underhand")
 end
 
 // NadeThrowState - 0 = getting ready to throw, 1 = throwing, 2 = redeploying
@@ -216,16 +216,16 @@ function SWEP:InitiateThrow()
 	if self:GetIsDeploying() or self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() or self:GetIsWaiting() then return end
 	
 	self:SetIsWaiting(true)
-    
-    self.WasAltThrow = ply:KeyDown(IN_ATTACK2)
-    
-    if self.NadeCookable and !self.WasAltThrow then
-        self._WasCookedThrow = ply:KeyDown(IN_USE)
-    end
-    
-    if self.NadeCookableAlt and self.WasAltThrow then
-        self._WasCookedThrow = ply:KeyDown(IN_USE)
-    end
+	
+	self.WasAltThrow = ply:KeyDown(IN_ATTACK2)
+	
+	if self.NadeCookable and !self.WasAltThrow then
+		self._WasCookedThrow = ply:KeyDown(IN_USE)
+	end
+	
+	if self.NadeCookableAlt and self.WasAltThrow then
+		self._WasCookedThrow = ply:KeyDown(IN_USE)
+	end
 	
 	if IsFirstTimePredicted() then
 		self:NadePullpinAnimLogic()
@@ -233,11 +233,11 @@ function SWEP:InitiateThrow()
 	
 	self.NadeThrowState = 0
 	self.NextNadeAction = CurTime() + (self._WasCookedThrow and self.NadeGetReadyTimeCooking or self.NadeGetReadyTime)
-    self.StartNadeCooking = CurTime() + self.NadeCookStartTime
+	self.StartNadeCooking = CurTime() + self.NadeCookStartTime
 end
 
 function SWEP:OnNadeOvercook() // override this for your own nades
-    self:CreateNade(0)
+	self:CreateNade(0)
 	if SERVER then
 		self.Owner:Kill()
 	end
@@ -247,83 +247,83 @@ function SWEP:OnNadeCookStart() // override this for your own nades
 end
 
 function SWEP:NadeFuseStart()
-    self.WhenShouldDetonateTime = CurTime() + self.NadeFuseTime
-    self._IsCooking = true
+	self.WhenShouldDetonateTime = CurTime() + self.NadeFuseTime
+	self._IsCooking = true
 end
 
 function SWEP:NadeFuseCreateNade()
-    self:CreateNade(self.WhenShouldDetonateTime - CurTime())
+	self:CreateNade(self.WhenShouldDetonateTime - CurTime())
 end
 
 function SWEP:NadeFuseBlowUp()
-    self._ThrowPower = 0
-    self._IsCooking = false
-    self.WhenShouldDetonateTime = nil
-    self.NadeThrowState = 2
-    self:OnNadeOvercook()
+	self._ThrowPower = 0
+	self._IsCooking = false
+	self.WhenShouldDetonateTime = nil
+	self.NadeThrowState = 2
+	self:OnNadeOvercook()
 end
 
 function SWEP:NadeFuseThink()
-    if self._WasCookedThrow and !self._IsCooking and self.StartNadeCooking and CurTime() > self.StartNadeCooking then
-        self:NadeFuseStart()
-        self.StartNadeCooking = nil
-    end
+	if self._WasCookedThrow and !self._IsCooking and self.StartNadeCooking and CurTime() > self.StartNadeCooking then
+		self:NadeFuseStart()
+		self.StartNadeCooking = nil
+	end
 
-    if self._IsCooking and self.WhenShouldDetonateTime and CurTime() > self.WhenShouldDetonateTime then
-        self:NadeFuseBlowUp()
-        self.WhenShouldDetonateTime = nil
-        self.NadeThrowState = 2
-        self.NextNadeAction = CurTime()
-        self._IsCooking = false
-    end
+	if self._IsCooking and self.WhenShouldDetonateTime and CurTime() > self.WhenShouldDetonateTime then
+		self:NadeFuseBlowUp()
+		self.WhenShouldDetonateTime = nil
+		self.NadeThrowState = 2
+		self.NextNadeAction = CurTime()
+		self._IsCooking = false
+	end
 end
 
 if SERVER then
-    function SWEP:SpoonEject_Network()
-        self:OnNadeCookStart()
-        net.Start("PB_BASE_NADE_SPOONEJECT")
-            net.WriteEntity(self)
-        net.Send(self.Owner)
-    end
+	function SWEP:SpoonEject_Network()
+		self:OnNadeCookStart()
+		net.Start("PB_BASE_NADE_SPOONEJECT")
+			net.WriteEntity(self)
+		net.Send(self.Owner)
+	end
 end
 
 if CLIENT then
-    net.Receive("PB_BASE_NADE_SPOONEJECT", function()
-        local wep = net.ReadEntity()
-        if !IsValid(wep) then return end
-        
-        wep:OnNadeCookStart()
-    end)
+	net.Receive("PB_BASE_NADE_SPOONEJECT", function()
+		local wep = net.ReadEntity()
+		if !IsValid(wep) then return end
+		
+		wep:OnNadeCookStart()
+	end)
 end
 
 function SWEP:AdditionalThink()
 	if (SP and SERVER) or IsFirstTimePredicted() then
 		local ply = self.Owner
-        
-        self:NadeFuseThink()
-        
+		
+		self:NadeFuseThink()
+		
 		if self.NadeThrowState == 0 and self.NextNadeAction and CurTime() > self.NextNadeAction then
-            if self.LockThrowStateOnInit then
-                if !self._IsCooking then
-                    if (self.WasAltThrow and self.NadeCookableAlt and ply:KeyDown(IN_ATTACK)) or (!self.WasAltThrow and self.NadeCookable and ply:KeyDown(IN_ATTACK2)) then
-                        self:NadeFuseStart()
-                        if SERVER then
-                            self:SpoonEject_Network()
-                        end
-                    end
-                end
-            end
-        
+			if self.LockThrowStateOnInit then
+				if !self._IsCooking then
+					if (self.WasAltThrow and self.NadeCookableAlt and ply:KeyDown(IN_ATTACK)) or (!self.WasAltThrow and self.NadeCookable and ply:KeyDown(IN_ATTACK2)) then
+						self:NadeFuseStart()
+						if SERVER then
+							self:SpoonEject_Network()
+						end
+					end
+				end
+			end
+		
 			if (self.LockThrowStateOnInit and ( (!self.WasAltThrow and !ply:KeyDown(IN_ATTACK)) or (self.WasAltThrow and !ply:KeyDown(IN_ATTACK2)) ) ) or (!self.LockThrowStateOnInit and !ply:KeyDown(IN_ATTACK) and !ply:KeyDown(IN_ATTACK2)) then
-                
-                if !self.LockThrowStateOnInit then
-                    if ply:KeyDownLast(IN_ATTACK) then
-                        self.WasAltThrow = false
-                    elseif ply:KeyDownLast(IN_ATTACK2) then
-                        self.WasAltThrow = true
-                    end
-                end
-                
+				
+				if !self.LockThrowStateOnInit then
+					if ply:KeyDownLast(IN_ATTACK) then
+						self.WasAltThrow = false
+					elseif ply:KeyDownLast(IN_ATTACK2) then
+						self.WasAltThrow = true
+					end
+				end
+				
 				if self.WasAltThrow then
 					self._ThrowPower = self.NadeThrowPowerAlt //0.2
 					self:NadeThrowLow()
@@ -340,16 +340,16 @@ function SWEP:AdditionalThink()
 		end
 		
 		if self.NadeThrowState == 1 and self.NextNadeAction and CurTime() > self.NextNadeAction then
-            if self._IsCooking then
-                self:NadeFuseCreateNade()
-            else
-                self:CreateNade(self.NadeFuseTime)
-            end
-            
+			if self._IsCooking then
+				self:NadeFuseCreateNade()
+			else
+				self:CreateNade(self.NadeFuseTime)
+			end
+			
 			ply:SetAnimation(PLAYER_ATTACK1)
-            self.NadeThrowState = 2
-            self.NextNadeAction = CurTime() + self.NadeRedeployWaitTime
-            self._IsCooking = false
+			self.NadeThrowState = 2
+			self.NextNadeAction = CurTime() + self.NadeRedeployWaitTime
+			self._IsCooking = false
 		end
 		
 		if self.NadeThrowState == 2 and self.NextNadeAction and CurTime() > self.NextNadeAction then
@@ -358,7 +358,7 @@ function SWEP:AdditionalThink()
 					if ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then // remove weapon, and switch to previous one
 						local wep = ply.PHUNBASE_LastWeapon
 						if IsValid(wep) then
-                            self.HolsterTime = 0 // put away instantly
+							self.HolsterTime = 0 // put away instantly
 							PHUNBASE.SelectWeapon(self.Owner, wep:GetClass())
 						end
 						timer.Simple(self.HolsterTime + 0.05, function() if IsValid(ply) and IsValid(self) then ply:StripWeapon(self:GetClass()) end end)
@@ -384,20 +384,20 @@ function SWEP:AdditionalThink()
 end
 
 function SWEP:OnRemove()
-    if SERVER then
-        if self._IsCooking then
-            self:NadeFuseCreateNade()
-            local grenade = self.NadeEnt
-            if IsValid(grenade) then	
-                grenade:SetPos(self:GetPos())
-                grenade:SetAngles(self:GetAngles())
-                local phy = grenade:GetPhysicsObject()
-                if IsValid(phy) then 
-                    phy:SetVelocity(self:GetVelocity())
-                end
-            end
-        end
-    end
+	if SERVER then
+		if self._IsCooking then
+			self:NadeFuseCreateNade()
+			local grenade = self.NadeEnt
+			if IsValid(grenade) then	
+				grenade:SetPos(self:GetPos())
+				grenade:SetAngles(self:GetAngles())
+				local phy = grenade:GetPhysicsObject()
+				if IsValid(phy) then 
+					phy:SetVelocity(self:GetVelocity())
+				end
+			end
+		end
+	end
 end
 
 function SWEP:Reload()

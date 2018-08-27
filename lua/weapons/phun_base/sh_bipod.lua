@@ -2,7 +2,7 @@
 local SP = game.SinglePlayer()
 
 if SERVER then
-    util.AddNetworkString("PHUNBASE_BipodDeployAngle")
+	util.AddNetworkString("PHUNBASE_BipodDeployAngle")
 end
 
 // bipod status

@@ -1,7 +1,7 @@
 
 // Material proxy for using realtime envmap color tint (best used with static envmaps rather than cubemaps), some are in materials/phunbase/envmaps, see the vmt for example usage
 
-if CLIENT then
+if CLIENT then	
 	local col = Vector()
 	local fallback = Vector(0.2, 0.2, 0.2)
 	

@@ -169,7 +169,7 @@ if CLIENT then
 
 		// draw things that take up 3d space in here, like lasers, attachments, viewmodels, etc.
 		cam.Start3D(viewdata.origin + viewdata.angles:Forward() * -5, viewdata.angles)
-            // handles laser drawing per-attachment, in RT
+			// handles laser drawing per-attachment, in RT
 			self.isDrawingLasersInScope = true
 				self:_handleAttLasers()
 			self.isDrawingLasersInScope = false
@@ -194,16 +194,16 @@ if CLIENT then
 			end
 			
 			self:drawVMShells()
-            
-            cam.IgnoreZ(false)
+			
+			cam.IgnoreZ(false)
 		cam.End3D()
 
 		local lens_color = render.ComputeLighting(attPos, -attAng:Forward())
 
 		// this is an overlay over the 3d stuff, draws the iris and stuff like that.
 		cam.Start2D()
-            cam.IgnoreZ(true)
-            
+			cam.IgnoreZ(true)
+			
 			if self.RTScope_DrawParallax then
 				surface.SetDrawColor(255, 255, 255, 255 - self.ScopeAlpha)
 				surface.SetMaterial(self.LensMask)
@@ -220,10 +220,10 @@ if CLIENT then
 				surface.DrawTexturedRect(0, 0, RTSize, RTSize)
 			end
 
-			if self.RTScope_IsThermal then
-				surface.SetMaterial(pb_rtscope_texturizeMat)
-				surface.DrawTexturedRect(0, 0, RTSize, RTSize)
-			end
+			-- if self.RTScope_IsThermal then
+				-- surface.SetMaterial(pb_rtscope_texturizeMat)
+				-- surface.DrawTexturedRect(0, 0, RTSize, RTSize)
+			-- end
 
 			surface.SetMaterial(self.LensVignette)
 			surface.DrawTexturedRect(0, 0, RTSize, RTSize)
@@ -235,17 +235,17 @@ if CLIENT then
 			if self.RTScope_DrawIris then
 				self:DrawScopeIris()
 			end
-            
-            cam.IgnoreZ(false)
+			
+			cam.IgnoreZ(false)
 		cam.End2D()
 
 		if !self._Scope or (self._Scope and self._Scope != self.RTScope_Material) then
 			self._Scope = self.RTScope_Material
 			self._Scope:SetTexture("$basetexture", self._ScopeRT)
-			pb_rtscope_texturizeMat:SetTexture( "$fbtexture", self._ScopeRT )
+			-- pb_rtscope_texturizeMat:SetTexture( "$fbtexture", self._ScopeRT )
 		end
 
-		PB_RTScope_Texturize_Draw( pb_rtscope_texturizeMat, 1, texturizeMat )
+		-- PB_RTScope_Texturize_Draw( pb_rtscope_texturizeMat, 1, texturizeMat )
 
 		render.SetViewPort(0, 0, oldX, oldY)
 		render.SetRenderTarget(oldRT)

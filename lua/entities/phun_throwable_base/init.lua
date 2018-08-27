@@ -11,7 +11,7 @@ ENT.IsBouncy = false
 function ENT:Initialize()
 	self:SetModel(self.NadeModel) 
 	//self:PhysicsInitBox(self:OBBMins(), self:OBBMaxs())
-    self:PhysicsInit(SOLID_VPHYSICS)
+	self:PhysicsInit(SOLID_VPHYSICS)
 	self:SetCollisionGroup(COLLISION_GROUP_NONE)
 	self.NextImpact = 0
 	self.Bounces = 0
@@ -32,8 +32,8 @@ end
 
 function ENT:Use(ply)
 	if IsValid(ply) and ply:IsPlayer() then
-        ply.PB_IsPickingUpObject = true
-        ply:PickupObject(self)
+		ply.PB_IsPickingUpObject = true
+		ply:PickupObject(self)
 	end
 end
 
@@ -44,7 +44,7 @@ function ENT:PhysicsCollide(data, physobj)
 	if len > 500 then -- let it roll
 		physobj:SetVelocity(vel * 0.6) -- cheap as fuck, but it works
 	end
-    
+	
 	if len > 50 then
 		local CT = CurTime()
 		
@@ -52,10 +52,10 @@ function ENT:PhysicsCollide(data, physobj)
 			self:EmitSound(self.NadeBounceSound, 75, 100)
 			self.NextImpact = CT + 0.05
 			self.Bounces = self.Bounces + 1
-            
-            -- if data.HitEntity then // for now disable this, as its killing player standing on the grenade
-                -- data.HitEntity:TakeDamage(2, self.Owner, self)
-            -- end
+			
+			-- if data.HitEntity then // for now disable this, as its killing player standing on the grenade
+				-- data.HitEntity:TakeDamage(2, self.Owner, self)
+			-- end
 		end
 	end
 	
