@@ -732,6 +732,8 @@ function SWEP:PerformFireAction()
 	end
 
 	ply:SetAnimation(PLAYER_ATTACK1)
+	
+	self:Cheap_WM_ShootEffects()
 end
 
 function SWEP:InitFireAction()
@@ -768,7 +770,6 @@ function SWEP:InitFireAction()
 		end
 	end
 	
-	self:Cheap_WM_ShootEffects()
 	self:TakePrimaryAmmo(self.Primary.TakePerShot)
 end
 

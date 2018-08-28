@@ -118,7 +118,7 @@ function SWEP:DrawHUD()
 		draw.OutlinedRect(cross_bwin, cross_bwout, x, y + cross_gap, 3, 18, 1)
 	end
 	
-	if self:GetIron() or self:GetIsReloading() or self:GetIsSprinting() or self:GetIsNearWall() or self:GetIsUnderwater() or self:GetIsOnLadder() or self:GetIsCustomizing() or (self:GetIsDeploying() and self:GetIsSprinting())or self:GetIsHolstering() then
+	if self:GetIron() or self:GetIsReloading() or self:GetIsSprinting() or self:GetIsNearWall() or self:GetIsUnderwater() or self:GetIsOnLadder() or self:GetIsCustomizing() or (self:GetIsDeploying() and self:GetIsSprinting()) or self:GetIsHolstering() then
 		self.ShouldDrawBWCross = false
 	else
 		self.ShouldDrawBWCross = true

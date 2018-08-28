@@ -272,7 +272,7 @@ SWEP.DisableNearwall = false
 
 local td = {}
 function SWEP:_NearWallThink()
-	if self:GetIsSprinting() or self:IsBusy() then return end
+	if self:GetIsSprinting() or self:IsBusy() or self:IsFiring() then return end
 	
 	if self.DisableNearwall then
 		if self:GetIsNearWall() then
