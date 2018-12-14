@@ -106,6 +106,7 @@ SWEP.HL2_IconParams = {dist = 42, mdlOffset = Vector(-9,0,0), camOffset = -3.5}
 SWEP.DisableReloadBlur = true
 SWEP.ReloadAfterShot = true
 SWEP.ReloadAfterShotTime = 0.1
+SWEP.LastShotFireDelay = 0.05
 SWEP.XBOWGLOW = true
 SWEP.NoReloadAnimation = true
 

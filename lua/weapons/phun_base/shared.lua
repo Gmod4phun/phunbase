@@ -259,7 +259,7 @@ SWEP.IsSuppressed = false // whether or not the weapon is suppressed, changes th
 SWEP.DisableIronsights = false // disable the usage of ironsights
 SWEP.DisableReloading = false // disable reloading for the weapon, useful when using AmmoCount logic
 SWEP.DisableReloadBlur = false // disables blur while reloading
-SWEP.ReloadAfterShot = false // automatically reloads the weapon after shooting
+SWEP.ReloadAfterShot = false // automatically reloads the weapon after shooting, but only on the last shot (does not make sense to reload not on the last shot -_-)
 SWEP.ReloadAfterShotTime = 0.5 // delay between firing and starting the reloading
 SWEP.UseIronTransitionAnims = true // enables iron transition sequences to be used
 SWEP.ForceGotoTransitionAnims = false // forces the use of goto_iron and goto_idle sequences instead of a built-in function to decide between individual idle animations
@@ -752,9 +752,8 @@ function SWEP:InitFireAction()
 			self:PerformFireAction()
 		end)
 
-
-		if self.ReloadAfterShot then
-			self:DelayedEvent(self.ReloadAfterShotTime, function() self:_realReloadStart() end)
+		if self.ReloadAfterShot and self:Clip1() == 1 then
+			self:DelayedEvent(self.ReloadAfterShotTime, function() self._ReloadAfterShotOverride = true self:_realReloadStart() self._ReloadAfterShotOverride = false end)
 		end
 
 		if self.UnIronAfterShot then

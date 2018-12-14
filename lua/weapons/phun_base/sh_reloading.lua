@@ -136,7 +136,7 @@ end
 
 function SWEP:_realReloadStart()
 	local ply = self.Owner
-	if self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self:GetShouldBeCocking() or self.DisableReloading or self:IsGlobalDelayActive() then return end
+	if (self:IsBusy() or self:IsFlashlightBusy() or self:IsFiring() or (ply:KeyDown(IN_ATTACK) and !self.ReloadAfterShot) or self.IsCocking or self:GetShouldBeCocking() or self.DisableReloading or self:IsGlobalDelayActive()) and !self._ReloadAfterShotOverride then return end
 	
 	if self:IsGLActive() then
 		if IsFirstTimePredicted() then
@@ -148,7 +148,7 @@ function SWEP:_realReloadStart()
 	self:changeHadInClip()
 	
 	if !(self.HadInClip < self.Primary.ClipSize + ((!self.WasEmpty and self.Chamberable and !self.ShotgunReload) and 1 or 0)) or ply:GetAmmoCount(self:GetPrimaryAmmoType()) < 1 then return end
-	if self:GetNextPrimaryFire() > CurTime() or self:GetNextSecondaryFire() > CurTime() then return end
+	if (self:GetNextPrimaryFire() > CurTime() or self:GetNextSecondaryFire() > CurTime()) and !self._ReloadAfterShotOverride then return end
 	
 	self:SetIsReloading(true)
 	self:CalcHoldType()

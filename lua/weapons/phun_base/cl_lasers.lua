@@ -7,14 +7,13 @@ if CLIENT then
 	CreateClientConVar("pb_laser_color_r", "255", true, false)
 	CreateClientConVar("pb_laser_color_g", "0", true, false)
 	CreateClientConVar("pb_laser_color_b", "0", true, false)
-
-	SWEP.UsePlayerColorAsLaserColor = false // either that, or default red laser
+	
 	SWEP.LaserDrawDistance = 128 // how far should the beam be drawn
-
+	
 	function SWEP:AddAttLaser(attName) // preferably call in att attachcallback
 		self._activeAttLasers[attName] = true
 	end
-
+	
 	function SWEP:RemoveAttLaser(attName) // preferably call in att detachcallback
 		self._activeAttLasers[attName] = nil
 	end
@@ -28,7 +27,7 @@ if CLIENT then
 	
 	local laserMat = Material("phunbase/laser/pb_laser_beam")
 	local laserDotMat = Material("sprites/light_glow02_add")
-
+	
 	function SWEP:_drawLaser(attName)
 		local velement = self:getVElementByName(attName)
 		if velement then
@@ -40,7 +39,6 @@ if CLIENT then
 			
 			local laserClr_r, laserClr_g, laserClr_b = GetConVar("pb_laser_color_r"):GetInt(), GetConVar("pb_laser_color_g"):GetInt(), GetConVar("pb_laser_color_b"):GetInt()
 			local laserClr = Color(laserClr_r, laserClr_g, laserClr_b, 255)
-			
 			
 			local finalLaserCol = laserClr
 			
@@ -54,10 +52,13 @@ if CLIENT then
 				finalLaserCol = HSVToColor( CurTime() * 500 % 360, 1, 1 )
 			end
 			
-			local angFwd = att.Ang:Forward()
+			local laserPos = att and att.Pos or velement:GetPos()
+			local laserAng = att and att.Ang or velement:GetAngles()
+			
+			local angFwd = laserAng:Forward()
 			local tr = util.TraceLine( {
-				start = att.Pos,
-				endpos = att.Pos + angFwd * 4096,
+				start = laserPos,
+				endpos = laserPos + angFwd * 4096,
 				filter = { LocalPlayer(), velement, self.VM },
 			} )
 
