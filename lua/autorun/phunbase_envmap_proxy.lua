@@ -1,8 +1,7 @@
 
 // Material proxy for using realtime envmap color tint (best used with static envmaps rather than cubemaps), some are in materials/phunbase/envmaps, see the vmt for example usage
 
-if CLIENT then	
-	local col = Vector()
+if CLIENT then
 	local fallback = Vector(0.2, 0.2, 0.2)
 	
 	matproxy.Add( {
@@ -10,22 +9,21 @@ if CLIENT then
 		init = function( self, mat, values )
 			self.envMin = values.min
 			self.envMax = values.max
+			self.col = Vector()
 		end,
 		bind = function( self, mat, ent )
 			if IsValid(ent) then
-				col = PHUNBASE_LerpVector(FrameTime() * 10, col, render.GetLightColor(ent:GetPos()))
+				self.col = PHUNBASE_LerpVector(FrameTime() * 10, self.col, render.GetLightColor(ent:GetPos()))
 			else
-				col = fallback
+				self.col = fallback
 			end
 			
-			local min, max = self.envMin, self.envMax
-			
-			if min and max and col then
-				col.x = math.Clamp(col.x, min, max)
-				col.y = math.Clamp(col.x, min, max)
-				col.z = math.Clamp(col.x, min, max)
-
-				mat:SetVector( "$envmaptint", col )
+			if self.envMin and self.envMax and self.col then
+				self.col.x = math.Clamp(self.col.x, self.envMin, self.envMax)
+				self.col.y = math.Clamp(self.col.x, self.envMin, self.envMax)
+				self.col.z = math.Clamp(self.col.x, self.envMin, self.envMax)
+				
+				mat:SetVector( "$envmaptint", self.col )
 			end
 		end
 	} )
