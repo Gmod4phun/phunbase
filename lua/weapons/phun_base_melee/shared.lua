@@ -219,7 +219,7 @@ end
 function SWEP:InitiateAttack()
 	local ply = self.Owner
 	
-	if self:GetIsDeploying() or self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
+	if self:IsGlobalDelayActive() or self:GetIsDeploying() or self:GetIsSprinting() or self:GetIsNearWall() or self:IsBusy() or self:IsFlashlightBusy() then return end
 	
 	if IsFirstTimePredicted() then
 		self:PlayVMSequence(ply:KeyDown(IN_ATTACK2) and "attack2" or "attack1")
