@@ -178,7 +178,7 @@ function SWEP:_realReloadStart()
 end
 
 function SWEP:ReloadAnimLogic()
-	self:PlayVMSequence(((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload"))
+	self:PlayVMSequence((self.WasEmpty and self.Sequences.reload_empty) and "reload_empty" or "reload")
 end
 
 function SWEP:_reloadDiscardbla()
@@ -263,7 +263,7 @@ function SWEP:_shotgunReloadRemoveAmmo(delay)
 end
 
 function SWEP:ShotgunReloadStartLogic()
-	self:PlayVMSequence(self.WasEmpty and "reload_shell_start_empty" or "reload_shell_start")
+	self:PlayVMSequence((self.WasEmpty and self.Sequences.reload_shell_start_empty) and "reload_shell_start_empty" or "reload_shell_start")
 end
 
 function SWEP:_shotgunReloadBegin()
@@ -294,7 +294,7 @@ function SWEP:_shotgunReloadBegin()
 end
 
 function SWEP:ShotgunReloadInsertLogic()
-	self:PlayVMSequence("reload_shell_insert")
+	self:PlayVMSequence((self.WasEmpty and self.Sequences.reload_shell_insert_empty) and "reload_shell_insert_empty" or "reload_shell_insert")
 end
 
 function SWEP:_shotgunReloadInsert()
@@ -307,7 +307,7 @@ function SWEP:_shotgunReloadInsert()
 end
 
 function SWEP:ShotgunReloadEndLogic()
-	self:PlayVMSequence(self.WasEmpty and "reload_shell_end_empty" or "reload_shell_end")
+	self:PlayVMSequence((self.WasEmpty and self.Sequences.reload_shell_end_empty) and "reload_shell_end_empty" or "reload_shell_end")
 end
 
 function SWEP:_shotgunReloadFinish()

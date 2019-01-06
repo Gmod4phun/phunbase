@@ -186,6 +186,8 @@ function SWEP:setupAttachmentModels(updateOnly) // true to only update them, not
 end
 
 function SWEP:getBoneOrientation(boneId)
+    if !boneId then return end
+	
 	local m = self.VM:GetBoneMatrix(boneId)
 	
 	if m then
@@ -224,6 +226,8 @@ function SWEP:_drawAttachmentModel(data)
 	if IsValid(model) then
 		if data.bone then
 			pos, ang = self:getBoneOrientation(data._bone)
+			if !pos or !ang then return end
+			
 			model:SetPos(pos + ang:Forward() * data.pos.x + ang:Right() * data.pos.y + ang:Up() * data.pos.z)
 			ang:RotateAroundAxis(ang:Up(), data.angle.y)
 			ang:RotateAroundAxis(ang:Right(), data.angle.p)
