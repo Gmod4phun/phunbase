@@ -37,7 +37,7 @@ function SWEP:_renderStencilReticle(att)
 	if retTable.useMuzzleAngles then
 		retAtt = self.VM:GetAttachment(self.VM:LookupAttachment(self.MuzzleAttachmentName))
 	else
-		if retTable.reticleAttachment then
+		if retTable.reticleAttachmentName then
 			retAtt = attachmEnt:GetAttachment(attachmEnt:LookupAttachment(retTable.reticleAttachmentName))
 		else
 			retAtt = attachmEnt:GetAttachment(1)
