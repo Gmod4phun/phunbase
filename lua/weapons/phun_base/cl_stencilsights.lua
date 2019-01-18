@@ -5,7 +5,7 @@ function SWEP:_drawStencilEntity(att)
 	local data = v.reticleTable
 	local stVElementName
 	
-	if not v._stencilEntity or !IsValid(v._stencilEntity) then
+	if !v._stencilEntity or !IsValid(v._stencilEntity) then
 		stVElementName = self.VElements[data.stencilElementName]
 		if !stVElementName then return end
 
@@ -25,8 +25,8 @@ local colWhiteTr = Color(255,255,255,123)
 local attachmEnt, retAtt, retDist, retPos, retNorm, retAng, retSize, retTable
 
 function SWEP:_renderStencilReticle(att)
-	if not att then return end
-	if not self.VElements[att.name] then return end
+	if !att then return end
+	if !self.VElements[att.name] then return end
 	
 	attachmEnt = self.VElements[att.name].ent
 	if !IsValid(attachmEnt) then return end
@@ -34,13 +34,17 @@ function SWEP:_renderStencilReticle(att)
 	retTable = self.VElements[att.name].reticleTable
 	if !retTable then return end
 	
-	if !retTable.useMuzzleAngles then
-		retAtt = attachmEnt:GetAttachment(1)
-		if not retAtt then return end
-	else
+	if retTable.useMuzzleAngles then
 		retAtt = self.VM:GetAttachment(self.VM:LookupAttachment(self.MuzzleAttachmentName))
-		if not retAtt then return end
+	else
+		if retTable.reticleAttachment then
+			retAtt = attachmEnt:GetAttachment(attachmEnt:LookupAttachment(retTable.reticleAttachmentName))
+		else
+			retAtt = attachmEnt:GetAttachment(1)
+		end
 	end
+	
+	if !retAtt then return end
 	
 	render.ClearStencil()
 	render.SetStencilEnable(true)
