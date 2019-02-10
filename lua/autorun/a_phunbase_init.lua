@@ -73,7 +73,7 @@ local function PHUNBASE_GiveWeaponFix(ply,wep,swep) -- disable default behaviour
 	if IsSWEP then
 		local base = weapons.GetStored(wep).Base
 		local basetable = weapons.GetStored(base)
-		if ply:IsPlayer() and basetable.PHUNBASEWEP then
+		if basetable and ply:IsPlayer() and basetable.PHUNBASEWEP then
 			if !ply:HasWeapon(wep) then
 				ply:Give(wep)
 			end

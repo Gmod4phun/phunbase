@@ -100,7 +100,7 @@ if CLIENT then
 		
 		if !IsValid(ply) then return end
 		
-		if !ply.FAS2_WATCH_HudModel then
+		if !ply.FAS2_WATCH_HudModel or !IsValid(ply.FAS2_WATCH_HudModel) then
 			ply.FAS2_WATCH_HudModel = ClientsideModel("models/phunbase/fas2_watch_realtime.mdl", RENDERGROUP_BOTH)
 			ply.FAS2_WATCH_HudModel:SetNoDraw(true)
 		end

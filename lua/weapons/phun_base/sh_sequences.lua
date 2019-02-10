@@ -105,7 +105,7 @@ function SWEP:_playMuzzleEffect()
 			end
 			
 			
-			if !isSup then
+			if !isSup and !self.DisableMuzzleLight then
 				local dlight = DynamicLight(self:EntIndex())
 				dlight.r = 250
 				dlight.g = 250

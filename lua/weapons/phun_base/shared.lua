@@ -239,6 +239,7 @@ SWEP.MuzzleAttachmentName_L = "muzzle_left" // used by dual weapons, vm attachme
 SWEP.MuzzleAttachmentName_R = "muzzle_right" // used by dual weapons, vm attachment name for muzzleflash, right gun
 SWEP.MuzzleEffect = {"smoke_trail"} // table of Particle Effect names to use as muzzleflash
 SWEP.MuzzleEffectSuppressed = {"smoke_trail"} // same as above, when suppressed
+SWEP.DisableMuzzleLight = false // disables muzzle light when firing
 
 SWEP.NoShells = false // disables shells when firing
 SWEP.ShellVelocity = {X = 0, Y = 0, Z = 0} // the directional velocity applied to the shell based on the axis of the ShellEject Attachment

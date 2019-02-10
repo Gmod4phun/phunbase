@@ -3,13 +3,13 @@ AddCSLuaFile()
 PHUNBASE.registeredAmmoTypes = PHUNBASE.registeredAmmoTypes or {}
 PHUNBASE.registeredAmmoCounts = PHUNBASE.registeredAmmoCounts or {}
 
-function PHUNBASE.addAmmoType(globalName, prettyName, ammoCount)
+function PHUNBASE.addAmmoType(globalName, prettyName, ammoCount, dmg_type)
 	if PHUNBASE.registeredAmmoTypes[globalName] then
 		print("The ammotype  "..globalName.."  already exists")
 		return
 	end
 
-	game.AddAmmoType({name = globalName, dmgtype = DMG_BULLET, tracer = TRACER_NONE})
+	game.AddAmmoType({name = globalName, dmgtype = dmg_type or DMG_BULLET, tracer = TRACER_NONE})
 	if CLIENT then
 		language.Add(globalName.."_ammo", prettyName)
 	end
@@ -48,6 +48,8 @@ PHUNBASE.addAmmoType("phunbase_10x25mm", "10mm Auto", 30)
 PHUNBASE.addAmmoType("phunbase_762x33", "7.62x33mm", 30)
 PHUNBASE.addAmmoType("phunbase_rocket", "Rocket", 1)
 PHUNBASE.addAmmoType("phunbase_flare", "Flare", 1)
+
+PHUNBASE.addAmmoType("phunbase_secret", "Secret Ammo", 10, bit.bor(DMG_BULLET, DMG_BLAST, DMG_AIRBOAT))
 
 hook.Add( "Initialize", "PHUNBASE_createAmmoBoxes", function() // create an ammocrate entity for every ammo type (Daxble's idea)
 	for k, v in pairs( PHUNBASE.registeredAmmoTypes ) do
