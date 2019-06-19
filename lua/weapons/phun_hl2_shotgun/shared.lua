@@ -147,7 +147,7 @@ SWEP.ShotgunReloadTimes = {
 }
 
 SWEP.CockAfterShot = true
-SWEP.CockAfterShotTime = 0.55
+SWEP.CockAfterShotTime = 0.33
 SWEP.MakeShellOnCock = true
 
 SWEP.AutoCockStart = true

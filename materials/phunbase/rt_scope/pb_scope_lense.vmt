@@ -1,14 +1,13 @@
 "VertexlitGeneric"
 {
 	"$basetexture" "phunbase/rt_scope/pb_scope_lense"
-
+	
+	"$phongexponenttexture" "phunbase/rt_scope/phong_exponent"
+	
 	"$phong" 1
 	"$phongalbedotint" 1
 	"$phongboost" 20
-
-	"$phongalbedotint" 1
-	"$phongexponenttexture" "phunbase/rt_scope/phong_exponent"
-
+	
 	"$phongfresnelranges" "[.5 1 48]"
 	
 	"$normalmapalphaenvmapmask" 1

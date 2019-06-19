@@ -31,6 +31,7 @@ CreateClientConVar("phunbase_dev_vm_attachments_draw", "0", true, false)
 CreateClientConVar("phunbase_dev_vm_attachments_all", "0", true, false)
 
 CreateClientConVar("phunbase_hl2_crosshair", "0", true, false)
+CreateClientConVar("phunbase_global_auto_cock", "0", true, true) // save for serverside
 
 function PHUNBASE.DEV.ENABLED()
 	return GetConVar("phunbase_devmode"):GetInt() == 1
@@ -573,6 +574,13 @@ local function PHUNBASE_MENU_PANEL(panel)
 	slider:SetValue(GetConVarNumber("phunbase_blur_iron_mod"))
 	slider:SetText("Ironsight Blur modifier")
 	panel:AddItem(slider)
+	
+	cb = vgui.Create("DCheckBoxLabel", panel)
+	cb:SetText("Enable weapon auto-cock?")
+	cb:SetConVar("phunbase_global_auto_cock")
+	cb:SetTooltip("Toggles between manual (RELOAD KEY) and automatic weapon cocking")
+	cb:SetTextColor(clrBlack)
+	panel:AddItem(cb)
 	
 	panel:AddControl("Label", {Text = "\nPHUNBASE HUD Settings"})
 	

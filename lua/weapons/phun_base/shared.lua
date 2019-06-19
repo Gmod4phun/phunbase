@@ -766,8 +766,14 @@ function SWEP:InitFireAction()
 			self:SetShouldBeCocking(true)
 		end
 
-		if self.CockAfterShot and self.AutoCockStart then
+		if self.CockAfterShot and self.AutoCockStart then // auto cock - per weapon
 			self:DelayedEvent(self.AutoCockStartTime, function() self:Cock() end)
+		end
+		
+		if self.CockAfterShot and self.Owner:GetInfoNum("phunbase_global_auto_cock", 0) == 1 then // auto cock - global - all weapons
+			if (self.DontCockWhenEmpty and self:Clip1() != 1) or !self.DontCockWhenEmpty then 
+				self:DelayedEvent(self.Primary.Delay, function() self:Cock() end)
+			end
 		end
 	end
 	

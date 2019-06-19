@@ -4,7 +4,7 @@
 if CLIENT then
 	AddCSLuaFile()
 
-	PHUNBASE.Version = 43.5
+	PHUNBASE.Version = 44
 
 	local function VerCheckNeedUpdateMsg(your, latest)
 		chat.AddText(Color(0, 180, 200, 255), "[PHUNBASE] ", Color(255,255,255,255), "Hey there, there is a new PHUNBASE version. Your version: "..your..", latest version: "..latest..". Updating is recommended.")
@@ -16,6 +16,10 @@ if CLIENT then
 
 	local function VerCheckOkayMsg()
 		chat.AddText(Color(0, 180, 200, 255), "[PHUNBASE] ", Color(10,250,10,255), "Thank you for using the latest PHUNBASE version. If you encounter any errors, you can open a new Issue on the GitHub page.")
+	end
+	
+	local function VerCheckFutureManMsg()
+		chat.AddText(Color(0, 180, 200, 255), "[PHUNBASE] ", Color(250,250,20,255), "It appears you are somehow using a newer version of PHUNBASE than the latest official one.")
 	end
 
 	function PHUNBASE.CheckVersion()
@@ -34,6 +38,8 @@ if CLIENT then
 						VerCheckNeedUpdateMsg(PHUNBASE.Version, latestVer)
 					elseif PHUNBASE.Version == latestVer then
 						VerCheckOkayMsg()
+					elseif PHUNBASE.Version > latestVer then
+						VerCheckFutureManMsg()
 					end
 				else
 					VerCheckFailMsg()
