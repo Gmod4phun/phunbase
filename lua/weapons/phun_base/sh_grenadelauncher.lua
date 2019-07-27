@@ -16,6 +16,7 @@ SWEP.GrenadeLauncherReloadTime = 2 // reload delay of the gl
 SWEP.GrenadeLauncherFireDelay = 0.5 // the time period during which the gl is considered firing
 SWEP.GrenadeLauncherDryFireDelay = 0.25 // same as above, for dryfiring
 SWEP.GrenadeLauncherTransitionDelay = 1 // time it takes to change to/from gl mode
+SWEP.GrenadeLauncherLoadedOnEquip = true // whether or not the gl will be loaded already when spawning a weapon
 
 SWEP.GrenadeLauncherFireSound = "PB_GRENADELAUNCHER_FIRE"
 

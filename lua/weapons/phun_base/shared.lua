@@ -354,7 +354,7 @@ function SWEP:Initialize()
 	self:SetIsSwitchingFiremode(false)
 	self:SetShouldBeCocking(false)
 	self:SetWeaponMode(PB_WEAPONMODE_NORMAL)
-	self:SetIsGLLoaded(true)
+	self:SetIsGLLoaded(false)
 	self:SetGlobalDelay(0)
 
 	if CLIENT then

@@ -43,10 +43,20 @@ if SERVER then
 		end
 	end
 	
+	function SWEP:GrenadeLauncherCheckOnEquip()
+		if self.GrenadeLauncherLoadedOnEquip then
+			if self:HasEnoughGLAmmo() then
+				self.Owner:RemoveAmmo(1, self.GrenadeLauncherAmmoType)
+				self:SetIsGLLoaded(true)
+			end
+		end
+	end
+	
 	function SWEP:Equip()
 		if !self._hasGivenExtraSpawnAmmo then
 			self._hasGivenExtraSpawnAmmo = true
 			self:GiveExtraAmmoOnSpawn()
+			self:GrenadeLauncherCheckOnEquip()
 		end
 	end
 end
